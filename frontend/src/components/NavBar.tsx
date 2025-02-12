@@ -36,7 +36,7 @@ const NavBar = () => {
 
             const handleBlur = () => {
                 navbar.classList.remove("navExpandRight")
-                navbar.current.value = ''
+                
             }
 
             searchInput.addEventListener('focus', handleFocus)
