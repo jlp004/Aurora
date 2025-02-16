@@ -6,6 +6,7 @@ Project Members:
 Charitha Sarraju  
 John Phelan  
 Lydia Ma  
+Hishita Shah
 
 Statement of Work:  
 
