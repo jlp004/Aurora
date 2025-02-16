@@ -7,6 +7,7 @@ Charitha Sarraju
 John Phelan  
 Lydia Ma  
 Hishita Shah
+Harish Kaushik
 
 Statement of Work:  
 
