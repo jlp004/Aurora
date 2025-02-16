@@ -9,6 +9,7 @@ Lydia Ma
 Hishita Shah  
 Harish Kaushik  
 Akash Jayakumar  
+Megan Chacko
 
 Statement of Work:  
 
