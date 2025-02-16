@@ -6,9 +6,9 @@ Project Members:
 Charitha Sarraju  
 John Phelan  
 Lydia Ma  
-Hishita Shah
-Harish Kaushik
-Akash Jayakumar
+Hishita Shah  
+Harish Kaushik  
+Akash Jayakumar  
 
 Statement of Work:  
 
