@@ -8,6 +8,7 @@ John Phelan
 Lydia Ma  
 Hishita Shah
 Harish Kaushik
+Akash Jayakumar
 
 Statement of Work:  
 
