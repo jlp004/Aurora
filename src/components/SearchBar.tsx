@@ -11,8 +11,8 @@ const SearchBar = () => {
 
     const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
         if(event.key == "Enter") {
-                // this may have to be changed depending on how search is implemented
-                navigate(`/search/s?query=${inputValue}`)      
+            // this may have to be changed depending on how search is implemented
+            navigate(`/search?query=${inputValue}`)      
         }
     }
 

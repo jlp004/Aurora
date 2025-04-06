@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router"
 import "../styles/HamburgerMenu.css"
 
-// Written by John Phelan
+// Written by John Phelan - jlp220005
 // Handles the side drop down box and navigation to the pages inside it
 
 const DropDownMenu = () => {
