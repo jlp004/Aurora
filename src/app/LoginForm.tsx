@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { ReactNode } from 'react'
 import { auth, provider, signInWithPopup } from '../services/firebase'
 
+// Charitha
+
 const LoginForm = () => {
   const navigate = useNavigate();
   
@@ -25,7 +27,7 @@ const LoginForm = () => {
   // </>)
   return (
 
-    //Currently the formatting of the buttons is flexible and looks different based on the screen it's being run on, just an FYI!
+    //Currently the formatting of the buttons is absolute and looks different based on the screen it's being run on, just an FYI!
     
     <div style={{ //this is for the background, to create the gradiant effect to make it look like northern lights/gradient looking
       background: 'linear-gradient(135deg,rgb(26, 22, 78) 0%,rgb(122, 50, 124) 100%)',
@@ -39,6 +41,7 @@ const LoginForm = () => {
     }}>
       
       <h1 style={{ //this is for the text box saying the web app name "Aurora"
+        display: 'flex',
         marginBottom: '300px', //aligning it as wanted
         marginLeft: '-40px',
         fontSize: '6rem', //increased font size for the app name effect, below are just some texxt formatting stuff

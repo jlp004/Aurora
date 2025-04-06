@@ -1,3 +1,5 @@
+/* John Phelan */
+
 * {
     margin: 0;
     padding: 0;
@@ -15,7 +17,6 @@
     align-items: flex-start;
     justify-content: flex-start;
     transition: all 0.5s ease;
-    
 }
 
 .collapsible-container{
@@ -30,6 +31,11 @@
     cursor: pointer;
 }
 
+/* The dashes animation is handled through pure CSS / rotations / transformations
+* It should be easier to render/manage than an animated image but it can break if
+* You change probably anything related to the dashes in HamburgerMenu.css
+*/
+
 .dash {
     background-color: black;
     width: 1.5rem;
@@ -37,6 +43,7 @@
     margin: 3px 0;
     transition: transform 0.2s ease;
     transform-origin: center;
+    z-index: 99;
 }
 
 .rotated {
@@ -57,6 +64,7 @@
 
 .navExpand {
     width: 15rem;
+    z-index: 0;
 }
 
 .expandableText {

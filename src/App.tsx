@@ -13,8 +13,9 @@ function App() {
         <Route path="/login" element={<LoginForm />}></Route>
         <Route path="/home" element={<Home />}></Route>
         <Route path="/search" element={<Search />}></Route>
-        <Route path="*" element = {<PageNotFound />} />
         <Route path="/logout" element={<Logout />} />
+
+        <Route path="*" element = {<PageNotFound />} />
       </Routes>
   )
 }

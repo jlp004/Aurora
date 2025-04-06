@@ -3,6 +3,8 @@ import { auth } from '../services/firebase';
 import { signOut } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
 
+// Charitha
+
 const Logout = () => {
   const navigate = useNavigate();
 
