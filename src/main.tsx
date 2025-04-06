@@ -35,7 +35,7 @@ const theme = extendTheme({ config, styles })
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <BrowserRouter> 
-      <ChakraProvider>
+      <ChakraProvider theme={theme}>
         <App />
       </ChakraProvider>
     </BrowserRouter>
