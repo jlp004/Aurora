@@ -4,6 +4,7 @@ import LoginForm from './app/LoginForm'
 import Home from './app/Home'
 import Search from './app/SearchPage'
 import PageNotFound from './app/PageNotFound';
+import Logout from './app/logOut';
 
 function App() {  
   return (
@@ -13,6 +14,7 @@ function App() {
         <Route path="/home" element={<Home />}></Route>
         <Route path="/search" element={<Search />}></Route>
         <Route path="*" element = {<PageNotFound />} />
+        <Route path="/logout" element={<Logout />} />
       </Routes>
   )
 }
