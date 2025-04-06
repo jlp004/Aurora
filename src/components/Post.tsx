@@ -1,3 +1,7 @@
+/* Written by Megan Chacko - msc220005
+*
+*/
+
 import { useState } from 'react';
 import '../styles/Post.css'; 
 
