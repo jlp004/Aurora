@@ -24,6 +24,8 @@ const LoginForm = () => {
   //   <button id="login-btn" className="btn btn-class-primary" onClick={handleFirebaseAuth}>Login</button>
   // </>)
   return (
+
+    //Currently the formatting of the buttons is flexible and looks different based on the screen it's being run on, just an FYI!
     
     <div style={{ //this is for the background, to create the gradiant effect to make it look like northern lights/gradient looking
       background: 'linear-gradient(135deg,rgb(26, 22, 78) 0%,rgb(122, 50, 124) 100%)',
