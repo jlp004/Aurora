@@ -5,6 +5,9 @@ import { auth, provider, signInWithPopup } from '../services/firebase'
 
 // Charitha
 
+// TODO: 'Create New Account' button currently is not implemented; 
+// needs database implementation
+
 const LoginForm = () => {
   const navigate = useNavigate();
   
