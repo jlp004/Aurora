@@ -5,6 +5,7 @@ import Home from './app/Home'
 import Search from './app/SearchPage'
 import PageNotFound from './app/PageNotFound';
 import Logout from './app/logOut';
+import AccountPage from './app/AccountPage';
 
 function App() {  
   return (
@@ -16,6 +17,7 @@ function App() {
         <Route path="/logout" element={<Logout />} />
 
         <Route path="*" element = {<PageNotFound />} />
+        <Route path="/account" element={<AccountPage/>}></Route>
       </Routes>
   )
 }
