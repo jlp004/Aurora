@@ -1,5 +1,6 @@
-/* AccountPage.css, Hishita Shah */
+/* AccountPage.css, Hishita Shah hrs220004 */
 
+/*default styles for page and background color*/
 body, html {
     margin: 0;
     padding: 0;
@@ -8,52 +9,54 @@ body, html {
     color: black;
 }
 
-.account-container {
-    min-height: 100px;
-    padding: 150px 250px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+/* styles for the account container */
+.account-container { 
+    min-height: 100px; 
+    padding: 150px 250px; /*space around the container*/
+    display: flex; /*flexbox for layout*/
+    flex-direction: column; /*column layout*/
+    align-items: center; 
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
     background-color: white;
     color: black;
     box-sizing: border-box;
 }
 
+
 .profile-header {
-    width: 100%;
-    max-width: 1000px;
-    display: flex;
+    width: 100%; /* full width */
+    max-width: 1000px; /* max width for larger screens */
+    display: flex; /*flexbox for layout and have info side by side*/
     align-items: center;
     gap: 30px;
     padding-bottom: 30px;
-    border-bottom: 1px solid #333;
+    border-bottom: 1px solid #333; /* bottom border for separation */
     margin-bottom: 40px;
 }
 
 .profile-pic {
     width: 120px;
     height: 120px;
-    border-radius: 50%;
-    object-fit: cover;
+    border-radius: 50%; /* circular image */
+    object-fit: cover; /* cover the entire area without distortion */
     border: 3px solid #555;
 }
 
 .user-info h2 {
     margin: 0;
-    font-size: 2rem;
+    font-size: 2rem; /* larger font size for name */
 }
 
 .user-info p {
-    margin: 6px 0;
-    font-size: 1.1rem;
+    margin: 6px 0; 
+    font-size: 1.1rem; /* slightly larger font size for bio */
     color: #bbb;
 }
 
 .stats {
-    display: flex;
-    gap: 25px;
-    margin-top: 12px;
+    display: flex; /*row display for followers/following*/
+    gap: 25px; /* space between stats */
+    margin-top: 12px; /*space above the stats for better ui*/
     font-size: 1rem;
     color: #ccc;
 }
@@ -77,6 +80,6 @@ body, html {
 }
 
 .post-img:hover {
-    transform: scale(1.03);
-    box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+    transform: scale(1.03); /* zoom effect */
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.2); /* soft shadow */
 }
