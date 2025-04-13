@@ -32,9 +32,9 @@
 }
 
 /* The dashes animation is handled through pure CSS / rotations / transformations
-* It should be easier to render/manage than an animated image but it can break if
-* You change probably anything related to the dashes in HamburgerMenu.css
-*/
+ * It should be easier to render/manage than an animated image but it can break if
+ * You change probably anything related to the dashes in HamburgerMenu.css
+ */
 
 .dash {
     background-color: black;
