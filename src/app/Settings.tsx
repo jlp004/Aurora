@@ -1,3 +1,7 @@
+/* Written by Hishita Shah - HRS220004
+
+*/
+
 import React, { useState } from 'react';
 import '../styles/SettingsPage.css';
 import Header from '../components/Header';
