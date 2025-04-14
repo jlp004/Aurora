@@ -5,7 +5,7 @@
 
 .post {
     max-width: 600px;
-    margin: 20px auto;
+    margin: 20px;
     border: 2px solid #dbdbdb;
     background: white;
     border-radius: 8px;
@@ -21,7 +21,7 @@
   }
 
   .post-feed {
-    padding-top: 1rem; /* Adjust based on your header height */
+    padding-top: 1rem; /* Adjust based on header height */
     max-width: 600px;
     margin: 0 auto;
     position: relative;

@@ -20,14 +20,15 @@ const SearchBar = () => {
     <>
         <div className="input-group">
             <input 
-            type="text" 
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            className="search-bar" 
-            placeholder="Search..." 
-            aria-label="Search..." 
-            aria-describedby="basic-addon1" 
-            onKeyDown={handleKeyDown}/>
+                type="text" 
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                className="search-bar" 
+                placeholder="Search..." 
+                aria-label="Search..." 
+                aria-describedby="basic-addon1"
+                onKeyDown={handleKeyDown} 
+            />
         </div>
     </>
   );

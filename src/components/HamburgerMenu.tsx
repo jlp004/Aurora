@@ -6,7 +6,7 @@ import "../styles/HamburgerMenu.css"
  *
  * TODO:
  * This could probably perform better if the query selectors didn't have to be called for every handleCollapseIcon call,
- * But the way to implement that seems a lot more annoying so I might come back to it
+ * But the way to implement that seems a lot more annoying and i don't understand it so I might come back to it
  */ 
 
 const HamburgerMenu = () => {

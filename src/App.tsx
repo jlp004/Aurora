@@ -6,6 +6,7 @@ import Search from './app/SearchPage'
 import PageNotFound from './app/PageNotFound';
 import Logout from './app/logOut';
 import AccountPage from './app/AccountPage';
+import Settings from './app/Settings';
 
 function App() {  
   return (
@@ -18,6 +19,7 @@ function App() {
 
         <Route path="*" element = {<PageNotFound />} />
         <Route path="/account" element={<AccountPage/>}></Route>
+        <Route path="/settings" element={<Settings/>}/>
       </Routes>
   )
 }

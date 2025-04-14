@@ -1,0 +1,59 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+// API -> src/app/api/*
+// May be missing some models
+
+model User {
+  id          Int     @id @default(autoincrement())
+  username    String  
+  email       String
+  pictureURL  String? // Picture may not exist; should use a default in that case
+  profileDesc String? // Profile description may not exist; should be empty in that case
+  // PasswordHash  
+  // ^^ if we make our own account system
+  followers   Int
+  likes       Int
+  role        Role
+  posts       Post[]
+  comments    Comment[]
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model Post {
+  id         Int     @id @default(autoincrement())
+  title      String
+  pictureURL String
+  userId     Int
+  user       User    @relation(fields: [userId], references: [id])
+  tags       Tag[]   
+}
+
+model Tag {
+  id          Int     @id @default(autoincrement())
+  tagName     String  @unique
+  posts       Post[]  
+}
+
+
+model Comment {
+  id        Int     @id @default(autoincrement())
+  text      String
+  posterId  Int
+  poster    User    @relation(fields: [posterId], references:[id])
+
+  // This part is for sub-comments/replies
+  parentId   Int?      
+  parent     Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  replies    Comment[] @relation("CommentReplies")
+}
