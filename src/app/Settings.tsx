@@ -1,3 +1,4 @@
+/*by hishita*/
 import React, { useState } from 'react';
 import '../styles/SettingsPage.css';
 import Header from '../components/Header';
