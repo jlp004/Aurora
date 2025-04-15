@@ -12,15 +12,15 @@ datasource db {
 
 model User {
   id          Int     @id @default(autoincrement())
-  username    String  
+  username    String  @unique
   email       String
   pictureURL  String? // Picture may not exist; should use a default in that case
   profileDesc String? // Profile description may not exist; should be empty in that case
-  // PasswordHash  
+  passwordHash String
   // ^^ if we make our own account system
-  followers   Int
-  likes       Int
-  role        Role
+  followers   Int     @default(0)
+  likes       Int     @default(0)
+  role        Role?
   posts       Post[]
   comments    Comment[]
 }

@@ -1,34 +1,41 @@
-import { PrismaClient } from '@prisma/client'
-const prisma = new PrismaClient()
+import prisma from '@/lib/db'
+import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET() {
-  const posts = await prisma.post.findMany({
-    include: {
-      user: true,
-      tags: true
-    }
-  })
-  return new Response(JSON.stringify(posts), {
-    headers: { 'Content-Type': 'application/json' }
-  })
+// GET - Get all posts (not recommended if database ever gets large)
+
+export async function GET(req: NextRequest) {
+  try {
+    const posts = await prisma.post.findMany()
+    return NextResponse.json({ message: "Posts fetched: ", data: posts }, { status: 200 } )
+  }
+  catch (error) {
+    return NextResponse.json({ message: error instanceof Error ? error.message : "Failed to retrieve posts" }, { status: 500})
+  }
 }
 
-export async function POST(req: Request) {
-  const body = await req.json()
-  const { title, pictureURL, userId, tagIds } = body
+// POST - add a new post
 
-  const post = await prisma.post.create({
-    data: {
-      title,
-      pictureURL,
-      user: { connect: { id: userId } },
-      tags: { connect: tagIds.map((id: number) => ({ id })) }
-    },
-    include: { user: true, tags: true }
-  })
+export async function POST(req: NextRequest, res: NextResponse) {
+  try {
+    const body = await req.json()
+    const { title, pictureURL, userId, tags } = body
 
-  return new Response(JSON.stringify(post), {
-    headers: { 'Content-Type': 'application/json' },
-    status: 201
-  })
+    const addPost = await prisma.post.create({  //This may not work as expected?
+      data: {
+        title,
+        pictureURL,
+        userId,
+        tags: {
+          connect: []                           // TODO: this allows null tags but tags should be a requirement; should be implemented when tags are finished
+        },
+      },
+    })
+
+    return NextResponse.json( addPost, { status: 200} )
+  }
+  catch (error) {
+    console.error('Post creation failed:', error);
+    return NextResponse.json({ error: 'Failed to post' }, { status: 501 })
+
+  }
 }
