@@ -1,3 +1,3 @@
 {
-  "/api/User/[username]/route": "app/api/User/[username]/route.js"
+  "/api/Comment/route": "app/api/Comment/route.js"
 }

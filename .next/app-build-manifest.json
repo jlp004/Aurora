@@ -1,9 +1,9 @@
 {
   "pages": {
-    "/api/User/[username]/route": [
+    "/api/Comment/route": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/api/User/[username]/route.js"
+      "static/chunks/app/api/Comment/route.js"
     ]
   }
 }
