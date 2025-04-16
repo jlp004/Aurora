@@ -1,14 +1,9 @@
 {
   "pages": {
-    "/api/Post/route": [
+    "/api/User/[username]/route": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/api/Post/route.js"
-    ],
-    "/api/User/route": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/api/User/route.js"
+      "static/chunks/app/api/User/[username]/route.js"
     ]
   }
 }

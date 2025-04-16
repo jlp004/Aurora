@@ -1,20 +1,16 @@
-// src/app/api/User/[username]/route.ts
 import { PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
 export async function GET(
   req: Request,
-  { params }: { params: { username: string } }
+  context: { params: { username: string } }
 ) {
+  const username = context.params.username
+
   const user = await prisma.user.findUnique({
-    where: {
-      username: params.username
-    },
-    include: {
-      posts: true,
-      comments: true
-    }
+    where: { username },
+    include: { posts: true, comments: true }
   })
 
   if (!user) {
