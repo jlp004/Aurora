@@ -1,9 +1,9 @@
 {
   "pages": {
-    "/api/Comment/route": [
+    "/api/Comment/post/[postId]/route": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/api/Comment/route.js"
+      "static/chunks/app/api/Comment/post/[postId]/route.js"
     ]
   }
 }
