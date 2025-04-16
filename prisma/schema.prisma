@@ -23,6 +23,7 @@ model User {
   role         Role?
   posts        Post[]
   comments     Comment[]
+  likedPosts   Post[]    @relation("PostLikes")
 }
 
 enum Role {
@@ -38,6 +39,8 @@ model Post {
   user       User      @relation(fields: [userId], references: [id])
   tags       Tag[]
   Comment    Comment[]
+  likes      Int       @default(0)
+  likedBy    User[]    @relation("PostLikes")
 }
 
 model Tag {
