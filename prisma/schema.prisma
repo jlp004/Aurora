@@ -17,6 +17,7 @@ model User {
   pictureURL   String? // Picture may not exist; should use a default in that case
   profileDesc  String? // Profile description may not exist; should be empty in that case
   passwordHash String
+  password     String
   // ^^ if we make our own account system
   followers    Int       @default(0)
   likes        Int       @default(0)
