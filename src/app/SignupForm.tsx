@@ -39,24 +39,16 @@ const SignupForm = () => {
         }
     };
 
-    return ( /** Formatting needs fixing */
+    return ( 
         <div style={{
             display: 'flex',
             flexDirection: 'column',
-
-            // gap: '15px',
-            // background: 'white',
-            // padding: '40px',
-            // borderRadius: '12px',
-            // boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-            // width: '100%',
-            // maxWidth: '400px',
-            // boxSizing: 'border-box'
-
             justifyContent: 'center',
             alignItems: 'center',
             height: '100vh',
-            background: 'linear-gradient(135deg, rgb(26, 22, 78), rgb(122, 50, 124))',
+            width: '100vw',
+            background: 'linear-gradient(135deg,rgb(26, 22, 78) 0%,rgb(122, 50, 124) 100%)',
+            position: 'relative',
             fontFamily: 'Arial, sans-serif',
         }}>
             {/* Header Title */}
