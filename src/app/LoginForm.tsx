@@ -72,7 +72,7 @@ const LoginForm = () => {
             <button //this button is for the create account page
                 id="createAccount-btn"
                 className="btn btn-create-Account"
-                //onClick={handleOtherAction}
+                onClick={() => navigate('/signup')}
                 style={{
                     position: 'absolute', //formatting the position of the button to align it with the login button
                     top: '360px',

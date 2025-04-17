@@ -7,6 +7,7 @@ import PageNotFound from './app/PageNotFound';
 import Logout from './app/logOut';
 import AccountPage from './app/AccountPage';
 import Settings from './app/Settings';
+import SignupForm from './app/SignupForm';
 
 function App() {  
   return (
@@ -20,6 +21,7 @@ function App() {
         <Route path="*" element = {<PageNotFound />} />
         <Route path="/account" element={<AccountPage/>}></Route>
         <Route path="/settings" element={<Settings/>}/>
+        <Route path="/signup" element={<SignupForm/>} />
       </Routes>
   )
 }
