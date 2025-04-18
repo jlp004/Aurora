@@ -4,8 +4,6 @@ import {ReactNode, useState} from 'react'
 import {auth, provider, signInWithPopup} from '../../services/firebase'
 
 // Charitha
-// TODO: 'Create New Account' button currently is not implemented; 
-// needs database implementation
 
 const Login = () => {
     const [username, setUsername] = useState('');
@@ -56,7 +54,6 @@ const Login = () => {
     //   <button id="login-btn" className="btn btn-class-primary" onClick={handleFirebaseAuth}>Login</button>
     // </>)
     return (
-
         //Currently the formatting of the buttons is absolute and looks different based on the screen it's being run on, just an FYI!
 
         <div className="background">
@@ -146,6 +143,27 @@ const Login = () => {
                 </form>
             </main>
 
+            {/** Go to Home Button (This will be removed later once login and create account work) */}
+            <button
+                onClick={() => navigate('/home')}
+                style={{
+                    position: 'fixed',
+                    bottom: '20px',
+                    right: '20px',
+                    padding: '12px 20px',
+                    background: 'rgb(122, 50, 124)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '50px',
+                    fontWeight: 'bold',
+                    boxShadow: '0 2px 6px rgba(0,0,0,0.3)',
+                    cursor: 'pointer',
+                    zIndex: 1000
+                }}
+            >
+                Go to Home
+            </button>
+
             {/*
             <button //this button helps you login using your google account
                 id="login-btn"
@@ -180,4 +198,4 @@ const Login = () => {
     );
 }
 
-export default Login //exporting it
+export default Login 
