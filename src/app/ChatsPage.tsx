@@ -32,8 +32,9 @@ const ChatsPage = () => {
 // Layout styles
 const containerStyle = {
     display: 'flex',
-    height: '100 vh',
+    height: '100vh',
     width: '100vw',
+    background: 'linear-gradient(135deg,rgb(26, 22, 78) 0%,rgb(122, 50, 124) 100%)',
 };
 
 const sidebarStyle = {
@@ -41,6 +42,8 @@ const sidebarStyle = {
     borderRight: '1px solid #ccc',
     padding: '20px',
     overflowY: 'auto',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    //backdropFilter: 'blur(10px)',
 };
 
 const chatRoomStyle = {
@@ -48,6 +51,8 @@ const chatRoomStyle = {
     padding: '20px',
     display: 'flex',
     flexDirection: 'column' as const,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    //backdropFilter: 'blur(10px)',
 };
 
 export default ChatsPage;
