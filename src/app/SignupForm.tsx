@@ -12,8 +12,8 @@ const SignupForm = () => {
     const navigate = useNavigate();
 
     // Handles form submission
-    const handleSignup = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleSignup = async (event: React.FormEvent) => {
+        event.preventDefault();
 
         try {
             // Send user input to backend API for account creation

@@ -19,7 +19,7 @@ const AccountPage = () => {
         ]
     });
 
-    //user can upload profile picture
+    // Profile Picture Upload
     const handleProfilePicChange = (event) => {
         const file = event.target.files[0];
         if (file) {
@@ -28,7 +28,16 @@ const AccountPage = () => {
         }
     };
 
-    //user can delete a post 
+    // New Post Upload - Lydia
+    const handleCreatePost = (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            const imageUrl = URL.createObjectURL(file);
+            setUser({...user, posts: [imageUrl, ...user.posts] }); // Add new post to the top
+        }
+    }
+
+    // Delete posts
     const handleDeletePost = (indexToRemove) => {
         const updatedPosts = user.posts.filter((_, index) => index !== indexToRemove);
         setUser({ ...user, posts: updatedPosts });
@@ -63,9 +72,24 @@ const AccountPage = () => {
                         <span><strong>{user.followers}</strong> Followers</span>
                         <span><strong>{user.following}</strong> Following</span>
                     </div>
+
+                    {/** Upload Post Button - Lydia */}
+                    <div style={{ marginTop: '10px' }}>
+                        <label htmlFor="post-upload" className="upload-btn">
+                            Create New Post
+                        </label>
+                        <input 
+                            id="post-upload"
+                            type="file"
+                            accept="image/*"
+                            onChange={handleCreatePost}
+                            style={{ display: 'none' }}
+                        />
+                    </div>
                 </div>
             </div>
 
+            {/** Posts Grid */}
             <div className="image-grid">
                 {user.posts.length === 0 ? (
                     <p className="no-posts-msg">You haven’t posted anything yet.</p>
