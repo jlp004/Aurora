@@ -8,6 +8,7 @@ import Logout from './app/logOut';
 import AccountPage from './app/AccountPage';
 import Settings from './app/Settings';
 import SignupForm from './app/SignupForm';
+import ChatsPage from './app/ChatsPage';
 
 function App() {  
   return (
@@ -22,6 +23,7 @@ function App() {
         <Route path="/account" element={<AccountPage/>}></Route>
         <Route path="/settings" element={<Settings/>}/>
         <Route path="/signup" element={<SignupForm/>} />
+        <Route path="/chats" element={<ChatsPage/> } />
       </Routes>
   )
 }
