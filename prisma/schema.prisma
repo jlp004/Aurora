@@ -11,18 +11,19 @@ datasource db {
 // May be missing some models
 
 model User {
-  id          Int     @id @default(autoincrement())
-  username    String  
-  email       String
-  pictureURL  String? // Picture may not exist; should use a default in that case
-  profileDesc String? // Profile description may not exist; should be empty in that case
-  // PasswordHash  
+  id           Int       @id @default(autoincrement())
+  username     String    @unique
+  email        String
+  pictureURL   String? // Picture may not exist; should use a default in that case
+  profileDesc  String? // Profile description may not exist; should be empty in that case
+  password     String
   // ^^ if we make our own account system
-  followers   Int
-  likes       Int
-  role        Role
-  posts       Post[]
-  comments    Comment[]
+  followers    Int       @default(0)
+  likes        Int       @default(0)
+  role         Role?
+  posts        Post[]
+  comments     Comment[]
+  likedPosts   Post[]    @relation("PostLikes")
 }
 
 enum Role {
@@ -31,29 +32,36 @@ enum Role {
 }
 
 model Post {
-  id         Int     @id @default(autoincrement())
+  id         Int       @id @default(autoincrement())
   title      String
   pictureURL String
   userId     Int
-  user       User    @relation(fields: [userId], references: [id])
-  tags       Tag[]   
+  user       User      @relation(fields: [userId], references: [id])
+  tags       Tag[]
+  Comment    Comment[]
+  likes      Int       @default(0)
+  likedBy    User[]    @relation("PostLikes")
 }
 
 model Tag {
-  id          Int     @id @default(autoincrement())
-  tagName     String  @unique
-  posts       Post[]  
+  id      Int    @id @default(autoincrement())
+  tagName String @unique
+  posts   Post[]
 }
 
-
 model Comment {
-  id        Int     @id @default(autoincrement())
-  text      String
-  posterId  Int
-  poster    User    @relation(fields: [posterId], references:[id])
+  id       Int    @id @default(autoincrement())
+  text     String
+  posterId Int
+  poster   User   @relation(fields: [posterId], references: [id])
+
+  postId Int
+  post   Post @relation(fields: [postId], references: [id])
 
   // This part is for sub-comments/replies
-  parentId   Int?      
-  parent     Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
-  replies    Comment[] @relation("CommentReplies")
+  parentId Int?
+  parent   Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  replies  Comment[] @relation("CommentReplies")
+
+  createdAt DateTime @default(now())
 }

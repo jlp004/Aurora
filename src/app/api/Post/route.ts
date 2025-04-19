@@ -12,3 +12,30 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ message: error instanceof Error ? error.message : "Failed to retrieve posts" }, { status: 500})
   }
 }
+
+// POST - add a new post
+
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json()
+    const { title, pictureURL, userId, tags } = body
+
+    const addPost = await prisma.post.create({  //This may not work as expected?
+      data: {
+        title,
+        pictureURL,
+        user: { connect: {id:userId}},
+        tags: {
+          connect: []                           // TODO: this allows null tags but tags should be a requirement; should be implemented when tags are finished
+        },
+      },
+    })
+
+    return NextResponse.json( addPost, { status: 201} )
+  }
+  catch (error) {
+    console.error('Post creation failed:', error);
+    return NextResponse.json({ error: 'Failed to post' }, { status: 500 })
+
+  }
+}
