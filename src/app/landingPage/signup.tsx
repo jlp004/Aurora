@@ -4,39 +4,38 @@
 import './landingStyles.css'
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { createUser } from '../../lib/api';
 
 const Signup = () => {
     // Track input values
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
 
     // Handles form submission
     const handleSignup = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsLoading(true);
 
         try {
-            // Send user input to backend API for account creation
-            const res = await fetch('/api/signup', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, email, password })
-            });
-
-            const data = await res.json();
-
-            if (res.ok) {
-                // If the signup is successful, show a message and redirect to home page
-                alert('Account Created');
-                navigate('/');
-            } else {
-                alert(data.message || 'Failed to Create Account');
-            }
+            // Use the API utility to create a user
+            const user = await createUser(username, email, password);
+            
+            // If we got here, the account was created successfully
+            alert('Account Created');
+            navigate('/home');
         } catch (err) {
-            // Handle unexpected error
+            // Handle API errors with specific error messages
             console.error('Signup error', err);
-            alert('Something went wrong.');
+            if (err instanceof Error) {
+                alert(err.message);
+            } else {
+                alert('Something went wrong.');
+            }
+        } finally {
+            setIsLoading(false);
         }
     };
 

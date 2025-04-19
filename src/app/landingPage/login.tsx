@@ -2,6 +2,7 @@ import './landingStyles.css'
 import {useNavigate} from 'react-router-dom'
 import {ReactNode, useState} from 'react'
 import {auth, provider, signInWithPopup} from '../../services/firebase'
+import { loginUser } from '../../lib/api'
 
 // Charitha
 
@@ -9,33 +10,33 @@ const Login = () => {
     const [username, setUsername] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
+    
     const handleLogin = async (event: React.FormEvent) => {
         event.preventDefault();
+        setIsLoading(true);
 
         try {
-            // Send user input to backend API for account creation
-            const res = await fetch('/api/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, email, password })
-            });
-
-            const data = await res.json();
-
-            if (res.ok) {
-                // If the signup is successful, show a message and redirect to home page
-                alert('logged in successfully!');
-                navigate('/home');
-            } else {
-                alert(data.message || 'Failed to login');
-            }
+            // Use the API utility to log in
+            const response = await loginUser(username, password);
+            
+            console.log('Login successful:', response);
+            
+            alert('Logged in successfully!');
+            navigate('/home');
         } catch (err) {
-            // Handle unexpected error
-            console.error('login error', err);
-            alert('Something went wrong.');
+            // Handle API errors with specific error messages
+            console.error('Login error:', err);
+            if (err instanceof Error) {
+                alert(err.message);
+            } else {
+                alert('Something went wrong during login.');
+            }
+        } finally {
+            setIsLoading(false);
         }
-    }
+    };
     /*
     const handleFirebaseAuth = async () => {   //firebase auth handler
         try {
