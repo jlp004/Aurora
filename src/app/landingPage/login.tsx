@@ -37,23 +37,7 @@ const Login = () => {
             setIsLoading(false);
         }
     };
-    /*
-    const handleFirebaseAuth = async () => {   //firebase auth handler
-        try {
-            const result = await signInWithPopup(auth, provider)
-            alert("Logged in successfully!")
-            navigate("/home")
-        } catch (error) {
-            console.error("Login failed: ", error)
-            alert("Login failed.")
-        }
-    }*/
-//testing
-
-    // return(
-    // <>
-    //   <button id="login-btn" className="btn btn-class-primary" onClick={handleFirebaseAuth}>Login</button>
-    // </>)
+    
     return (
         //Currently the formatting of the buttons is absolute and looks different based on the screen it's being run on, just an FYI!
 
@@ -165,36 +149,7 @@ const Login = () => {
                 Go to Home
             </button>
 
-            {/*
-            <button //this button helps you login using your google account
-                id="login-btn"
-                className="btn btn-class-primary"
-                onClick={handleFirebaseAuth} //using firebase for the google account login
-
-                style={{
-                    position: 'absolute',
-                    top: '300px',
-                    width: '200px', // Wider button
-                    padding: '12px 0', // Adjusted padding for width
-                }}
-            >
-                Login
-            </button>
-
-            <button //this button is for the create account page
-                id="createAccount-btn"
-                className="btn btn-create-Account"
-                onClick={() => navigate('/signup')}
-                style={{
-                    position: 'absolute', //formatting the position of the button to align it with the login button
-                    top: '360px',
-                    width: '200px', // Wider button
-                    padding: '12px 0' // Adjusted padding for width
-                }}
-            >
-                Create Account
-            </button>
-            */}
+            
         </div>
     );
 }

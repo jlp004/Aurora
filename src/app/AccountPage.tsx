@@ -18,6 +18,13 @@ const AccountPage = () => {
         ]
     });
 
+    // Tags
+    const predefinedTags = ["Nature", "Food", "Travel", "Fashion", "Other"];
+    const [selectedImage, setSelectedImage] = useState<string | null>(null);
+    const [selectedTags, setSelectedTags] = useState<string[]>([]);
+    const [newPostComment, setNewPostComment] = useState<string>("");
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
     const handleProfilePicChange = (event) => {
         const file = event.target.files[0];
         if (file) {
@@ -34,8 +41,34 @@ const AccountPage = () => {
         const file = event.target.files[0];
         if (file) {
             const imageUrl = URL.createObjectURL(file);
-            setUser({ ...user, posts: [imageUrl, ...user.posts] });
+            setSelectedImage(imageUrl);
+            setIsModalOpen(true);
+            //setUser({ ...user, posts: [imageUrl, ...user.posts] });
         }
+    };
+
+    const toggleTag = (tag: string) => {
+        setSelectedTags(prev => 
+            prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
+        );
+    };
+
+    const confirmPost = () => {
+        if (selectedImage) {
+            // TODO: Save the tags and comment to DB
+            setUser(prev => ({
+                ...prev,
+                posts: [selectedImage, ...prev.posts],
+            }));
+            closeModal();
+        }
+    };
+
+    const closeModal = () => {
+        setSelectedImage(null);
+        setSelectedTags([]);
+        setNewPostComment("");
+        setIsModalOpen(false);
     };
 
     const handleDeletePost = (indexToRemove) => {
@@ -106,6 +139,44 @@ const AccountPage = () => {
                     ))
                 )}
             </div>
+
+            {isModalOpen && (
+            <div className='modal-overlay'>
+                <div className='modal-content'>
+                    <h3>Preview Your Post</h3>
+                        {selectedImage && (
+                            <img src={selectedImage} alt="Preview" className='preview-img' />
+                        )}
+
+                        <textarea
+                            placeholder='Write a comment...'
+                            value={newPostComment}
+                            onChange={(e) => setNewPostComment(e.target.value)}
+                            className='comment-box'
+                        />
+
+                        <div className='tag-selection'>
+                            <h4>Select Tags:</h4>
+                            <div className='tags'>
+                                {predefinedTags.map(tag => (
+                                    <button
+                                        key={tag}
+                                        className={`tag-btn ${selectedTags.includes(tag) ? 'selected' : ''}`}
+                                        onClick={() => toggleTag(tag)} 
+                                    >
+                                        {tag}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="modal-actions">
+                            <button className="confirm-btn" onClick={confirmPost}>Post</button>
+                            <button className="cancel-btn" onClick={closeModal}>Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
