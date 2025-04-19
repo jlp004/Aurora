@@ -1,22 +1,13 @@
 /* AccountPage.css, Hishita Shah hrs220004 */
 
-body, html {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    color: black;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    overflow-y: auto;
-}
-
 .account-container {
     min-height: 100vh;
-    padding: 150px 250px;
+    max-width: 100%;
+    padding: 150px 400px;
     display: flex;
     flex-direction: column;
     align-items: center;
     background: linear-gradient(135deg, #2e0066 0%, #943fb1 100%);
-
     box-sizing: border-box;
 }
 
