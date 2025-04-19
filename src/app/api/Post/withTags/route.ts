@@ -1,58 +1,56 @@
-import prisma from '@/lib/db';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server'
+import prisma from '@/lib/db'
 
-// Add this above your POST handler
-export async function GET() {
-    return NextResponse.json(
-      { message: "Endpoint exists! Use POST to create posts with tags" },
-      { status: 200 }
-    );
-  }
-  /* 
-  {
-  "title": "Test Post from Postman",
-  "pictureURL": "https://example.com/test.jpg",
-  "userId": 1,  // Must match an existing user ID in your DB
-  "tags": ["tech", "test"]
-}
-  */
-export async function POST(req: NextRequest) {
+export async function POST(req: Request) {
   try {
-    const body = await req.json();
-    const { title, pictureURL, userId, tags } = body;
+    const { title, pictureURL, userId, tags } = await req.json()
 
-    if (!tags || !Array.isArray(tags) || tags.length === 0) {
-      return NextResponse.json({ error: 'Tags are required' }, { status: 400 });
+    // Validate tags against enum
+    const validTags = Object.values(prisma.TagName)
+    const invalidTags = tags.filter((t: string) => !validTags.includes(t))
+    if (invalidTags.length > 0) {
+      return NextResponse.json(
+        { error: `Invalid tags: ${invalidTags.join(', ')}` },
+        { status: 400 }
+      )
     }
 
-    const tagRecords = await Promise.all(
-      tags.map((tagName: string) =>
-        prisma.tag.upsert({
-          where: { tagName },
-          update: {},
-          create: { tagName },
-        })
-      )
-    );
-
-    const addPost = await prisma.post.create({
+    const post = await prisma.post.create({
       data: {
         title,
         pictureURL,
-        user: { connect: { id: userId } },
-        tags: {
-          connect: tagRecords.map((tag) => ({ id: tag.id })),
-        },
+        userId,
+        postTags: {
+          create: await Promise.all(
+            tags.map(async (tagName: string) => ({
+              tag: {
+                connectOrCreate: {
+                  where: { name: tagName },
+                  create: { name: tagName }
+                }
+              }
+            }))
+          )
+        }
       },
       include: {
-        tags: true,
-        user: true,
-      },
-    });
+        postTags: {
+          include: {
+            tag: true
+          }
+        }
+      }
+    })
 
-    return NextResponse.json(addPost, { status: 201 });
+    return NextResponse.json({
+      ...post,
+      tags: post.postTags.map(pt => pt.tag.name)
+    }, { status: 201 })
   } catch (error) {
-    console.error('Post creation with tags failed:', error);
-    return NextResponse.json({ error: 'Failed to post with tags' }, { status: 500 });
+    console.error('Error creating post:', error)
+    return NextResponse.json(
+      { error: 'Failed to create post' },
+      { status: 500 }
+    )
   }
 }

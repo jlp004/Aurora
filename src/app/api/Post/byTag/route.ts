@@ -1,33 +1,46 @@
-import { NextRequest, NextResponse } from 'next/server';
-import prisma from '@/lib/db';
+import { NextRequest, NextResponse } from 'next/server'
+import prisma from '@/lib/db'
 
 export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url);
-  const tag = searchParams.get('tag');
-
+  const tag = req.nextUrl.searchParams.get('tag')
+  
   if (!tag) {
-    return NextResponse.json({ error: 'Missing tag parameter' }, { status: 400 });
+    return NextResponse.json(
+      { error: 'Missing tag parameter' },
+      { status: 400 }
+    )
   }
 
   try {
     const posts = await prisma.post.findMany({
       where: {
-        tags: {
+        postTags: {
           some: {
-            tagName: tag,
-          },
-        },
+            tag: {
+              name: tag
+            }
+          }
+        }
       },
       include: {
         user: true,
-        tags: true,
-        Comment: true,
-      },
-    });
+        postTags: {
+          include: {
+            tag: true
+          }
+        }
+      }
+    })
 
-    return NextResponse.json(posts, { status: 200 });
+    return NextResponse.json(posts.map(post => ({
+      ...post,
+      tags: post.postTags.map(pt => pt.tag.name)
+    })))
   } catch (error) {
-    console.error('Error fetching posts by tag:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    console.error('Error fetching posts:', error)
+    return NextResponse.json(
+      { error: 'Failed to fetch posts' },
+      { status: 500 }
+    )
   }
 }
