@@ -1,5 +1,5 @@
 /*page by hishita shah hrs220004*/
-import React, { useState } from 'react';
+import { useState } from 'react';
 import '../styles/AccountPage.css';
 import Header from "../components/Header";
 import "../styles/HamburgerMenu.css";
