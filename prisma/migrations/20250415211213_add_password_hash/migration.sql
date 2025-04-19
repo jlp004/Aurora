@@ -23,7 +23,7 @@ CREATE TABLE "new_User" (
     "email" TEXT NOT NULL,
     "pictureURL" TEXT,
     "profileDesc" TEXT,
-    "passwordHash" TEXT NOT NULL,
+    "password" TEXT NOT NULL,
     "followers" INTEGER NOT NULL DEFAULT 0,
     "likes" INTEGER NOT NULL DEFAULT 0,
     "role" TEXT
