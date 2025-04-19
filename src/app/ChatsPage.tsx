@@ -43,7 +43,6 @@ const sidebarStyle = {
     padding: '20px',
     overflowY: 'auto',
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    //backdropFilter: 'blur(10px)',
 };
 
 const chatRoomStyle = {
@@ -52,7 +51,6 @@ const chatRoomStyle = {
     display: 'flex',
     flexDirection: 'column' as const,
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    //backdropFilter: 'blur(10px)',
 };
 
 export default ChatsPage;

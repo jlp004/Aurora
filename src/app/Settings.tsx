@@ -74,10 +74,6 @@ const SettingsPage = () => {
       <button className="save-button" onClick={handleSave}>
         Save Changes
       </button>
-
-      <button className="logout-button">
-        Log Out
-      </button>
     </div>
   );
 };

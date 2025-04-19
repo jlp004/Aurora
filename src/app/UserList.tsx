@@ -38,9 +38,13 @@ const UserList = ({ onUserSelect }: { onUserSelect: (id: string) => void }) => {
                         key={user.id}
                         onClick={() => onUserSelect(user.id)}
                         style={{
+                            display: 'flex',  // Horizontal layout
+                            alignItems: 'center',
+                            gap: '10px',
                             padding: '10px',
                             cursor: 'pointer',
-                            borderBottom: '1px solid #eee'
+                            borderBottom: '1px solid #eee',
+                            color: 'white', 
                         }}
                     >
                         {/** Avatar Image */}

@@ -13,20 +13,21 @@ body {
   
   /* Centering the container and constraining its size */
   .settings-container {
-    width: 100%;
-    background-color: #683576;
+    background: linear-gradient(135deg,rgb(26, 22, 78) 0%,rgb(122, 50, 124) 100%);
     border-radius: 10px;
     box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
     padding: 30px;
     display: flex;
     flex-direction: column;
     align-items: center;
+    width: 100vw;
   }
   
   .settings-title {
     font-size: 1.5rem;
     margin-top: 50px;
     text-align: center;
+    color: #dcdcff;
   }
   
   .settings-section {

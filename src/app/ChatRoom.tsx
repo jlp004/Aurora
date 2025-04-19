@@ -116,15 +116,20 @@ const ChatRoom = ({ userId }: { userId: string }) => {
             </div>
 
             {/** Message input */}
-            <div style={{ display: 'flex', gap: '10px' }}>
+            <form 
+                onSubmit={(e) => {
+                    e.preventDefault();     // Prevent page reload
+                    sendMessage();
+                }}
+                style={{ display: 'flex', gap: '10px' }}>
                 <input
                     value={newMessage}
                     onChange={e => setNewMessage(e.target.value)}
                     placeholder="Type a message..."
                     style={{ flex: 1, padding: '10px'}}
                 />
-                <button onClick={sendMessage}>Send</button>
-            </div>
+                <button type="submit">Send</button>
+            </form>
         </div>
     );
 };
