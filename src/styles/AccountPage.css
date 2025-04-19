@@ -1,37 +1,43 @@
 /* AccountPage.css, Hishita Shah hrs220004 */
 
-/*default styles for page and background color*/
 body, html {
     margin: 0;
     padding: 0;
     height: 100%;
     background-color: white;
     color: black;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    overflow-y: auto;
 }
 
-/* styles for the account container */
-.account-container { 
-    min-height: 100px; 
-    padding: 150px 250px; /*space around the container*/
-    display: flex; /*flexbox for layout*/
-    flex-direction: column; /*column layout*/
-    align-items: center; 
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+.account-container {
+    min-height: 100vh;
+    padding: 150px 250px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     background-color: white;
     color: black;
     box-sizing: border-box;
 }
 
-
 .profile-header {
-    width: 100%; /* full width */
-    max-width: 1000px; /* max width for larger screens */
-    display: flex; /*flexbox for layout and have info side by side*/
+    width: 100%;
+    max-width: 1000px;
+    display: flex;
     align-items: center;
     gap: 30px;
     padding-bottom: 30px;
-    border-bottom: 1px solid #333; /* bottom border for separation */
+    border-bottom: 1px solid #333;
     margin-bottom: 40px;
+}
+
+.profile-pic-container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
 }
 
 .profile-pic {
@@ -40,56 +46,46 @@ body, html {
     border-radius: 50%;
     object-fit: cover;
     border: 3px solid #555;
+    transition: opacity 0.3s ease;
+}
+
+.delete-text-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-weight: bold;
+    font-size: 1rem;
+    background-color: rgba(0, 0, 0, 0.5);
+    padding: 4px 10px;
+    border-radius: 6px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.profile-pic-container:hover .delete-text-overlay {
+    opacity: 1;
 }
 
 .user-info h2 {
     margin: 0;
-    font-size: 2rem; /* larger font size for name */
+    font-size: 2rem;
 }
 
 .user-info p {
-    margin: 6px 0; 
-    font-size: 1.1rem; /* slightly larger font size for bio */
+    margin: 6px 0;
+    font-size: 1.1rem;
     color: #bbb;
 }
 
 .stats {
-    display: flex; /*row display for followers/following*/
-    gap: 25px; /* space between stats */
-    margin-top: 12px; /*space above the stats for better ui*/
+    display: flex;
+    gap: 25px;
+    margin-top: 12px;
     font-size: 1rem;
     color: #ccc;
-}
-
-.image-grid {
-    width: 100%;
-    max-width: 1000px;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 20px;
-    margin-top: 20px;
-    min-height: 200px; 
-}
-
-.post-img {
-    width: 100%;
-    height: 250px;
-    object-fit: cover;
-    border-radius: 12px;
-    border: 1px solid #444;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.post-img:hover {
-    transform: scale(1.03); /* zoom effect */
-    box-shadow: 0 0 10px rgba(255, 255, 255, 0.2); /* soft shadow */
-}
-
-.profile-pic-container {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
 }
 
 .upload-btn {
@@ -107,6 +103,16 @@ body, html {
     background-color: #555;
 }
 
+.image-grid {
+    width: 100%;
+    max-width: 1000px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+    min-height: 200px;
+}
+
 .post-container {
     position: relative;
     width: 100%;
@@ -115,7 +121,20 @@ body, html {
     border-radius: 12px;
 }
 
-/* delete button overlays on top */
+.post-img {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+    border-radius: 12px;
+    border: 1px solid #444;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.post-img:hover {
+    transform: scale(1.03);
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+}
+
 .delete-btn {
     position: absolute;
     top: 0;
@@ -135,7 +154,6 @@ body, html {
     justify-content: center;
 }
 
-/* Shows delete option on hover */
 .post-container:hover .delete-btn {
     opacity: 1;
 }

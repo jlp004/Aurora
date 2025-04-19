@@ -11,7 +11,7 @@ const AccountPage = () => {
         bio: "Lover of code and coffee ☕",
         followers: 120,
         following: 80,
-        profilePic: "/images/profile-pic.jpg", //Default image
+        profilePic: "/images/profile-pic.jpg", // Default image
         posts: [
             "/images/accountPic1.png",
             "/images/accountPic2.png",
@@ -19,7 +19,6 @@ const AccountPage = () => {
         ]
     });
 
-    // Profile Picture Upload
     const handleProfilePicChange = (event) => {
         const file = event.target.files[0];
         if (file) {
@@ -28,16 +27,18 @@ const AccountPage = () => {
         }
     };
 
-    // New Post Upload - Lydia
+    const handleRemoveProfilePic = () => {
+        setUser({ ...user, profilePic: "" }); // Or reset to a default image
+    };
+
     const handleCreatePost = (event) => {
         const file = event.target.files[0];
         if (file) {
             const imageUrl = URL.createObjectURL(file);
-            setUser({...user, posts: [imageUrl, ...user.posts] }); // Add new post to the top
+            setUser({ ...user, posts: [imageUrl, ...user.posts] });
         }
-    }
+    };
 
-    // Delete posts
     const handleDeletePost = (indexToRemove) => {
         const updatedPosts = user.posts.filter((_, index) => index !== indexToRemove);
         setUser({ ...user, posts: updatedPosts });
@@ -48,10 +49,14 @@ const AccountPage = () => {
             <Header />
 
             <div className="profile-header">
-                <div className="profile-pic-container">
-                    <img src={user.profilePic} alt="Profile" className="profile-pic" />
+                <div className="profile-pic-container" onClick={handleRemoveProfilePic}>
+                    <img
+                        src={user.profilePic || "/images/default-profile.jpg"}
+                        alt="Profile"
+                        className="profile-pic"
+                    />
+                    <div className="delete-text-overlay">Delete</div>
 
-                    {/* Image upload button */}
                     <label htmlFor="profile-pic-upload" className="upload-btn">
                         Upload Profile Photo
                     </label>
@@ -73,12 +78,11 @@ const AccountPage = () => {
                         <span><strong>{user.following}</strong> Following</span>
                     </div>
 
-                    {/** Upload Post Button - Lydia */}
                     <div style={{ marginTop: '10px' }}>
                         <label htmlFor="post-upload" className="upload-btn">
                             Create New Post
                         </label>
-                        <input 
+                        <input
                             id="post-upload"
                             type="file"
                             accept="image/*"
@@ -89,7 +93,6 @@ const AccountPage = () => {
                 </div>
             </div>
 
-            {/** Posts Grid */}
             <div className="image-grid">
                 {user.posts.length === 0 ? (
                     <p className="no-posts-msg">You haven’t posted anything yet.</p>
