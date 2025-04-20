@@ -1,4 +1,6 @@
-/*page by hishita shah hrs220004*/
+/*page by hishita shah hrs220004
+* updates by Megan Chacko - MSC220005
+*/
 import { useState, useEffect } from 'react';
 import '../styles/AccountPage.css';
 import Header from "../components/Header";
