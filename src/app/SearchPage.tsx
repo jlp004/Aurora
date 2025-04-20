@@ -57,7 +57,8 @@ const SearchPage = () => {
       try {
         const res = await fetch(`/api/posts/search?q=${encodeURIComponent(query)}`)
         const data = await res.json()
-        setPosts(data.posts)
+        setPosts(data.posts || [])
+        console.log("Search results:", data) // Debugging
       } catch (err) {
         console.error("Failed to fetch posts:", err)
       }
@@ -85,12 +86,12 @@ const SearchPage = () => {
           posts.map((post: any) => (
             <Post
               key={post.id}
-              username={post.author?.username || "Unknown"} // or however you store authors
-              imageUrl={post.imageUrl || "../../images/img4.png"} // fallback if missing
+              username={post.user?.username || "Unknown"} 
+              imageUrl={post.pictureURL || "../../images/img4.png"} 
               caption={post.title}
               likes={post.likes || 0}
-              comments={post.comments?.length || 0}
-              timePosted={post.createdAt || "Unknown"}
+              comments={post.Comment?.length || 0}
+              timePosted={new Date(post.createdAt).toLocaleString() || "Unknown"}
             />
           ))
         )}
