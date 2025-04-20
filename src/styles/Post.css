@@ -162,4 +162,11 @@
   background-color: #b2dffc;
   cursor: not-allowed;
 }
+
+.error-message {
+  color: #ed4956;
+  font-size: 14px;
+  margin-top: 8px;
+  text-align: center;
+}
   

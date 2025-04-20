@@ -30,6 +30,8 @@ export default function Post({
   const [isLiked, setIsLiked] = useState(false);
   const [commentText, setCommentText] = useState('');
   const [showComments, setShowComments] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleLike = () => {
     setCurrentLikes(isLiked ? currentLikes - 1 : currentLikes + 1);
@@ -38,7 +40,13 @@ export default function Post({
 
   const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!commentText.trim() || !currentUserId || !id) return;
+    if (!commentText.trim() || !currentUserId || !id) {
+      setError('Please enter a comment');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setError(null);
 
     try {
       const response = await fetch('/api/Comment', {
@@ -53,12 +61,19 @@ export default function Post({
         }),
       });
 
-      if (response.ok) {
-        setCommentText('');
-        // You might want to refresh the comments list here
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to post comment');
       }
+
+      setCommentText('');
+      // You might want to refresh the comments list here
     } catch (error) {
       console.error('Error posting comment:', error);
+      setError(error instanceof Error ? error.message : 'Failed to post comment');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -109,9 +124,17 @@ export default function Post({
               onChange={(e) => setCommentText(e.target.value)}
               placeholder="Add a comment..."
               className="comment-input"
+              disabled={isSubmitting}
             />
-            <button type="submit" className="comment-submit">Post</button>
+            <button 
+              type="submit" 
+              className="comment-submit"
+              disabled={isSubmitting || !commentText.trim()}
+            >
+              {isSubmitting ? 'Posting...' : 'Post'}
+            </button>
           </form>
+          {error && <div className="error-message">{error}</div>}
         </div>
       )}
       
