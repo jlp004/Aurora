@@ -18,12 +18,14 @@
     --input-bg: #ffffff;
     --input-border: #e2e8f0;
     --input-focus-border: rgba(134, 42, 255, 0.5);
+    --input-focus-shadow: rgba(69, 0, 147, 0.3);
+
     --button-bg: #f8f9fa;
     --button-hover: #e9ecef;
     
     /* Component Specific Colors */
     --dropdown-bg: #ffffff;
-    --dropdown-shadow: rgba(0, 0, 0, 0.1);
+    --dropdown-shadow: rgba(0, 0, 0, 0.3);
     --dropdown-hover: rgba(134, 42, 255, 0.1);
     --sidebar-bg: #f8f9fa;
     --card-bg: #ffffff;
@@ -35,24 +37,26 @@
 
 :root[data-theme="dark"] {
     /* Background Colors */
-    --bg-primary: #000000;
-    --bg-secondary: #121212;
-    --bg-tertiary: #1a1a1a;
+    --bg-primary: #1e1e1e;
+    --bg-secondary: #323232;
+    --bg-tertiary: #464646;
     --bg-overlay: #000000;
     
     /* Text Colors */
-    --text-primary: #ffffff;
-    --text-secondary: #cccccc;
-    --text-tertiary: #999999;
+    --text-primary: #dcdcdc;
+    --text-secondary: #c8c8c8;
+    --text-tertiary: #b4b499;
     
     /* Border Colors */
-    --border-color: #333333;
+    --border-color: #3c3c3c;
     --border-hover: #404040;
     
     /* UI Element Colors */
     --input-bg: #121212;
-    --input-border: #333333;
+    --input-border: #3c3c3c;
     --input-focus-border: rgba(134, 42, 255, 0.5);
+    --input-focus-shadow: rgba(69, 0, 147, 0.3);
+
     --button-bg: #1a1a1a;
     --button-hover: #262626;
     

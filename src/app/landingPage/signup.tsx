@@ -116,7 +116,7 @@ const Signup = () => {
                         style={{
                             padding: '12px',
                             background: 'rgb(122, 50, 124)',
-                            color: 'white',
+                            color: '#dcdcdc',
                             border: 'none',
                             borderRadius: '8px',
                             fontWeight: 'bold',
@@ -127,7 +127,7 @@ const Signup = () => {
                         Create Account
                     </button>
                     {/* Go back to Login page */}
-                    <p style={{ marginTop: '10px', fontSize: '0.9rem', textAlign: "center" }}>
+                    <p style={{ marginTop: '10px', fontSize: '0.9rem', textAlign: "center", color: 'var(--text-primary)'}}>
                         Already have an account? {''}
                         <span
                             style={{ color: 'rgb(122, 50, 124)', cursor: 'pointer', textDecoration: 'underline' }}

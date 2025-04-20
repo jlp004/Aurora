@@ -71,7 +71,7 @@ const Login = () => {
                     display: "flex",
                     fontSize: "10rem",
                     fontWeight: "bold",
-                    textShadow: "0 2px 4px rgba(0,0,0,0.3)",
+                    textShadow: "0 2px 4px var(--dropdown-shadow)",
                     textAlign: "center",
                 }}>
                     Aurora
@@ -129,7 +129,7 @@ const Login = () => {
                         style={{
                             padding: '12px',
                             background: 'rgb(122, 50, 124)',
-                            color: 'white',
+                            color: '#dcdcdc',
                             border: 'none',
                             borderRadius: '8px',
                             fontWeight: 'bold',
@@ -140,7 +140,7 @@ const Login = () => {
                         Login
                     </button>
                     {/* Go back to Login page */}
-                    <p style={{ marginTop: '10px', fontSize: '0.9rem', textAlign: "center" }}>
+                    <p style={{ marginTop: '10px', fontSize: '0.9rem', textAlign: "center", color: 'var(--text-primary)' }}>
                         Don't have an account? {''}
                         <span
                             style={{ color: 'rgb(122, 50, 124)', cursor: 'pointer', textDecoration: 'underline' }}

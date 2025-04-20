@@ -6,8 +6,8 @@
     width: 100%;
     max-width: 100%;
     margin: 0 0 20px 0;
-    border: 2px solid #dbdbdb;
-    background: white;
+    border: 2px solid var(--border-color);
+    background: var(--bg-primary);
     border-radius: 12px;
     padding-bottom: 24px;
   }
@@ -18,7 +18,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    border-bottom: 1px solid #efefef;
+    border-bottom: 1px solid var(--border-color);
   }
 
   .post-feed {
@@ -59,14 +59,12 @@
     align-items: center;
   }
 
-  
-  
   .user-avatar {
     width: 32px;
     height: 32px;
     background: linear-gradient(45deg, #d416cb, #d416cb);
     border-radius: 50%;
-    color: white;
+    color: var(--bg-secondary);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -75,7 +73,7 @@
   }
 
   .username {
-    color: #262626;
+    color: var(--text-primary);
     font-weight: 600;
     font-size: 15px;
   }
@@ -111,7 +109,7 @@
 
   .like-btn.liked::before {
     color: red;
-    -webkit-text-stroke: 0; 
+    -webkit-text-stroke: 1px #262626;
   }
   
   .post-stats {
@@ -120,6 +118,7 @@
     margin-bottom: 8px;
     display: flex;
     gap: 15px;
+    color: var(--text-primary);
   }
   
   .post-caption {
@@ -131,16 +130,16 @@
   .caption-username {
     font-weight: bold;
     margin-right: 5px;
-    color: #262626;
+    color: var(--text-primary);
   }
 
   .caption-text {
-    color: #262626;
+    color: var(--text-secondary);
   }
   
   .post-time {
     padding: 0 14px;
-    color: #8e8e8e;
+    color: var(--text-secondary);
     font-size: 12px;
     text-transform: uppercase;
   }
