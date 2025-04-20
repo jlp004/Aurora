@@ -145,3 +145,7 @@
     text-transform: uppercase;
   }
   
+  textarea::placeholder {
+    color: gray;
+  }
+  
