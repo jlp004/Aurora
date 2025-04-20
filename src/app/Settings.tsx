@@ -3,6 +3,7 @@
 */
 
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import '../styles/SettingsPage.css';
 import Header from '../components/Header';
 
@@ -16,6 +17,32 @@ const SettingsPage = () => {
   const handleSave = () => {
     alert('Settings saved!');
   };
+/////////////// - delete function
+  const navigate = useNavigate();
+
+const handleDeleteAccount = async () => {
+  try {
+    const res = await fetch('/api/user/delete', {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ username }) // Now has access to the state
+    });
+
+    if (res.ok) {
+      alert("Account deleted successfully.");
+      navigate('/login');
+    } else {
+      const error = await res.json();
+      alert("Failed to delete account: " + error.message);
+    }
+  } catch (err) {
+    console.error("Error:", err);
+    alert("An unexpected error occurred.");
+  }
+}; //////////// - delete function
+
 
   return (
     <div className="settings-container">
@@ -74,11 +101,19 @@ const SettingsPage = () => {
         </label>
       </div>
 
+      
+      <button className="delete-button" onClick={handleDeleteAccount}> 
+        Delete Account
+      </button>
+      
+
       <button className="save-button" onClick={handleSave}>
         Save Changes
       </button>
     </div>
   );
+
+  
 };
 
 export default SettingsPage;
