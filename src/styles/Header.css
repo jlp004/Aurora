@@ -6,7 +6,20 @@
     width: 100%;
     height: 5rem;
     top: 0;
+    display: flex;
+    align-items: center;
 }
+
+.aurora-title {
+    margin: 0;
+    font-size: 2rem;
+    color: #333;
+    font-weight: bold;
+    position: absolute;
+    left: 50%;                /* Move the element to the center */
+    transform: translateX(-50%); /* Adjust by 50% of its own width */
+}
+
 
 body {
     padding-top: 5rem; 

@@ -9,6 +9,7 @@ const Header = () => {
   return (
     <>
       <div className='background-div'>
+        <h1 className='aurora-title'>Aurora</h1>
         <HamburgerMenu />
         <SearchBar />
       </div>
