@@ -31,7 +31,7 @@
     position: absolute;
     bottom: 0.7rem;
     left: 0.3rem;
-    color: #666;
+    color: var(--text-tertiary);
     font-size: 1rem;
     z-index: 1;
 }
@@ -45,30 +45,29 @@ input[type="text"] {
     width: 24rem;       
     padding: 1rem;
     font-size: 1rem;           
-    border: 2px solid #ccc;    
+    border: 2px solid var(--input-border);    
     border-radius: 1.5rem;       
-    background-color: white;   
+    background-color: var(--input-bg);   
+    color: var(--text-primary);
     outline: none;             
     transition: all 0.3s ease; 
-    color: black;
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 0 5px var(--dropdown-shadow);
 }
 
 input[type="text"]:focus {
-    border-color: rgba(134, 42, 255, 0.808); 
-    box-shadow: 0 0 15px rgba(69, 0, 147, 0.2);
-    background-color: #fff;
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 15px var(--accent-secondary);
+    background-color: var(--input-bg);
 }
 
 /* Buttons */
 .clear-button,
-.filter-button,
-.voice-button {
+.filter-button {
     position: absolute;
     background: none;
     border: none;
     cursor: pointer;
-    color: #666;
+    color: var(--text-tertiary);
     padding: 0.5rem;
     display: flex;
     align-items: center;
@@ -77,21 +76,16 @@ input[type="text"]:focus {
 }
 
 .clear-button {
-    right: 5rem;
-}
-
-.filter-button {
     right: 2.8rem;
 }
 
-.voice-button {
+.filter-button {
     right: 0.6rem;
 }
 
 .clear-button:hover,
-.filter-button:hover,
-.voice-button:hover {
-    color: rgba(134, 42, 255, 0.808);
+.filter-button:hover {
+    color: var(--accent-primary);
 }
 
 /* Suggestions Dropdown */
@@ -100,9 +94,9 @@ input[type="text"]:focus {
     top: calc(100% + 0.5rem);
     left: 0;
     right: 0;
-    background: white;
+    background: var(--dropdown-bg);
     border-radius: 1rem;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 12px var(--dropdown-shadow);
     overflow: hidden;
     z-index: 100;
 }
@@ -111,14 +105,14 @@ input[type="text"]:focus {
     padding: 0.8rem 1rem;
     cursor: pointer;
     transition: background-color 0.2s ease;
-    color: #333;
+    color: var(--text-primary);
     display: flex;
     align-items: center;
     gap: 0.5rem;
 }
 
 .suggestion-item:hover {
-    background-color: rgba(134, 42, 255, 0.1);
+    background-color: var(--dropdown-hover);
 }
 
 /* Loading Animation */
@@ -128,7 +122,7 @@ input[type="text"]:focus {
 
 .loading-line {
     height: 0.8rem;
-    background: #f0f0f0;
+    background: var(--bg-tertiary);
     border-radius: 0.4rem;
     margin: 0.5rem 0;
     animation: pulse 1.5s infinite;
@@ -148,16 +142,16 @@ input[type="text"]:focus {
     top: calc(100% + 0.5rem);
     right: 0;
     width: 250px;
-    background: white;
+    background: var(--dropdown-bg);
     border-radius: 1rem;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 12px var(--dropdown-shadow);
     padding: 1rem;
     z-index: 101;
 }
 
 .filters-panel h3 {
     margin: 0 0 1rem 0;
-    color: #333;
+    color: var(--text-primary);
     font-size: 1rem;
 }
 
@@ -168,7 +162,7 @@ input[type="text"]:focus {
 .filter-section label {
     display: block;
     margin-bottom: 0.5rem;
-    color: #666;
+    color: var(--text-tertiary);
     font-size: 0.9rem;
 }
 
@@ -180,15 +174,17 @@ input[type="text"]:focus {
     cursor: pointer;
     border-radius: 0.5rem;
     transition: background-color 0.2s ease;
+    color: var(--text-primary);
 }
 
 .filter-option:hover {
-    background-color: rgba(134, 42, 255, 0.1);
+    background-color: var(--dropdown-hover);
 }
 
 .filter-option input[type="checkbox"],
 .filter-option input[type="radio"] {
     margin: 0;
+    accent-color: var(--accent-primary);
 }
 
 /* Header Controls */
@@ -209,13 +205,13 @@ input[type="text"]:focus {
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #666;
+    color: var(--text-tertiary);
     transition: all 0.2s ease;
 }
 
 .theme-toggle:hover,
 .notifications-bell:hover {
-    color: rgba(134, 42, 255, 0.808);
+    color: var(--accent-primary);
 }
 
 .notifications-badge {
@@ -240,9 +236,9 @@ input[type="text"]:focus {
     top: calc(100% + 0.5rem);
     right: 0;
     width: 200px;
-    background: white;
+    background: var(--dropdown-bg);
     border-radius: 1rem;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 12px var(--dropdown-shadow);
     overflow: hidden;
     z-index: 101;
 }
@@ -252,14 +248,14 @@ input[type="text"]:focus {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    color: #333;
+    color: var(--text-primary);
     text-decoration: none;
     transition: background-color 0.2s ease;
     cursor: pointer;
 }
 
 .user-menu-item:hover {
-    background-color: rgba(134, 42, 255, 0.1);
+    background-color: var(--dropdown-hover);
 }
 
 .user-avatar {
@@ -272,7 +268,7 @@ input[type="text"]:focus {
 }
 
 .user-avatar:hover {
-    border-color: rgba(134, 42, 255, 0.808);
+    border-color: var(--accent-primary);
 }
 
 .user-avatar img {

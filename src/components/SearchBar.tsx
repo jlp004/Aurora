@@ -13,6 +13,7 @@ import {
     FaCog,
     FaSignOutAlt
 } from 'react-icons/fa'
+import { useTheme } from '../context/ThemeContext';
 
 // written by John Phelan - jlp220005
 // handles rendering the search bar and redirecting the user to the search page for the string input.
@@ -21,6 +22,7 @@ interface SearchSuggestion {
     id: string;
     type: 'user' | 'post';
     text: string;
+    timestamp: Date;
 }
 
 interface HeaderProps {
@@ -34,11 +36,22 @@ const SearchBar: React.FC<HeaderProps> = ({ onThemeToggle }) => {
     const [isFocused, setIsFocused] = useState(false)
     const [showFilters, setShowFilters] = useState(false)
     const [showUserMenu, setShowUserMenu] = useState(false)
-    const [isDarkMode, setIsDarkMode] = useState(false)
+    const [selectedDateFilter, setSelectedDateFilter] = useState('all')
+    const [currentTime, setCurrentTime] = useState(new Date())
     const searchRef = useRef<HTMLDivElement>(null)
     const filterRef = useRef<HTMLDivElement>(null)
     const userMenuRef = useRef<HTMLDivElement>(null)
     const navigate = useNavigate()
+    const { theme, toggleTheme } = useTheme();
+
+    // Update current time every minute
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setCurrentTime(new Date());
+        }, 60000); // Update every minute
+
+        return () => clearInterval(timer);
+    }, []);
 
     // Close dropdowns when clicking outside
     useEffect(() => {
@@ -55,7 +68,7 @@ const SearchBar: React.FC<HeaderProps> = ({ onThemeToggle }) => {
         return () => document.removeEventListener('mousedown', handleClickOutside)
     }, [])
 
-    // Debounced search function
+    // Debounced search function with time filter
     useEffect(() => {
         const timer = setTimeout(() => {
             if (inputValue) {
@@ -67,7 +80,7 @@ const SearchBar: React.FC<HeaderProps> = ({ onThemeToggle }) => {
         }, 300)
 
         return () => clearTimeout(timer)
-    }, [inputValue])
+    }, [inputValue, selectedDateFilter])
 
     // Keyboard shortcut for focus
     useEffect(() => {
@@ -85,11 +98,53 @@ const SearchBar: React.FC<HeaderProps> = ({ onThemeToggle }) => {
     const fetchSuggestions = async (query: string) => {
         try {
             await new Promise(resolve => setTimeout(resolve, 500))
+            const now = new Date();
+            
+            // Create mock suggestions with dynamic timestamps
             const mockSuggestions: SearchSuggestion[] = [
-                { id: '1', type: 'user', text: 'user123' },
-                { id: '2', type: 'post', text: 'Recent post about...' },
-            ]
-            setSuggestions(mockSuggestions)
+                { 
+                    id: '1', 
+                    type: 'user' as const, 
+                    text: 'user123', 
+                    timestamp: now 
+                },
+                { 
+                    id: '2', 
+                    type: 'post' as const, 
+                    text: 'Recent post about...', 
+                    timestamp: new Date(now.getTime() - 2 * 60 * 1000) // 2 minutes ago
+                },
+                { 
+                    id: '3', 
+                    type: 'post' as const, 
+                    text: 'Older post about...', 
+                    timestamp: new Date(now.getTime() - 10 * 60 * 1000) // 10 minutes ago
+                },
+                {
+                    id: '4',
+                    type: 'post' as const,
+                    text: 'Post from last week...',
+                    timestamp: new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000) // 5 days ago
+                }
+            ].filter(suggestion => 
+                suggestion.text.toLowerCase().includes(query.toLowerCase())
+            );
+
+            // Filter suggestions based on time
+            const filteredSuggestions = mockSuggestions.filter(suggestion => {
+                const timeDiff = currentTime.getTime() - suggestion.timestamp.getTime();
+                
+                switch (selectedDateFilter) {
+                    case 'last5min':
+                        return timeDiff <= 5 * 60 * 1000; // 5 minutes in milliseconds
+                    case 'recent':
+                        return timeDiff <= 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
+                    default:
+                        return true;
+                }
+            });
+
+            setSuggestions(filteredSuggestions)
         } catch (error) {
             console.error('Error fetching suggestions:', error)
         } finally {
@@ -109,8 +164,22 @@ const SearchBar: React.FC<HeaderProps> = ({ onThemeToggle }) => {
     }
 
     const handleThemeToggle = () => {
-        setIsDarkMode(!isDarkMode)
-        if (onThemeToggle) onThemeToggle()
+        toggleTheme();
+    }
+
+    const formatTimestamp = (timestamp: Date) => {
+        const diff = currentTime.getTime() - timestamp.getTime();
+        
+        const seconds = Math.floor(diff / 1000);
+        const minutes = Math.floor(seconds / 60);
+        const hours = Math.floor(minutes / 60);
+        const days = Math.floor(hours / 24);
+        
+        if (days > 0) return `${days}d ago`;
+        if (hours > 0) return `${hours}h ago`;
+        if (minutes > 0) return `${minutes}m ago`;
+        if (seconds > 30) return `${seconds}s ago`;
+        return 'Just now';
     }
 
     return (
@@ -141,9 +210,6 @@ const SearchBar: React.FC<HeaderProps> = ({ onThemeToggle }) => {
                     >
                         <FaFilter />
                     </button>
-                    <button className="voice-button">
-                        <FaMicrophone />
-                    </button>
                 </div>
 
                 {/* Suggestions dropdown */}
@@ -166,7 +232,10 @@ const SearchBar: React.FC<HeaderProps> = ({ onThemeToggle }) => {
                                     }}
                                 >
                                     {suggestion.type === 'user' ? '👤 ' : '📝 '}
-                                    {suggestion.text}
+                                    <span>{suggestion.text}</span>
+                                    <span style={{ marginLeft: 'auto', fontSize: '0.8em', color: '#666' }}>
+                                        {formatTimestamp(suggestion.timestamp)}
+                                    </span>
                                 </div>
                             ))
                         )}
@@ -191,12 +260,34 @@ const SearchBar: React.FC<HeaderProps> = ({ onThemeToggle }) => {
                         <div className="filter-section">
                             <label>Date Range</label>
                             <div className="filter-option">
-                                <input type="radio" name="date" id="all" />
+                                <input 
+                                    type="radio" 
+                                    name="date" 
+                                    id="all" 
+                                    checked={selectedDateFilter === 'all'}
+                                    onChange={() => setSelectedDateFilter('all')}
+                                />
                                 <label htmlFor="all">All Time</label>
                             </div>
                             <div className="filter-option">
-                                <input type="radio" name="date" id="recent" />
+                                <input 
+                                    type="radio" 
+                                    name="date" 
+                                    id="recent" 
+                                    checked={selectedDateFilter === 'recent'}
+                                    onChange={() => setSelectedDateFilter('recent')}
+                                />
                                 <label htmlFor="recent">Past Week</label>
+                            </div>
+                            <div className="filter-option">
+                                <input 
+                                    type="radio" 
+                                    name="date" 
+                                    id="last5min" 
+                                    checked={selectedDateFilter === 'last5min'}
+                                    onChange={() => setSelectedDateFilter('last5min')}
+                                />
+                                <label htmlFor="last5min">Last 5 Minutes</label>
                             </div>
                         </div>
                     </div>
@@ -206,7 +297,7 @@ const SearchBar: React.FC<HeaderProps> = ({ onThemeToggle }) => {
             {/* Header Controls */}
             <div className="header-controls">
                 <button className="theme-toggle" onClick={handleThemeToggle}>
-                    {isDarkMode ? <FaSun /> : <FaMoon />}
+                    {theme === 'dark' ? <FaSun /> : <FaMoon />}
                 </button>
                 
                 <div className="notifications-badge">
