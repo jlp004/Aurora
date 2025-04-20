@@ -29,7 +29,7 @@ export async function search(req: NextRequest) {
       where: {
         title: {
           contains: query,   // Exact substring match
-          mode: 'insensitive',  // Case insensitive search
+          mode: 'insensitive' as const,  // Case insensitive search
         }
       }
     });
@@ -42,20 +42,21 @@ export async function search(req: NextRequest) {
 /////////////////////////
 
 // POST - add a new post
-
+// STILL NEEDS TAGS!! 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { title, pictureURL, userId, tags } = body
+    const { title, pictureURL, userId } = body
 
-    const addPost = await prisma.post.create({  //This may not work as expected?
+    if (!title || !pictureURL || !userId) {
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+    }
+
+    const addPost = await prisma.post.create({
       data: {
         title,
         pictureURL,
-        user: { connect: {id:userId}},
-        tags: {
-          connect: []                           // TODO: this allows null tags but tags should be a requirement; should be implemented when tags are finished
-        },
+        userId: Number(userId), // ensures userId is a number
       },
     })
 
@@ -63,7 +64,6 @@ export async function POST(req: NextRequest) {
   }
   catch (error) {
     console.error('Post creation failed:', error);
-    return NextResponse.json({ error: 'Failed to post' }, { status: 500 })
-
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Failed to post' }, { status: 500 })
   }
 }
