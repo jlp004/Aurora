@@ -1,45 +1,64 @@
-// prisma/seed.ts
-import { PrismaClient } from '@prisma/client';
-const prisma = new PrismaClient();
-
-async function main() {
-  const user1 = await prisma.user.create({
-    data: {
+await prisma.user.createMany({
+  data: [
+    {
       username: 'megantest',
       email: 'megantest@gmail.com',
-      password: 'secure123',
-      pictureURL: null,
-      profileDesc: 'Just a dev testing this app!',
+      password: 'megantest'
     },
-  });
-
-  const user2 = await prisma.user.create({
-    data: {
-      username: 'coderfriend',
-      email: 'friend@example.com',
-      password: 'testpass',
-      pictureURL: null,
-      profileDesc: 'Friend for testing follows!',
+    {
+      username: 'johndoe',
+      email: 'johndoe@gmail.com',
+      password: 'johndoe'
     },
-  });
-
-  // make user1 follow user2
-  await prisma.user.update({
-    where: { id: user1.id },
-    data: {
-      following: {
-        connect: { id: user2.id }
-      }
+    {
+      username: 'ilovecats',
+      email: 'cats@gmail.com',
+      password: 'cats'
+    },
+    {
+      username: 'musiclover123',
+      email: 'musiclover123@gmail.com',
+      password: 'music'
+    },
+    {
+      username: 'coffeeandtreats1',
+      email: 'coffeeandtreats1@gmail.com',
+      password: 'coffee'
+    },
+    {
+      username: 'bobphilfred',
+      email: 'bobphilfred@gmail.com',
+      password: 'bob'
+    },
+    {
+      username: 'sarahjane',
+      email: 'sarahjane@gmail.com',
+      password: 'sarah'
+    },
+    {
+      username: 'techgirl101',
+      email: 'techgirl101@gmail.com',
+      password: 'tech123'
+    },
+    {
+      username: 'wanderlust',
+      email: 'wanderlust@gmail.com',
+      password: 'travel456'
+    },
+    {
+      username: 'booknerd',
+      email: 'booknerd@gmail.com',
+      password: 'readmore'
+    },
+    {
+      username: 'gamerking',
+      email: 'gamerking@gmail.com',
+      password: 'pwnggamer'
+    },
+    {
+      username: 'chefqueen',
+      email: 'chefqueen@gmail.com',
+      password: 'yumfood'
     }
-  });
-}
-
-main()
-  .then(() => {
-    console.log('✅ Seed data inserted');
-    return prisma.$disconnect();
-  })
-  .catch((e) => {
-    console.error('❌ Error seeding data:', e);
-    return prisma.$disconnect();
-  });
+  ]
+});
