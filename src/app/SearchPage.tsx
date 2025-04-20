@@ -4,6 +4,15 @@ import { useEffect, useState } from 'react'
 import Header from '../components/Header'
 import Post from '../components/Post'
 
+// Custom style to override Post component's default styles
+const customStyles = `
+  .posts-found-container .post {
+    margin: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+`;
+
 const SearchPage = () => {
   const location = useLocation()
   const params = new URLSearchParams(location.search)
@@ -44,6 +53,7 @@ const SearchPage = () => {
       zIndex: 0,      //set at bottom of z index
       overflowY: 'auto' 
     }}>
+      <style>{customStyles}</style>
       <Header />
       <div style={{ width: '100%', maxWidth: '1000px', padding: '0 20px' }}>
         <h1 
@@ -52,9 +62,9 @@ const SearchPage = () => {
         </h1>
       </div>
 
-      <div className='posts-found-container' style={{ width: '100%', maxWidth: '1000px', padding: '0 20px' }}>
+      <div className="post-feed">
         {posts.length === 0 ? (
-          <p style={{ color: 'white', textAlign: 'center' }}>
+          <p style={{ color: '#fff', textAlign: 'center', width: '100%' }}>
             No posts found.
           </p>
         ) : (

@@ -8,6 +8,11 @@ const Home = () => {
       <Header />
       <div className="post-feed">
         <Post />
+        <Post />
+        <Post />
+        <Post />
+        <Post />
+        
       </div>
     </div>
   );
