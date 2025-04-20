@@ -1,0 +1,36 @@
+.searchWrapper {
+  position: relative;
+  margin-bottom: 1rem;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #666;
+  font-size: 1rem;
+  z-index: 1;
+}
+
+.searchInput {
+  /* padding: top | right | bottom | left */
+  padding: 0.5rem 1rem 0.5rem 4rem; 
+  font-size: 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid #ccc;
+  outline: none;
+  color: black;
+  background-color: #fff;
+
+  /* push the user‐typed text further right */
+  text-indent: 2rem;  
+}
+
+
+/* placeholder text in black */
+.searchInput::placeholder {
+  padding-left: 0rem;
+  color: black;
+  opacity: 1;
+}
