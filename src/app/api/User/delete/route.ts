@@ -1,3 +1,5 @@
+//written by Charitha Sarraju - CXS220054
+
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db'; // Prisma setup for database connection
 
