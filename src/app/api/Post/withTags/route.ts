@@ -1,13 +1,24 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/db'
 
+// Mock enum validation (since Prisma enums can't be imported directly)
+const ALLOWED_TAGS = [
+  'TECHNOLOGY',
+  'SCIENCE',
+  'ART',
+  'BUSINESS',
+  'HEALTH',
+  'SPORTS',
+  'FOOD',
+  'TRAVEL'
+]
+
 export async function POST(req: Request) {
   try {
     const { title, pictureURL, userId, tags } = await req.json()
 
-    // Validate tags against enum
-    const validTags = Object.values(prisma.TagName)
-    const invalidTags = tags.filter((t: string) => !validTags.includes(t))
+    // Validate against allowed tags
+    const invalidTags = tags.filter((t: string) => !ALLOWED_TAGS.includes(t))
     if (invalidTags.length > 0) {
       return NextResponse.json(
         { error: `Invalid tags: ${invalidTags.join(', ')}` },
@@ -15,22 +26,21 @@ export async function POST(req: Request) {
       )
     }
 
+    // Rest of your existing implementation...
     const post = await prisma.post.create({
       data: {
         title,
-        pictureURL,
+        pictureURL: pictureURL || '',
         userId,
         postTags: {
-          create: await Promise.all(
-            tags.map(async (tagName: string) => ({
-              tag: {
-                connectOrCreate: {
-                  where: { name: tagName },
-                  create: { name: tagName }
-                }
+          create: tags.map((tag: string) => ({
+            tag: {
+              connectOrCreate: {
+                where: { name: tag },
+                create: { name: tag }
               }
-            }))
-          )
+            }
+          }))
         }
       },
       include: {
@@ -46,10 +56,11 @@ export async function POST(req: Request) {
       ...post,
       tags: post.postTags.map(pt => pt.tag.name)
     }, { status: 201 })
+
   } catch (error) {
-    console.error('Error creating post:', error)
+    console.error('Error:', error)
     return NextResponse.json(
-      { error: 'Failed to create post' },
+      { error: 'Internal server error' },
       { status: 500 }
     )
   }
