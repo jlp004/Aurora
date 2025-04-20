@@ -38,6 +38,7 @@
 
 // export default SearchPage
 ///////////////////////////////////////////////////////////////
+// Written by Charitha Sarraju and John Phelan
 import { useLocation } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import Header from '../components/Header'
