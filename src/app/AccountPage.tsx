@@ -1,11 +1,12 @@
 /*page by hishita shah hrs220004*/
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import '../styles/AccountPage.css';
 import Header from "../components/Header";
 import "../styles/HamburgerMenu.css";
 
 const AccountPage = () => {
     const [user, setUser] = useState({
+        id: 1, // Assuming user ID for testing
         username: "user123!",
         bio: "Lover of code and coffee ☕",
         followers: 120,
@@ -41,25 +42,101 @@ const AccountPage = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [editingPost, setEditingPost] = useState<any>(null);
+    const [uploadLoading, setUploadLoading] = useState(false);
+    const [error, setError] = useState("");
 
-    const handleProfilePicChange = (event) => {
+    const handleProfilePicChange = async (event) => {
         const file = event.target.files[0];
-        if (file) {
-            const imageUrl = URL.createObjectURL(file);
-            setUser({ ...user, profilePic: imageUrl });
+        if (!file) return;
+        
+        try {
+            setUploadLoading(true);
+            setError("");
+            
+            // Create a form data object
+            const formData = new FormData();
+            formData.append('image', file);
+            formData.append('userId', user.id.toString());
+            
+            console.log('Uploading profile pic for user:', user.id);
+            
+            // Upload image using our API
+            const response = await fetch('/api/upload/profile', {
+                method: 'POST',
+                body: formData,
+            });
+            
+            // Check response type before parsing JSON
+            const contentType = response.headers.get("content-type");
+            if (!contentType || !contentType.includes("application/json")) {
+                // Get the text to see what's being returned
+                const text = await response.text();
+                console.error("Non-JSON response:", text);
+                throw new Error("Server didn't return JSON. Check server logs.");
+            }
+            
+            const data = await response.json();
+            console.log('Profile upload response:', data);
+            
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to upload profile picture');
+            }
+            
+            // Update user state with new profile picture URL
+            setUser({ ...user, profilePic: data.imageUrl });
+        } catch (err) {
+            console.error('Error uploading profile picture:', err);
+            setError(err.message || 'Failed to upload profile picture');
+        } finally {
+            setUploadLoading(false);
         }
     };
 
     const handleRemoveProfilePic = () => {
-        setUser({ ...user, profilePic: "" }); // Or reset to a default image
+        setUser({ ...user, profilePic: "/images/default-profile.jpg" }); // Reset to default
     };
 
-    const handleCreatePost = (event) => {
+    const handleCreatePost = async (event) => {
         const file = event.target.files[0];
-        if (file) {
-            const imageUrl = URL.createObjectURL(file);
-            setSelectedImage(imageUrl);
+        if (!file) return;
+        
+        try {
+            setUploadLoading(true);
+            setError("");
+            
+            // Create a form data object
+            const formData = new FormData();
+            formData.append('image', file);
+            
+            // Upload image using our API
+            const response = await fetch('/api/upload/post', {
+                method: 'POST',
+                body: formData,
+            });
+            
+            // Check response type before parsing JSON
+            const contentType = response.headers.get("content-type");
+            if (!contentType || !contentType.includes("application/json")) {
+                // Get the text to see what's being returned
+                const text = await response.text();
+                console.error("Non-JSON response:", text);
+                throw new Error("Server didn't return JSON. Check server logs.");
+            }
+            
+            const data = await response.json();
+            
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to upload image');
+            }
+            
+            // Set the selected image and open the modal
+            setSelectedImage(data.imageUrl);
             setIsModalOpen(true);
+        } catch (err) {
+            console.error('Error uploading image:', err);
+            setError(err.message || 'Failed to upload image');
+        } finally {
+            setUploadLoading(false);
         }
     };
 
@@ -76,19 +153,66 @@ const AccountPage = () => {
         }
     };
 
-    const confirmPost = () => {
+    const confirmPost = async () => {
         if (selectedImage) {
-            const newPost = {
-                id: Date.now(),
-                image: selectedImage,
-                caption: newPostComment,
-                tags: selectedTags
-            };
-            setUser(prev => ({
-                ...prev,
-                posts: [newPost, ...prev.posts],
-            }));
-            closeModal();
+            try {
+                // Create post data matching the schema
+                const postData = {
+                    userId: user.id,
+                    title: newPostComment,
+                    pictureURL: selectedImage,
+                    // Tags are handled differently in the schema so we'll omit for now
+                };
+                
+                console.log('Sending post data:', postData);
+                
+                // Save post to database through API
+                const response = await fetch('/api/posts', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(postData)
+                });
+                
+                // Check response type before parsing JSON
+                const contentType = response.headers.get("content-type");
+                if (!contentType || !contentType.includes("application/json")) {
+                    // Get the text to see what's being returned
+                    const text = await response.text();
+                    console.error("Non-JSON response:", text);
+                    throw new Error("Server didn't return JSON. Check server logs.");
+                }
+                
+                const data = await response.json();
+                console.log('Response data:', data);
+                
+                if (!response.ok) {
+                    if (data.details) {
+                        console.error('Server error details:', data.details);
+                        throw new Error(`${data.message}: ${data.details}`);
+                    }
+                    throw new Error(data.message || data.error || 'Failed to create post');
+                }
+                
+                // Add post to local state
+                const newPost = {
+                    id: data.id || Date.now(),
+                    image: selectedImage,
+                    caption: newPostComment,
+                    tags: selectedTags
+                };
+                
+                setUser(prev => ({
+                    ...prev,
+                    posts: [newPost, ...prev.posts],
+                }));
+                
+                closeModal();
+            } catch (err) {
+                console.error('Error creating post:', err);
+                setError(err.message || 'Failed to create post');
+            }
         }
     };
 
@@ -123,8 +247,11 @@ const AccountPage = () => {
         <div className="account-container">
             <Header />
 
+            {error && <div className="error-message">{error}</div>}
+            {uploadLoading && <div className="loading-indicator">Uploading...</div>}
+
             <div className="profile-header">
-                <div className="profile-pic-container" onClick={handleRemoveProfilePic}>
+                <div className="profile-pic-container" onClick={!uploadLoading ? handleRemoveProfilePic : undefined}>
                     <img
                         src={user.profilePic || "/images/default-profile.jpg"}
                         alt="Profile"
@@ -132,8 +259,8 @@ const AccountPage = () => {
                     />
                     <div className="delete-text-overlay">Delete</div>
 
-                    <label htmlFor="profile-pic-upload" className="upload-btn">
-                        Upload Profile Photo
+                    <label htmlFor="profile-pic-upload" className={`upload-btn ${uploadLoading ? 'disabled' : ''}`}>
+                        {uploadLoading ? 'Uploading...' : 'Upload Profile Photo'}
                     </label>
                     <input
                         id="profile-pic-upload"
@@ -141,6 +268,7 @@ const AccountPage = () => {
                         accept="image/*"
                         onChange={handleProfilePicChange}
                         style={{ display: 'none' }}
+                        disabled={uploadLoading}
                     />
                 </div>
 
@@ -154,8 +282,8 @@ const AccountPage = () => {
                     </div>
 
                     <div style={{ marginTop: '10px' }}>
-                        <label htmlFor="post-upload" className="upload-btn">
-                            Create New Post
+                        <label htmlFor="post-upload" className={`upload-btn ${uploadLoading ? 'disabled' : ''}`}>
+                            {uploadLoading ? 'Uploading...' : 'Create New Post'}
                         </label>
                         <input
                             id="post-upload"
@@ -163,6 +291,7 @@ const AccountPage = () => {
                             accept="image/*"
                             onChange={handleCreatePost}
                             style={{ display: 'none' }}
+                            disabled={uploadLoading}
                         />
                     </div>
                 </div>

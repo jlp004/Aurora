@@ -1,14 +1,52 @@
 import express from 'express';
 import { PrismaClient } from '@prisma/client';
 import cors from 'cors';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
 
 const prisma = new PrismaClient();
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// Ensure images directory exists
+const imagesDir = path.join(process.cwd(), 'public', 'images');
+if (!fs.existsSync(imagesDir)) {
+  fs.mkdirSync(imagesDir, { recursive: true });
+}
+
+// Configure multer for file uploads
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, imagesDir);
+  },
+  filename: (req, file, cb) => {
+    // Create a unique filename with original extension
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const ext = path.extname(file.originalname);
+    cb(null, uniqueSuffix + ext);
+  }
+});
+
+const upload = multer({ 
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+  fileFilter: (req, file, cb) => {
+    // Accept only images
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image files are allowed'));
+    }
+  }
+});
+
 // Middleware
 app.use(cors());
 app.use(express.json());
+// Serve static files from the public directory
+app.use('/public/images', express.static(path.join(process.cwd(), 'public', 'images')));
+app.use('/images', express.static(path.join(process.cwd(), 'public', 'images'))); // Keep this for backward compatibility
 
 // Logging middleware
 app.use((req, res, next) => {
@@ -248,7 +286,8 @@ app.get('/api/posts/:userId', async (req, res) => {
 // Create a post
 app.post('/api/posts', async (req, res) => {
   try {
-    const { title, content, tags, userId } = req.body;
+    console.log('Received post data:', req.body);
+    const { title, tags, userId, pictureURL } = req.body;
     
     // Validate input
     if (!title || !userId) {
@@ -257,21 +296,23 @@ app.post('/api/posts', async (req, res) => {
       });
     }
     
+    // Create post with only the fields that exist in the schema
     const post = await prisma.post.create({
       data: {
         title,
-        content: content || '',
-        tags: tags || '',
-        pictureURL: '', // Default empty string
-        userId: Number(userId)
+        pictureURL: pictureURL || '',
+        userId: Number(userId),
+        // Note: tags field is removed as it doesn't match how tags are related in the schema
       }
     });
     
+    console.log('Post created successfully:', post);
     return res.status(201).json(post);
   } catch (error) {
-    console.error('Error creating post:', error);
+    console.error('Detailed error creating post:', error);
     return res.status(500).json({ 
-      message: 'Failed to create post' 
+      message: 'Failed to create post',
+      details: error.message 
     });
   }
 });
@@ -300,13 +341,76 @@ app.put('/api/posts/:id', async (req, res) => {
   }
 });
 
-// Add error handler middleware at the end
+// === File Upload Endpoints ===
+
+// Upload profile picture
+app.post('/api/upload/profile', upload.single('image'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    const userId = req.body.userId;
+    if (!userId) {
+      return res.status(400).json({ error: 'User ID is required' });
+    }
+
+    const imageUrl = `/public/images/${req.file.filename}`;
+    
+    // Update user profile picture in database
+    const user = await prisma.user.update({
+      where: { id: Number(userId) },
+      data: { pictureURL: imageUrl }
+    });
+    
+    return res.status(200).json({
+      message: 'Profile picture uploaded successfully',
+      imageUrl
+    });
+  } catch (error) {
+    console.error('Error uploading profile picture:', error);
+    return res.status(500).json({ error: 'Failed to upload profile picture' });
+  }
+});
+
+// Upload post image
+app.post('/api/upload/post', upload.single('image'), async (req, res) => {
+  try {
+    console.log('Upload request received:', req.file ? 'File found' : 'No file');
+    
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    const imageUrl = `/public/images/${req.file.filename}`;
+    console.log('Image uploaded successfully:', imageUrl);
+    
+    return res.status(200).json({
+      message: 'Image uploaded successfully',
+      imageUrl
+    });
+  } catch (error) {
+    console.error('Error uploading image:', error);
+    return res.status(500).json({ error: 'Failed to upload image' });
+  }
+});
+
+// Error handling middleware for multer
 app.use((err, req, res, next) => {
-  console.error('Server error:', err);
-  res.status(500).json({
-    message: 'Server error occurred',
-    error: err.message
-  });
+  if (err instanceof multer.MulterError) {
+    // A Multer error occurred when uploading
+    console.error('Multer error:', err);
+    return res.status(400).json({ 
+      error: `Upload error: ${err.message}` 
+    });
+  } else if (err) {
+    // An unknown error occurred
+    console.error('Server error:', err);
+    return res.status(500).json({ 
+      error: `Server error: ${err.message}` 
+    });
+  }
+  next();
 });
 
 // Start server

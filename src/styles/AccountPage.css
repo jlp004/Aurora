@@ -288,3 +288,39 @@
     background-color: #dc3545;
     color: white;
 }
+
+/* Loading indicator */
+.loading-indicator {
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 4px;
+    position: fixed;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    font-weight: bold;
+}
+
+/* Error message */
+.error-message {
+    background-color: rgba(255, 0, 0, 0.8);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 4px;
+    position: fixed;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    font-weight: bold;
+    max-width: 80%;
+    text-align: center;
+}
+
+/* Disabled button */
+.upload-btn.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
