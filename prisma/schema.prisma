@@ -31,23 +31,28 @@ enum Role {
   ADMIN
 }
 
+enum TagEnum {
+  ART
+  TECH
+  MUSIC
+  SPORTS
+  FOOD
+  MEMES
+}
+
 model Post {
   id         Int       @id @default(autoincrement())
   title      String
   pictureURL String
   userId     Int
   user       User      @relation(fields: [userId], references: [id])
-  tags       Tag[]
+  tag        TagEnum
   Comment    Comment[]
   likes      Int       @default(0)
   likedBy    User[]    @relation("PostLikes")
 }
 
-model Tag {
-  id      Int    @id @default(autoincrement())
-  tagName String @unique
-  posts   Post[]
-}
+
 
 model Comment {
   id       Int    @id @default(autoincrement())
