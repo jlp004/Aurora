@@ -1,43 +1,3 @@
-// import { useLocation } from 'react-router-dom'
-// import Header from '../components/Header'
-// import Post from '../components/Post'
-
-// /* Written by John Phelan - jlp220005
-//  * Parse the URL for the string to be queried for
-//  * Upon querying, display the found results
-//  * No database to pull from; hard coded values
-//  */ 
-
-// const SearchPage = () => {
-//   const location = useLocation()
-//   const params = new URLSearchParams(location.search)
-//   const query = params.get('query')
-
-//   return (
-//     <>
-//       <Header />
-//       <div>
-//         <h1 
-//           style={{ color: 'white', fontSize: '40px', textAlign: 'center',  }}>
-//           <b>Search results for {query}</b>
-//         </h1>
-//       </div>
-//       <div className='posts-found-container'>
-//         <Post  
-//           username="DifferentUser"
-//           imageUrl="../../images/img4.png"
-//           caption="Check this out ^^^"
-//           likes={20}
-//           comments={5}
-//           timePosted="3 days ago"
-//         />
-//       </div>
-//     </>
-//   )
-// }
-
-// export default SearchPage
-///////////////////////////////////////////////////////////////
 // Written by Charitha Sarraju and John Phelan
 import { useLocation } from 'react-router-dom'
 import { useEffect, useState } from 'react'
@@ -69,16 +29,30 @@ const SearchPage = () => {
   }, [query])
 
   return (
-    <>
+    <div style={{ 
+      width: '100%', 
+      display: 'flex', 
+      flexDirection: 'column', 
+      alignItems: 'center',
+      minHeight: '100vh',
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      background: 'linear-gradient(135deg, rgb(26, 22, 78) 0%, rgb(122, 50, 124) 100%)',
+      zIndex: 0,      //set at bottom of z index
+      overflowY: 'auto' 
+    }}>
       <Header />
-      <div>
+      <div style={{ width: '100%', maxWidth: '1000px', padding: '0 20px' }}>
         <h1 
-          style={{ color: 'white', fontSize: '40px', textAlign: 'center' }}>
+          style={{ color: '#fff', fontSize: '40px', textAlign: 'center', marginTop: '6rem' }}>
           <b>Search results for "{query}"</b>
         </h1>
       </div>
 
-      <div className='posts-found-container'>
+      <div className='posts-found-container' style={{ width: '100%', maxWidth: '1000px', padding: '0 20px' }}>
         {posts.length === 0 ? (
           <p style={{ color: 'white', textAlign: 'center' }}>
             No posts found.
@@ -97,7 +71,7 @@ const SearchPage = () => {
           ))
         )}
       </div>
-    </>
+    </div>
   )
 }
 
