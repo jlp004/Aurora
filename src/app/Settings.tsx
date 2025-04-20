@@ -20,28 +20,25 @@ const SettingsPage = () => {
 /////////////// - delete function
   const navigate = useNavigate();
 
-const handleDeleteAccount = async () => {
-  try {
-    const res = await fetch('/api/user/delete', {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ username }) // Now has access to the state
-    });
-
-    if (res.ok) {
-      alert("Account deleted successfully.");
+  const handleDeleteAccount = async () => {
+    try {
+      await fetch('/api/User/delete', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username })
+      });
+      
+    } catch (err) {
+      console.error("Error during account deletion:", err);
+    } finally {
+      // Navigate away regardless of success/failure
       navigate('/login');
-    } else {
-      const error = await res.json();
-      alert("Failed to delete account: " + error.message);
+      console.log("Account deleted");
     }
-  } catch (err) {
-    console.error("Error:", err);
-    alert("An unexpected error occurred.");
-  }
-}; //////////// - delete function
+  };
+   //////////// - delete function
 
 
   return (
