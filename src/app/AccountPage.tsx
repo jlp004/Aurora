@@ -12,9 +12,24 @@ const AccountPage = () => {
         following: 80,
         profilePic: "/images/profile-pic.jpg", // Default image
         posts: [
-            "/images/accountPic1.png",
-            "/images/accountPic2.png",
-            "/images/accountPic3.png"
+            {
+                id: 1,
+                image: "/images/accountPic1.png",
+                caption: "Beautiful morning coffee",
+                tags: ["Food"]
+            },
+            {
+                id: 2,
+                image: "/images/accountPic2.png",
+                caption: "Nature at its best",
+                tags: ["Nature"]
+            },
+            {
+                id: 3,
+                image: "/images/accountPic3.png",
+                caption: "Travel diaries",
+                tags: ["Travel"]
+            }
         ]
     });
 
@@ -24,6 +39,8 @@ const AccountPage = () => {
     const [selectedTags, setSelectedTags] = useState<string[]>([]);
     const [newPostComment, setNewPostComment] = useState<string>("");
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [editingPost, setEditingPost] = useState<any>(null);
 
     const handleProfilePicChange = (event) => {
         const file = event.target.files[0];
@@ -43,22 +60,33 @@ const AccountPage = () => {
             const imageUrl = URL.createObjectURL(file);
             setSelectedImage(imageUrl);
             setIsModalOpen(true);
-            //setUser({ ...user, posts: [imageUrl, ...user.posts] });
         }
     };
 
     const toggleTag = (tag: string) => {
-        setSelectedTags(prev => 
-            prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
-        );
+        if (isEditModalOpen) {
+            const updatedTags = editingPost.tags.includes(tag)
+                ? editingPost.tags.filter(t => t !== tag)
+                : [...editingPost.tags, tag];
+            setEditingPost({ ...editingPost, tags: updatedTags });
+        } else {
+            setSelectedTags(prev => 
+                prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
+            );
+        }
     };
 
     const confirmPost = () => {
         if (selectedImage) {
-            // TODO: Save the tags and comment to DB
+            const newPost = {
+                id: Date.now(),
+                image: selectedImage,
+                caption: newPostComment,
+                tags: selectedTags
+            };
             setUser(prev => ({
                 ...prev,
-                posts: [selectedImage, ...prev.posts],
+                posts: [newPost, ...prev.posts],
             }));
             closeModal();
         }
@@ -69,10 +97,25 @@ const AccountPage = () => {
         setSelectedTags([]);
         setNewPostComment("");
         setIsModalOpen(false);
+        setIsEditModalOpen(false);
+        setEditingPost(null);
     };
 
-    const handleDeletePost = (indexToRemove) => {
-        const updatedPosts = user.posts.filter((_, index) => index !== indexToRemove);
+    const handleEditPost = (post) => {
+        setEditingPost(post);
+        setIsEditModalOpen(true);
+    };
+
+    const confirmEditPost = () => {
+        const updatedPosts = user.posts.map(post => 
+            post.id === editingPost.id ? editingPost : post
+        );
+        setUser({ ...user, posts: updatedPosts });
+        closeModal();
+    };
+
+    const handleDeletePost = (postId) => {
+        const updatedPosts = user.posts.filter(post => post.id !== postId);
         setUser({ ...user, posts: updatedPosts });
     };
 
@@ -127,29 +170,45 @@ const AccountPage = () => {
 
             <div className="image-grid">
                 {user.posts.length === 0 ? (
-                    <p className="no-posts-msg">You haven’t posted anything yet.</p>
+                    <p className="no-posts-msg">You haven't posted anything yet.</p>
                 ) : (
-                    user.posts.map((post, index) => (
-                        <div key={index} className="post-container">
-                            <img src={post} alt={`Post ${index + 1}`} className="post-img" />
-                            <button className="delete-btn" onClick={() => handleDeletePost(index)}>
-                                Delete
-                            </button>
+                    user.posts.map((post) => (
+                        <div key={post.id} className="post-container">
+                            <img src={post.image} alt={post.caption} className="post-img" />
+                            <div className="post-overlay">
+                                <div className="post-info">
+                                    <p className="post-caption">{post.caption}</p>
+                                    <div className="post-tags">
+                                        {post.tags.map((tag, idx) => (
+                                            <span key={idx} className="post-tag">{tag}</span>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div className="post-actions">
+                                    <button className="edit-btn" onClick={() => handleEditPost(post)}>
+                                        Edit
+                                    </button>
+                                    <button className="delete-btn" onClick={() => handleDeletePost(post.id)}>
+                                        Delete
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     ))
                 )}
             </div>
 
+            {/* Create Post Modal */}
             {isModalOpen && (
-            <div className='modal-overlay'>
-                <div className='modal-content'>
-                    <h3>Preview Your Post</h3>
+                <div className='modal-overlay'>
+                    <div className='modal-content'>
+                        <h3>Create New Post</h3>
                         {selectedImage && (
                             <img src={selectedImage} alt="Preview" className='preview-img' />
                         )}
 
                         <textarea
-                            placeholder='Write a comment...'
+                            placeholder='Write a caption...'
                             value={newPostComment}
                             onChange={(e) => setNewPostComment(e.target.value)}
                             className='comment-box'
@@ -172,6 +231,43 @@ const AccountPage = () => {
 
                         <div className="modal-actions">
                             <button className="confirm-btn" onClick={confirmPost}>Post</button>
+                            <button className="cancel-btn" onClick={closeModal}>Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Edit Post Modal */}
+            {isEditModalOpen && editingPost && (
+                <div className='modal-overlay'>
+                    <div className='modal-content'>
+                        <h3>Edit Post</h3>
+                        <img src={editingPost.image} alt="Preview" className='preview-img' />
+
+                        <textarea
+                            placeholder='Edit caption...'
+                            value={editingPost.caption}
+                            onChange={(e) => setEditingPost({ ...editingPost, caption: e.target.value })}
+                            className='comment-box'
+                        />
+
+                        <div className='tag-selection'>
+                            <h4>Edit Tags:</h4>
+                            <div className='tags'>
+                                {predefinedTags.map(tag => (
+                                    <button
+                                        key={tag}
+                                        className={`tag-btn ${editingPost.tags.includes(tag) ? 'selected' : ''}`}
+                                        onClick={() => toggleTag(tag)} 
+                                    >
+                                        {tag}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="modal-actions">
+                            <button className="confirm-btn" onClick={confirmEditPost}>Save Changes</button>
                             <button className="cancel-btn" onClick={closeModal}>Cancel</button>
                         </div>
                     </div>
