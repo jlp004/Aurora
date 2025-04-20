@@ -16,8 +16,8 @@
     color: #333;
     font-weight: bold;
     position: absolute;
-    left: 50%;                /* Move the element to the center */
-    transform: translateX(-50%); /* Adjust by 50% of its own width */
+    left: 50%;               
+    transform: translateX(-50%); 
 }
 
 
