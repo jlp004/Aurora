@@ -185,6 +185,39 @@ app.get('/api/user/:username', async (req, res) => {
 
 // === Post Endpoints ===
 
+// Search posts by query - MUST BE BEFORE :userId route
+app.get('/api/posts/search', async (req, res) => {
+  try {
+    const { q } = req.query;
+    
+    if (!q) {
+      return res.status(200).json({ posts: [] });
+    }
+    
+    const posts = await prisma.post.findMany({
+      where: {
+        title: {
+          contains: q
+        }
+      },
+      include: {
+        user: {
+          select: {
+            username: true
+          }
+        }
+      }
+    });
+    
+    return res.status(200).json({ posts });
+  } catch (error) {
+    console.error('Error searching posts:', error);
+    return res.status(500).json({ 
+      message: 'Failed to search posts' 
+    });
+  }
+});
+
 // Get posts by user ID
 app.get('/api/posts/:userId', async (req, res) => {
   try {
