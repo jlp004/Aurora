@@ -6,28 +6,60 @@ import { useState } from 'react';
 import '../styles/Post.css'; 
 
 interface PostProps {
+  id?: number;
   username?: string;
   imageUrl?: string;
   caption?: string;
   likes?: number;
   comments?: number;
   timePosted?: string;
+  currentUserId?: number;
 }
 
 export default function Post({
+  id = 0,
   username = "user1234!",
   imageUrl = "../../images/mountain.jpg",
   caption = "Mountain view!",
   likes = 5,
   comments = 2,
-  timePosted = "2 hours ago"
+  timePosted = "2 hours ago",
+  currentUserId = 0
 }: PostProps) {
   const [currentLikes, setCurrentLikes] = useState(likes);
   const [isLiked, setIsLiked] = useState(false);
+  const [commentText, setCommentText] = useState('');
+  const [showComments, setShowComments] = useState(false);
 
   const handleLike = () => {
     setCurrentLikes(isLiked ? currentLikes - 1 : currentLikes + 1);
     setIsLiked(!isLiked);
+  };
+
+  const handleCommentSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!commentText.trim() || !currentUserId || !id) return;
+
+    try {
+      const response = await fetch('/api/Comment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          text: commentText,
+          posterId: currentUserId,
+          postId: id,
+        }),
+      });
+
+      if (response.ok) {
+        setCommentText('');
+        // You might want to refresh the comments list here
+      }
+    } catch (error) {
+      console.error('Error posting comment:', error);
+    }
   };
 
   return (
@@ -50,7 +82,12 @@ export default function Post({
         >
           
         </button>
-        <button className="action-btn comment-btn">💬</button>
+        <button 
+          className="action-btn comment-btn"
+          onClick={() => setShowComments(!showComments)}
+        >
+          💬
+        </button>
       </div>
       
       <div className="post-stats">
@@ -62,6 +99,21 @@ export default function Post({
         <span className="caption-username">{username}</span>
         <span className="caption-text">{caption}</span>
       </div>
+      
+      {showComments && (
+        <div className="comments-section">
+          <form onSubmit={handleCommentSubmit} className="comment-form">
+            <input
+              type="text"
+              value={commentText}
+              onChange={(e) => setCommentText(e.target.value)}
+              placeholder="Add a comment..."
+              className="comment-input"
+            />
+            <button type="submit" className="comment-submit">Post</button>
+          </form>
+        </div>
+      )}
       
       <div className="post-time">{timePosted}</div>
     </div>
