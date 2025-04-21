@@ -3,6 +3,7 @@ import {useNavigate} from 'react-router-dom'
 import {ReactNode, useState} from 'react'
 import {auth, provider, signInWithPopup} from '../../services/firebase'
 import { loginUser } from '../../lib/api'
+import { useUser } from '../userData'
 
 // Charitha
 
@@ -12,6 +13,7 @@ const Login = () => {
     const [password, setPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
+    const { setCurrentUser } = useUser();
     
     const handleLogin = async (event: React.FormEvent) => {
         event.preventDefault();
@@ -23,10 +25,19 @@ const Login = () => {
             
             console.log('Login successful:', response);
             
+            // Save the complete user data including ID to context
+            setCurrentUser({
+                id: response.user?.id || 'user_' + Date.now(), // Generate a unique ID if none provided
+                username: username,
+                email: email,
+                pictureURL: response.user?.pictureURL || '/images/profile-pic.jpg'
+            });
+            
+            // Store to localStorage happens in the UserProvider
+            
             alert('Logged in successfully!');
             navigate('/home');
         } catch (err) {
-            // Handle API errors with specific error messages
             console.error('Login error:', err);
             if (err instanceof Error) {
                 alert(err.message);
@@ -36,6 +47,19 @@ const Login = () => {
         } finally {
             setIsLoading(false);
         }
+    };
+    
+    // For prototype, add quick login without API
+    const handleQuickLogin = () => {
+        // Set a mock user with unique ID
+        setCurrentUser({
+            id: 'user_' + Date.now(), // Generate a unique ID
+            username: username || 'demo_user',
+            email: email || 'demo@example.com',
+            pictureURL: '/images/profile-pic.jpg'
+        });
+        
+        navigate('/home');
     };
     
     return (

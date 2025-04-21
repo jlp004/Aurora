@@ -5,6 +5,7 @@ import './landingStyles.css'
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createUser } from '../../lib/api';
+import { useUser } from '../userData';
 
 const Signup = () => {
     // Track input values
@@ -13,6 +14,7 @@ const Signup = () => {
     const [password, setPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
+    const { setCurrentUser } = useUser();
 
     // Handles form submission
     const handleSignup = async (e: React.FormEvent) => {
@@ -22,6 +24,14 @@ const Signup = () => {
         try {
             // Use the API utility to create a user
             const user = await createUser(username, email, password);
+            
+            // Save the new user to context
+            setCurrentUser({
+                id: user?.id || 'user_' + Date.now(), // Use the user ID from API or generate one
+                username: username,
+                email: email,
+                pictureURL: user?.pictureURL || '/images/profile-pic.jpg'
+            });
             
             // If we got here, the account was created successfully
             alert('Account Created');
