@@ -30,6 +30,66 @@ export default function Post({
     setIsLiked(!isLiked);
   };
 
+<<<<<<< Updated upstream
+=======
+  const handleCommentSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+     // Debug log
+     console.log('Submitting comment:', {
+      text: commentText,
+      currentUserId,
+      postId: id
+    });
+
+    if (!commentText.trim()) {
+      setError('Please enter a comment');
+      return;
+    }
+
+    if (!currentUserId) {
+      setError('You must be logged in to comment');
+      return;
+    }
+
+    if (!id) {
+      setError('Invalid post');
+      return;
+    }
+
+
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      const response = await fetch('/api/Comment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          text: commentText.trim(),
+          posterId: currentUserId,
+          postId: id,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to post comment');
+      }
+
+      setCommentText('');
+      // You might want to refresh the comments list here
+    } catch (error) {
+      console.error('Error posting comment:', error);
+      setError(error instanceof Error ? error.message : 'Failed to post comment');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+>>>>>>> Stashed changes
   return (
     <div className="post">
       <div className="post-header">
@@ -63,6 +123,32 @@ export default function Post({
         <span className="caption-text">{caption}</span>
       </div>
       
+<<<<<<< Updated upstream
+=======
+      {showComments && (
+        <div className="comments-section">
+          <form onSubmit={handleCommentSubmit} className="comment-form">
+            <input
+              type="text"
+              value={commentText}
+              onChange={(e) => setCommentText(e.target.value)}
+              placeholder="Add a comment..."
+              className="comment-input"
+              disabled={isSubmitting}
+            />
+            <button 
+              type="submit" 
+              className="comment-submit"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Posting...' : 'Post'}
+            </button>
+          </form>
+          {error && <div className="error-message">{error}</div>}
+        </div>
+      )}
+      
+>>>>>>> Stashed changes
       <div className="post-time">{timePosted}</div>
     </div>
   );

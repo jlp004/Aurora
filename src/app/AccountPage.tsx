@@ -280,7 +280,8 @@ const AccountPage = () => {
 
       <div className="profile-header">
         <div className="profile-pic-container" onClick={!uploadLoading ? handleRemoveProfilePic : undefined}>
-          <img src={user.profilePic || "/images/default-profile.jpg"} alt="Profile" className="profile-pic" />
+          <img src={user.profilePic || "/images/default-profile.jpg"} alt="" className="profile-pic" />
+          <div className="profile-text">Profile</div>
           <div className="delete-text-overlay">Delete</div>
           <label htmlFor="profile-pic-upload" className={`upload-btn ${uploadLoading ? 'disabled' : ''}`}>
             {uploadLoading ? 'Uploading...' : 'Upload Profile Photo'}
