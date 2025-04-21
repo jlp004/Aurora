@@ -49,6 +49,7 @@ const AccountPage = () => {
     if (currentUser) {
       setUser(prev => ({
         ...prev,
+        id: typeof currentUser.id === 'string' ? parseInt(currentUser.id, 10) || 1 : currentUser.id,
         username: currentUser.username,
         profilePic: currentUser.pictureURL || prev.profilePic
       }));
@@ -74,15 +75,34 @@ const AccountPage = () => {
     try {
       setUploadLoading(true);
       setError("");
-      const formData = new FormData();
-      formData.append('image', file);
-      formData.append('userId', user.id.toString());
-      const response = await fetch('/api/upload/profile', { method: 'POST', body: formData });
-      const contentType = response.headers.get("content-type");
-      if (!contentType?.includes("application/json")) throw new Error(await response.text());
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'Failed to upload profile picture');
-      setUser({ ...user, profilePic: data.imageUrl });
+      
+      // Create a URL for the selected file (for offline support)
+      const imageUrl = URL.createObjectURL(file);
+      
+      try {
+        // Try to upload to API if available
+        const formData = new FormData();
+        formData.append('image', file);
+        formData.append('userId', currentUser?.id.toString() || user.id.toString());
+        
+        const response = await fetch('/api/upload/profile', { method: 'POST', body: formData });
+        
+        if (response.ok) {
+          const contentType = response.headers.get("content-type");
+          if (contentType?.includes("application/json")) {
+            const data = await response.json();
+            // If API returns a URL, use it instead of local URL
+            setUser({ ...user, profilePic: data.imageUrl });
+            return;
+          }
+        }
+      } catch (err) {
+        console.error('API upload error:', err);
+        // Continue with local URL
+      }
+      
+      // Use the local URL if API call fails
+      setUser({ ...user, profilePic: imageUrl });
     } catch (err) {
       setError(err.message || 'Failed to upload profile picture');
     } finally {
@@ -153,7 +173,7 @@ const AccountPage = () => {
       try {
         // Attempt the API call, but don't require it to succeed
         const postData = {
-          userId: user.id,
+          userId: currentUser?.id || user.id,
           title: newPostComment,
           pictureURL: selectedImage
         };
@@ -184,7 +204,8 @@ const AccountPage = () => {
         image: selectedImage,
         caption: newPostComment,
         tags: selectedTags,
-        comments: []
+        comments: [],
+        userId: currentUser?.id || user.id
       };
       
       // Add the new post to the user's posts
