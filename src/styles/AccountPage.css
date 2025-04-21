@@ -422,11 +422,12 @@ body.account-page-active {
     width: 100%;
     display: flex;
     justify-content: center;
+    gap: 10px;
     padding: 0 10px;
     box-sizing: border-box;
 }
 
-.post-view-btn {
+.post-view-btn, .post-edit-btn {
     padding: 10px 20px;
     background-color: rgba(255, 255, 255, 0.8);
     color: #333;
@@ -438,7 +439,44 @@ body.account-page-active {
     min-width: 100px;
 }
 
-.post-view-btn:hover {
+.post-view-btn:hover, .post-edit-btn:hover {
     background-color: rgba(255, 255, 255, 1);
     transform: scale(1.05);
+}
+
+.modal-close-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 20px;
+    font-weight: bold;
+    transition: all 0.2s ease;
+}
+
+.modal-close-btn:hover {
+    background-color: rgba(0, 0, 0, 0.7);
+    transform: scale(1.1);
+}
+
+.expanded-post-modal {
+    position: relative;
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    margin-top: 50px;
+    width: 600px;
+    max-width: 90%;
+    box-sizing: border-box;
+    max-height: 90vh;
+    overflow-y: auto;
 }

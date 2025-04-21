@@ -335,6 +335,20 @@ const AccountPage = () => {
                   >
                     View Post
                   </button>
+                  <button 
+                    className="post-edit-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setEditingPost(post);
+                      setSelectedImage(post.image);
+                      setNewPostComment(post.caption);
+                      setSelectedTags(post.tags);
+                      setIsEditModalOpen(true);
+                    }}
+                    aria-label="Edit post"
+                  >
+                    Edit Post
+                  </button>
                 </div>
               </div>
             </div>
@@ -408,7 +422,8 @@ const AccountPage = () => {
       {/* Selected Post Modal */}
       {selectedPost && (
         <div className="modal-overlay" onClick={closeModal} style={{ backgroundColor: 'rgba(168, 85, 247, 0.3)', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-          <div className="expanded-post-modal" onClick={(e) => e.stopPropagation()} style={{ backgroundColor: 'white', padding: '20px', borderRadius: '10px', marginTop: '50px', width: '600px', maxWidth: '90%', boxSizing: 'border-box', maxHeight: '90vh', overflowY: 'auto' }}>
+          <div className="expanded-post-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close-btn" onClick={closeModal} aria-label="Close modal">×</button>
             <h2>Comments</h2>
             <div className="post-preview">
               <img src={selectedPost.image} alt="Post preview" className="preview-img" />
@@ -434,6 +449,78 @@ const AccountPage = () => {
                   <button onClick={handlePostComment} style={{ backgroundColor: '#a855f7', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '6px', cursor: 'pointer', marginTop: '10px' }}>Post comment →</button>
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Post Modal */}
+      {isEditModalOpen && editingPost && (
+        <div className="modal-overlay" onClick={closeModal} style={{ backgroundColor: 'rgba(168, 85, 247, 0.3)', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          <div className="expanded-post-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close-btn" onClick={closeModal} aria-label="Close modal">×</button>
+            <h2>Edit Post</h2>
+            <div className="post-preview">
+              <img src={editingPost.image} alt="Post preview" className="preview-img" style={{ maxWidth: '100%', maxHeight: '300px', objectFit: 'contain' }} />
+            </div>
+            <div className="post-form" style={{ marginTop: '20px' }}>
+              <textarea 
+                placeholder="Write your caption here..." 
+                value={newPostComment} 
+                onChange={(e) => setNewPostComment(e.target.value)}
+                style={{ width: '100%', padding: '10px', minHeight: '100px', borderRadius: '6px', marginBottom: '15px' }}
+              />
+              
+              <div className="tag-selection" style={{ marginBottom: '15px' }}>
+                <p style={{ marginBottom: '8px', fontWeight: 'bold' }}>Tags:</p>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                  {predefinedTags.map(tag => (
+                    <button
+                      key={tag}
+                      onClick={() => {
+                        if (selectedTags.includes(tag)) {
+                          setSelectedTags(selectedTags.filter(t => t !== tag));
+                        } else {
+                          setSelectedTags([...selectedTags, tag]);
+                        }
+                      }}
+                      style={{
+                        padding: '6px 12px',
+                        borderRadius: '20px',
+                        background: selectedTags.includes(tag) ? '#a855f7' : '#f3f4f6',
+                        color: selectedTags.includes(tag) ? 'white' : 'black',
+                        border: 'none',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      {tag}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                <button 
+                  onClick={closeModal}
+                  style={{ padding: '8px 16px', borderRadius: '6px', border: '1px solid #d1d5db', background: 'white', cursor: 'pointer' }}
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={() => {
+                    const updatedPosts = user.posts.map(p => 
+                      p.id === editingPost.id 
+                        ? { ...p, caption: newPostComment, tags: selectedTags }
+                        : p
+                    );
+                    setUser({ ...user, posts: updatedPosts });
+                    closeModal();
+                  }}
+                  style={{ padding: '8px 16px', borderRadius: '6px', background: '#a855f7', color: 'white', border: 'none', cursor: 'pointer' }}
+                >
+                  Save Changes
+                </button>
+              </div>
             </div>
           </div>
         </div>
