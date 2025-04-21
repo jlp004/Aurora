@@ -1,7 +1,6 @@
 // userData.tsx - Lydia
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
 
-// Define User interface
 export interface User {
     id: string | number;
     username: string;
@@ -11,22 +10,18 @@ export interface User {
     profileDesc?: string;
 }
 
-// Define the context type
 interface UserContextType {
     currentUser: User | null;
     setCurrentUser: (user: User | null) => void;
 }
 
-// Create default context value
 const defaultContextValue: UserContextType = {
     currentUser: null,
     setCurrentUser: () => {},
 };
 
-// Create the context
 export const UserContext = createContext<UserContextType>(defaultContextValue);
 
-// Create the provider component
 export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     // Initialize state from localStorage if available
     const [currentUser, setCurrentUser] = useState<User | null>(() => {
@@ -58,7 +53,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 // Create a custom hook to use the user context
 export const useUser = () => useContext(UserContext);
 
-// Sample user data for testing
+// example user data for testing
 export const users = {
     '1': { username: 'Jane Doe', avatar: '/images/img1.png' },
     '2': { username: 'John Smith', avatar: '/images/img2.png' },

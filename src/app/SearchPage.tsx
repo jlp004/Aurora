@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import Header from '../components/Header'
 import Post from '../components/Post'
 
-// Custom style to override Post component's default styles
+// overwrite some stuff from posts-found-container
 const customStyles = `
   .posts-found-container .post {
     margin: 0 !important;
@@ -28,7 +28,7 @@ const SearchPage = () => {
         const res = await fetch(`/api/posts/search?q=${encodeURIComponent(query)}`)
         const data = await res.json()
         setPosts(data.posts || [])
-        console.log("Search results:", data) // Debugging
+        console.log("Search results:", data) 
       } catch (err) {
         console.error("Failed to fetch posts:", err)
       }

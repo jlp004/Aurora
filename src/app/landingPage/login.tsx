@@ -30,7 +30,8 @@ const Login = () => {
                 id: response.user?.id || 'user_' + Date.now(), // Generate a unique ID if none provided
                 username: username,
                 email: email,
-                pictureURL: response.user?.pictureURL || '/images/profile-pic.jpg'
+                pictureURL: response.user?.pictureURL || '/images/profile-pic.jpg',
+                profileDesc: response.user?.profileDesc || 'Lover of code and coffee ☕' // Include bio
             });
             
             // Store to localStorage happens in the UserProvider
@@ -49,22 +50,20 @@ const Login = () => {
         }
     };
     
-    // For prototype, add quick login without API
     const handleQuickLogin = () => {
         // Set a mock user with unique ID
         setCurrentUser({
             id: 'user_' + Date.now(), // Generate a unique ID
             username: username || 'demo_user',
             email: email || 'demo@example.com',
-            pictureURL: '/images/profile-pic.jpg'
+            pictureURL: '/images/profile-pic.jpg',
+            profileDesc: 'Lover of code and coffee ☕' // Default bio
         });
         
         navigate('/home');
     };
     
     return (
-        //Currently the formatting of the buttons is absolute and looks different based on the screen it's being run on, just an FYI!
-
         <div className="background">
             <header>
                 <h1 style={{

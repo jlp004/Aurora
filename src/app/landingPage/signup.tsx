@@ -30,14 +30,15 @@ const Signup = () => {
                 id: user?.id || 'user_' + Date.now(), // Use the user ID from API or generate one
                 username: username,
                 email: email,
-                pictureURL: user?.pictureURL || '/images/profile-pic.jpg'
+                pictureURL: user?.pictureURL || '/images/profile-pic.jpg',
+                profileDesc: user?.profileDesc || 'Lover of code and coffee ☕' // Default bio
             });
             
-            // If we got here, the account was created successfully
+            // the account was created successfully
             alert('Account Created');
             navigate('/home');
         } catch (err) {
-            // Handle API errors with specific error messages
+            // Handle API errors 
             console.error('Signup error', err);
             if (err instanceof Error) {
                 alert(err.message);

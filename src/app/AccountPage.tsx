@@ -51,7 +51,8 @@ const AccountPage = () => {
         ...prev,
         id: typeof currentUser.id === 'string' ? parseInt(currentUser.id, 10) || 1 : currentUser.id,
         username: currentUser.username,
-        profilePic: currentUser.pictureURL || prev.profilePic
+        profilePic: currentUser.pictureURL || prev.profilePic,
+        bio: currentUser.profileDesc || prev.bio
       }));
     }
   }, [currentUser]);
@@ -122,12 +123,10 @@ const AccountPage = () => {
       setUploadLoading(true);
       setError("");
       
-      // For production, you would upload the file to a server
-      // But for now, we'll create a local URL for the file
+     
       let imageUrl = "";
       
       try {
-        // Try to upload to API if available
         const formData = new FormData();
         formData.append('image', file);
         const response = await fetch('/api/upload/post', { method: 'POST', body: formData });
@@ -141,15 +140,12 @@ const AccountPage = () => {
         }
       } catch (err) {
         console.error('API upload error:', err);
-        // Continue with local URL creation
       }
       
-      // If API upload failed or not available, create a local object URL
       if (!imageUrl) {
         imageUrl = URL.createObjectURL(file);
       }
       
-      // Set the selected image and open modal
       setSelectedImage(imageUrl);
       setIsModalOpen(true);
     } catch (err) {
@@ -165,8 +161,6 @@ const AccountPage = () => {
     try {
       setUploadLoading(true);
       
-      // For production, you would use this API call
-      // But for now, we'll just simulate a successful post creation
       let newPostId = Date.now();
       let newPostData = null;
       
@@ -194,7 +188,6 @@ const AccountPage = () => {
           }
         }
       } catch (err) {
-        // Just log the error but continue with local post creation
         console.error('API error:', err);
       }
       
