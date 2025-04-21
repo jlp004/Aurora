@@ -57,6 +57,16 @@ const AccountPage = () => {
     }
   }, [currentUser]);
 
+  useEffect(() => {
+    // Add the class to body when component mounts
+    document.body.classList.add('account-page-active');
+    
+    // Remove the class when component unmounts
+    return () => {
+      document.body.classList.remove('account-page-active');
+    };
+  }, []);
+
   const predefinedTags = ["Nature", "Food", "Travel", "Fashion", "Other"];
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
@@ -242,6 +252,25 @@ const AccountPage = () => {
     setCommentTab('view');
   };
 
+  // Add a function to handle post deletion
+  const handleDeletePost = (postId: number) => {
+    // Confirm before deleting
+    if (window.confirm('Are you sure you want to delete this post?')) {
+      // Filter out the post with the matching ID
+      const updatedPosts = user.posts.filter(post => post.id !== postId);
+      setUser({ ...user, posts: updatedPosts });
+      
+      // Try to send delete request to backend if available
+      try {
+        fetch(`/api/posts/${postId}`, {
+          method: 'DELETE',
+        }).catch(err => console.error('API error:', err));
+      } catch (err) {
+        console.error('Error deleting post:', err);
+      }
+    }
+  };
+
   return (
     <div className="account-container">
       <Header />
@@ -279,8 +308,34 @@ const AccountPage = () => {
           <p className="no-posts-msg">You haven't posted anything yet.</p>
         ) : (
           user.posts.map((post) => (
-            <div key={post.id} className="post-container" onClick={() => setSelectedPost(post)}>
+            <div key={post.id} className="post-container">
               <img src={post.image} alt={post.caption} className="post-img" />
+              
+              {/* Delete button overlay */}
+              <div className="post-hover-overlay">
+                <div className="post-hover-actions">
+                  <button 
+                    className="post-delete-btn" 
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevent opening the post
+                      handleDeletePost(post.id);
+                    }}
+                    aria-label="Delete post"
+                  >
+                    <span className="delete-icon">×</span>
+                  </button>
+                </div>
+                
+                <div className="post-view-container">
+                  <button 
+                    className="post-view-btn"
+                    onClick={() => setSelectedPost(post)}
+                    aria-label="View post"
+                  >
+                    View Post
+                  </button>
+                </div>
+              </div>
             </div>
           ))
         )}
