@@ -182,6 +182,10 @@ const SearchBar: React.FC<HeaderProps> = ({ onThemeToggle }) => {
         return 'Just now';
     }
 
+    const handleMessagesClick = () => {
+        navigate('/chats');
+    };
+
     return (
         <div className="header-wrapper">
             <div className="input-group" ref={searchRef}>
@@ -302,7 +306,7 @@ const SearchBar: React.FC<HeaderProps> = ({ onThemeToggle }) => {
                 </button>
                 
                 <div className="notifications-badge">
-                    <button className="notifications-bell">
+                    <button className="notifications-bell" onClick={handleMessagesClick}>
                         <FaFacebookMessenger />
                     </button>
                     <span className="notifications-count">3</span>

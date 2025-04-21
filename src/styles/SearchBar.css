@@ -47,7 +47,7 @@ input[type="text"] {
     font-size: 1rem;           
     border: 2px solid var(--input-border);    
     border-radius: 1.5rem;       
-    background-color: #1a1a1a;   
+    background-color: white;   
     color: var(--text-primary);
     outline: none;             
     transition: all 0.3s ease; 
@@ -55,20 +55,17 @@ input[type="text"] {
 }
 
 /* Dark mode specific styles */
-[data-theme='dark'] input[type="text"],
-[data-theme='dark'] input[type="text"]:focus {
+[data-theme='dark'] input[type="text"] {
     background-color: #1a1a1a;
     color: white;
-    border-color: rgba(255, 255, 255, 0.1);
-}
-
-.search-wrapper input[type="text"] {
-    background-color: #1a1a1a;
 }
 
 input[type="text"]:focus {
     border-color: var(--accent-primary);
     box-shadow: 0 0 15px var(--accent-secondary);
+}
+
+[data-theme='dark'] input[type="text"]:focus {
     background-color: #1a1a1a;
 }
 
