@@ -12,6 +12,8 @@ interface PostProps {
   likes?: number;
   comments?: number;
   timePosted?: string;
+  id?: number;
+  currentUserId?: string | number;
 }
 
 export default function Post({
@@ -20,22 +22,26 @@ export default function Post({
   caption = "Mountain view!",
   likes = 5,
   comments = 2,
-  timePosted = "2 hours ago"
+  timePosted = "2 hours ago",
+  id = 0,
+  currentUserId = ''
 }: PostProps) {
   const [currentLikes, setCurrentLikes] = useState(likes);
   const [isLiked, setIsLiked] = useState(false);
+  const [showComments, setShowComments] = useState(false);
+  const [commentText, setCommentText] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleLike = () => {
     setCurrentLikes(isLiked ? currentLikes - 1 : currentLikes + 1);
     setIsLiked(!isLiked);
   };
 
-<<<<<<< Updated upstream
-=======
   const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-     // Debug log
-     console.log('Submitting comment:', {
+    // Debug log
+    console.log('Submitting comment:', {
       text: commentText,
       currentUserId,
       postId: id
@@ -55,7 +61,6 @@ export default function Post({
       setError('Invalid post');
       return;
     }
-
 
     setIsSubmitting(true);
     setError(null);
@@ -89,7 +94,6 @@ export default function Post({
     }
   };
 
->>>>>>> Stashed changes
   return (
     <div className="post">
       <div className="post-header">
@@ -110,7 +114,12 @@ export default function Post({
         >
           
         </button>
-        <button className="action-btn comment-btn">💬</button>
+        <button 
+          className="action-btn comment-btn" 
+          onClick={() => setShowComments(!showComments)}
+        >
+          💬
+        </button>
       </div>
       
       <div className="post-stats">
@@ -123,8 +132,6 @@ export default function Post({
         <span className="caption-text">{caption}</span>
       </div>
       
-<<<<<<< Updated upstream
-=======
       {showComments && (
         <div className="comments-section">
           <form onSubmit={handleCommentSubmit} className="comment-form">
@@ -148,7 +155,6 @@ export default function Post({
         </div>
       )}
       
->>>>>>> Stashed changes
       <div className="post-time">{timePosted}</div>
     </div>
   );
