@@ -17,22 +17,43 @@
   padding: 0.5rem 1rem 0.5rem 4rem;
   font-size: 1rem;
   border-radius: 0.5rem;
-  border: 1px solid var(--border-color);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   outline: none;
-  color: var(--text-primary);
-  background-color: var(--input-bg);
+  color: white !important;
+  caret-color: white;
+  background-color: rgba(255, 255, 255, 0.1);
   width: 100%;
   text-indent: 2rem;
   transition: all 0.3s ease;
+  -webkit-text-fill-color: white !important;
+}
+
+/* Force white text in all states */
+input.searchInput,
+.searchInput:active,
+.searchInput:focus,
+.searchInput::placeholder,
+.searchInput::-webkit-input-placeholder {
+  color: white !important;
+  -webkit-text-fill-color: white !important;
+}
+
+.searchInput:-webkit-autofill,
+.searchInput:-webkit-autofill:hover,
+.searchInput:-webkit-autofill:focus {
+  -webkit-text-fill-color: white !important;
+  -webkit-box-shadow: 0 0 0px 1000px rgba(255, 255, 255, 0.1) inset;
+  transition: background-color 5000s ease-in-out 0s;
+  color: white !important;
 }
 
 .searchInput:focus {
-  border-color: var(--accent-primary);
-  box-shadow: 0 0 0 3px var(--accent-secondary);
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
 }
 
 .searchInput::placeholder {
-  color: var(--text-tertiary);
+  color: rgba(255, 255, 255, 0.5);
   opacity: 1;
 }
 

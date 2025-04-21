@@ -8,7 +8,7 @@ import {
     FaFilter, 
     FaSun, 
     FaMoon, 
-    FaBell, 
+    FaFacebookMessenger, 
     FaUser,
     FaCog,
     FaSignOutAlt
@@ -198,6 +198,7 @@ const SearchBar: React.FC<HeaderProps> = ({ onThemeToggle }) => {
                         onKeyDown={handleKeyDown}
                         onFocus={() => setIsFocused(true)}
                         onBlur={() => setIsFocused(false)}
+                        style={{ backgroundColor: theme === 'dark' ? '#1a1a1a' : undefined }}
                     />
                     {inputValue && (
                         <button className="clear-button" onClick={handleClear}>
@@ -302,7 +303,7 @@ const SearchBar: React.FC<HeaderProps> = ({ onThemeToggle }) => {
                 
                 <div className="notifications-badge">
                     <button className="notifications-bell">
-                        <FaBell />
+                        <FaFacebookMessenger />
                     </button>
                     <span className="notifications-count">3</span>
                 </div>

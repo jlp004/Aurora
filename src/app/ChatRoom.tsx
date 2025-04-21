@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { users, currentUser } from '../app/userData';
+import { useTheme } from '../context/ThemeContext';
 
 interface Message {
     sender: 'me' | 'them';
@@ -29,6 +30,8 @@ const messageStore: { [userId: string]: Message[] } = {
 const ChatRoom = ({ userId }: { userId: string }) => {
     const [messages, setMessages] = useState<Message[]>([]);
     const [newMessage, setNewMessage] = useState('');
+    const { theme } = useTheme();
+    const isDarkMode = theme === 'dark';
 
     // Load messages when a new user is selected
     useEffect(() => {
@@ -54,7 +57,7 @@ const ChatRoom = ({ userId }: { userId: string }) => {
                 display: 'flex',
                 alignItems: 'center',
                 marginBottom: '20px',
-                borderBottom: '1px solid #ccc',
+                borderBottom: isDarkMode ? '1px solid rgba(0, 0, 0, 0.3)' : '1px solid #ccc',
                 paddingBottom: '10px',
                 }}>
                     <img
@@ -121,12 +124,26 @@ const ChatRoom = ({ userId }: { userId: string }) => {
                     e.preventDefault();     // Prevent page reload
                     sendMessage();
                 }}
-                style={{ display: 'flex', gap: '10px' }}>
+                style={{ 
+                    display: 'flex', 
+                    gap: '10px',
+                    padding: '20px',
+                    borderTop: isDarkMode ? '1px solid rgba(0, 0, 0, 0.3)' : '1px solid #ccc',
+                    backgroundColor: isDarkMode ? 'rgba(0, 0, 0, 0.2)' : 'transparent'
+                }}>
                 <input
                     value={newMessage}
                     onChange={e => setNewMessage(e.target.value)}
                     placeholder="Type a message..."
-                    style={{ flex: 1, padding: '10px'}}
+                    style={{ 
+                        flex: 1, 
+                        padding: '10px',
+                        ...(isDarkMode && {
+                            backgroundColor: '#1a1a1a',
+                            color: 'white',
+                            border: '1px solid rgba(0, 0, 0, 0.3)'
+                        })
+                    }}
                 />
                 <button type="submit">Send</button>
             </form>

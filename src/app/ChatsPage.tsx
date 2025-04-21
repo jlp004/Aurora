@@ -1,9 +1,11 @@
 /** src/app/ChatsPage.tsx */
 import React, { useState } from "react";
 import { FaSearch } from "react-icons/fa";
+import { BsMessenger } from "react-icons/bs";
 import ChatRoom from "./ChatRoom";         // adjust path if needed
 import Header from "../components/Header";
 import styles from "../styles/ChatsPage.module.css";
+import { useTheme } from '../context/ThemeContext';
 
 interface User {
   id: string;
@@ -20,6 +22,8 @@ const existingUsers: User[] = [
 const ChatsPage: React.FC = () => {
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm]         = useState("");
+  const { theme } = useTheme();
+  const isDarkMode = theme === 'dark';
 
   const filteredUsers = existingUsers.filter(user =>
     user.username.toLowerCase().includes(searchTerm.toLowerCase())
@@ -30,7 +34,10 @@ const ChatsPage: React.FC = () => {
       <Header />
 
       {/** Left panel: Search + User list */}
-      <div style={sidebarStyle}>
+      <div style={{
+        ...sidebarStyle,
+        borderRight: isDarkMode ? '1px solid rgba(0, 0, 0, 0.3)' : '1px solid #ccc'
+      }}>
         {/* ── Styled Search Bar ─────────────────────── */}
         <div className={styles.searchWrapper}>
           <FaSearch className={styles.searchIcon} />
@@ -55,7 +62,7 @@ const ChatsPage: React.FC = () => {
                 gap: '10px',
                 padding: '10px',
                 cursor: 'pointer',
-                borderBottom: '1px solid #eee',
+                borderBottom: isDarkMode ? '1px solid rgba(0, 0, 0, 0.3)' : '1px solid #eee',
                 color: 'white',
               }}
             >
@@ -80,9 +87,12 @@ const ChatsPage: React.FC = () => {
         {selectedUserId ? (
           <ChatRoom userId={selectedUserId} />
         ) : (
-          <p style={{ color: 'gray', textAlign: 'center' }}>
-            Select a user to begin chatting
-          </p>
+          <div style={emptyStateStyle}>
+            <BsMessenger size={64} color="rgba(255,255,255,0.3)" />
+            <p style={{ color: 'rgba(255,255,255,0.6)', marginTop: '20px' }}>
+              Select a user to begin chatting
+            </p>
+          </div>
         )}
       </div>
     </div>
@@ -103,7 +113,6 @@ const containerStyle: React.CSSProperties = {
 
 const sidebarStyle: React.CSSProperties = {
   width: "30%",
-  borderRight: "1px solid #ccc",
   padding: "20px",
   overflow: "auto",
   backgroundColor: "rgba(255, 255, 255, 0.1)",
@@ -115,4 +124,12 @@ const chatRoomStyle: React.CSSProperties = {
   display: "flex",
   flexDirection: "column",
   backgroundColor: "rgba(255, 255, 255, 0.1)",
+};
+
+const emptyStateStyle: React.CSSProperties = {
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  justifyContent: "center",
+  height: "100%",
 };
