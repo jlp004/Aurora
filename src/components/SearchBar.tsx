@@ -186,6 +186,21 @@ const SearchBar: React.FC<HeaderProps> = ({ onThemeToggle }) => {
         navigate('/chats');
     };
 
+    const handleProfileClick = () => {
+        navigate('/account');
+        setShowUserMenu(false);
+    };
+
+    const handleSettingsClick = () => {
+        navigate('/settings');
+        setShowUserMenu(false);
+    };
+
+    const handleLogoutClick = () => {
+        navigate('/logout');
+        setShowUserMenu(false);
+    };
+
     return (
         <div className="header-wrapper">
             <div className="input-group" ref={searchRef}>
@@ -319,15 +334,15 @@ const SearchBar: React.FC<HeaderProps> = ({ onThemeToggle }) => {
                     
                     {showUserMenu && (
                         <div className="user-menu">
-                            <div className="user-menu-item">
+                            <div className="user-menu-item" onClick={handleProfileClick}>
                                 <FaUser />
                                 Profile
                             </div>
-                            <div className="user-menu-item">
+                            <div className="user-menu-item" onClick={handleSettingsClick}>
                                 <FaCog />
                                 Settings
                             </div>
-                            <div className="user-menu-item">
+                            <div className="user-menu-item" onClick={handleLogoutClick}>
                                 <FaSignOutAlt />
                                 Sign Out
                             </div>
