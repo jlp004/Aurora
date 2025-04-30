@@ -53,15 +53,31 @@ const Signup = () => {
     return ( 
         <div className="background">
             <header>
-                <h1 style={{
+                <div style={{
                     display: "flex",
-                    fontSize: "10rem",
-                    fontWeight: "bold",
-                    textShadow: "0 2px 4px rgba(0,0,0,0.3)",
-                    textAlign: "center",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    width: "100%"
                 }}>
-                    Aurora
-                </h1>
+                    <img 
+                        src="/images/logo.png" 
+                        alt="Aurora Logo" 
+                        style={{
+                            width: '150px',
+                            height: 'auto',
+                            marginBottom: '20px'
+                        }}
+                    />
+                    <h1 style={{
+                        fontSize: "6rem",
+                        fontWeight: "bold",
+                        textShadow: "0 2px 4px rgba(0,0,0,0.3)",
+                        textAlign: "center",
+                        margin: 0
+                    }}>
+                        Aurora
+                    </h1>
+                </div>
             </header>
 
             <main style={{
