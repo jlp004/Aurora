@@ -395,6 +395,33 @@ app.post('/api/upload/post', upload.single('image'), async (req, res) => {
   }
 });
 
+// Create a comment for a specific post
+app.post('/api/Comment/post/:postId', async (req, res) => {
+  const { postId } = req.params;
+  const { text, posterId, parentId } = req.body;
+
+  if (!text || !posterId) {
+    return res.status(400).json({ error: 'Missing text or posterId' });
+  }
+
+  try {
+    const comment = await prisma.comment.create({
+      data: {
+        text,
+        posterId: Number(posterId),
+        postId: Number(postId),
+        parentId: parentId ?? null
+      }
+    });
+
+    res.status(201).json(comment);
+  } catch (error) {
+    console.error('Error creating comment:', error);
+    res.status(500).json({ error: 'Failed to create comment' });
+  }
+});
+
+
 // Error handling middleware for multer
 app.use((err, req, res, next) => {
   if (err instanceof multer.MulterError) {
