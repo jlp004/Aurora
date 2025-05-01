@@ -446,3 +446,28 @@
         text-align: center;
     }
 }
+
+.follow-btn {
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-top: 10px;
+}
+
+.follow-btn.follow {
+    background-color: #0095f6;
+    color: white;
+    border: none;
+}
+
+.follow-btn.unfollow {
+    background-color: #efefef;
+    color: #262626;
+    border: 1px solid #dbdbdb;
+}
+
+.follow-btn:hover {
+    opacity: 0.9;
+}

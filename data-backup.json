@@ -1,0 +1,166 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "username": "megantest",
+      "email": "megantest@gmail.com",
+      "password": "megantest",
+      "pictureURL": null,
+      "profileDesc": null,
+      "followers": 0,
+      "likes": 0
+    },
+    {
+      "id": 2,
+      "username": "johndoe",
+      "email": "johndoe@gmail.com",
+      "password": "johndoe",
+      "pictureURL": null,
+      "profileDesc": null,
+      "followers": 0,
+      "likes": 0
+    },
+    {
+      "id": 3,
+      "username": "ilovecats",
+      "email": "cats@gmail.com",
+      "password": "cats",
+      "pictureURL": null,
+      "profileDesc": null,
+      "followers": 0,
+      "likes": 0
+    },
+    {
+      "id": 4,
+      "username": "musiclover123",
+      "email": "musiclover123@gmail.com",
+      "password": "music",
+      "pictureURL": null,
+      "profileDesc": null,
+      "followers": 0,
+      "likes": 0
+    },
+    {
+      "id": 5,
+      "username": "coffeeandtreats1",
+      "email": "coffeeandtreats1@gmail.com",
+      "password": "coffee",
+      "pictureURL": null,
+      "profileDesc": null,
+      "followers": 0,
+      "likes": 0
+    },
+    {
+      "id": 6,
+      "username": "bobphilfred",
+      "email": "bobphilfred@gmail.com",
+      "password": "bob",
+      "pictureURL": null,
+      "profileDesc": null,
+      "followers": 0,
+      "likes": 0
+    },
+    {
+      "id": 7,
+      "username": "sarahjane",
+      "email": "sarahjane@gmail.com",
+      "password": "sarah",
+      "pictureURL": null,
+      "profileDesc": null,
+      "followers": 0,
+      "likes": 0
+    },
+    {
+      "id": 8,
+      "username": "user1",
+      "email": "user1@gmail.com",
+      "password": "user1",
+      "pictureURL": null,
+      "profileDesc": null,
+      "followers": 0,
+      "likes": 0
+    },
+    {
+      "id": 9,
+      "username": "user2",
+      "email": "user2@gmail.com",
+      "password": "password",
+      "pictureURL": "/public/images/1745214414940-21855646.jpg",
+      "profileDesc": null,
+      "followers": 0,
+      "likes": 0
+    }
+  ],
+  "posts": [
+    {
+      "id": 1,
+      "title": "Mountain View!",
+      "pictureURL": "/public/images/1745185013986-633134130.jpg",
+      "userId": 1,
+      "likes": 0
+    },
+    {
+      "id": 2,
+      "title": "mountain",
+      "pictureURL": "/public/images/1745185086315-292101488.jpg",
+      "userId": 1,
+      "likes": 0
+    },
+    {
+      "id": 3,
+      "title": "white guy",
+      "pictureURL": "/public/images/1745196235621-159677321.jpg",
+      "userId": 1,
+      "likes": 0
+    },
+    {
+      "id": 4,
+      "title": "black guy",
+      "pictureURL": "/public/images/1745196313274-499246011.jpg",
+      "userId": 1,
+      "likes": 0
+    },
+    {
+      "id": 5,
+      "title": "john doe ^^",
+      "pictureURL": "/public/images/1745196468501-155725651.jpg",
+      "userId": 1,
+      "likes": 0
+    },
+    {
+      "id": 6,
+      "title": "picture",
+      "pictureURL": "/public/images/1745196590826-587352849.jpg",
+      "userId": 3,
+      "likes": 0
+    },
+    {
+      "id": 7,
+      "title": "white guy",
+      "pictureURL": "/public/images/1745209351990-770610996.jpg",
+      "userId": 3,
+      "likes": 0
+    },
+    {
+      "id": 8,
+      "title": "new picture",
+      "pictureURL": "/public/images/1745210126604-426997691.jpg",
+      "userId": 8,
+      "likes": 0
+    },
+    {
+      "id": 9,
+      "title": "picture",
+      "pictureURL": "/public/images/1745210774080-773479176.jpg",
+      "userId": 1,
+      "likes": 0
+    },
+    {
+      "id": 10,
+      "title": "picture\n",
+      "pictureURL": "/public/images/1745214322960-534769790.jpg",
+      "userId": 9,
+      "likes": 0
+    }
+  ]
+}

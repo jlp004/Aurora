@@ -11,19 +11,23 @@ datasource db {
 // May be missing some models
 
 model User {
-  id           Int       @id @default(autoincrement())
-  username     String    @unique
-  email        String
-  pictureURL   String? // Picture may not exist; should use a default in that case
-  profileDesc  String? // Profile description may not exist; should be empty in that case
-  password     String
+  id              Int       @id @default(autoincrement())
+  username        String    @unique
+  email           String
+  pictureURL      String? // Picture may not exist; should use a default in that case
+  profileDesc     String? // Profile description may not exist; should be empty in that case
+  password        String
   // ^^ if we make our own account system
-  followers    Int       @default(0)
-  likes        Int       @default(0)
-  role         Role?
-  posts        Post[]
-  comments     Comment[]
-  likedPosts   Post[]    @relation("PostLikes")
+  followers       Int       @default(0)
+  following       Int       @default(0)
+  likes           Int       @default(0)
+  role            Role?
+  posts           Post[]
+  comments        Comment[]
+  likedPosts      Post[]    @relation("PostLikes")
+  // Following relationships
+  followingUsers  User[]    @relation("UserFollows")
+  followedByUsers User[]    @relation("UserFollows")
 }
 
 enum Role {
