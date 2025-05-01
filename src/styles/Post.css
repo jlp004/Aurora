@@ -3,29 +3,55 @@
 */
 
 .post {
-    max-width: 600px;
-    margin: 20px;
-    border: 2px solid #dbdbdb;
-    background: white;
-    border-radius: 8px;
-    padding-bottom: 16px;
+    width: 100%;
+    max-width: 100%;
+    margin: 0 0 20px 0;
+    border: 2px solid var(--border-color);
+    background: var(--bg-primary);
+    border-radius: 12px;
+    padding-bottom: 24px;
   }
   
   
   .post-header {
-    padding: 14px;
+    padding: 18px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    border-bottom: 1px solid #efefef;
+    border-bottom: 1px solid var(--border-color);
   }
 
   .post-feed {
     padding-top: 1rem; /* Adjust based on header height */
-    max-width: 600px;
+    width: 100%;
+    max-width: 1400px;
     margin: 0 auto;
     position: relative;
     z-index: 1;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 30px;
+  }
+
+  /* For post-feed child items (the post containers) */
+  .post-feed > * {
+    width: calc(50% - 15px);
+    min-width: 340px;
+    margin-bottom: 30px;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 960px) {
+    .post-feed > * {
+      width: calc(50% - 15px);
+    }
+  }
+
+  @media (max-width: 768px) {
+    .post-feed > * {
+      width: 100%;
+    }
   }
 
   .post-user {
@@ -33,14 +59,12 @@
     align-items: center;
   }
 
-  
-  
   .user-avatar {
     width: 32px;
     height: 32px;
     background: linear-gradient(45deg, #d416cb, #d416cb);
     border-radius: 50%;
-    color: white;
+    color: var(--bg-secondary);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -49,7 +73,7 @@
   }
 
   .username {
-    color: #262626;
+    color: var(--text-primary);
     font-weight: 600;
     font-size: 15px;
   }
@@ -85,7 +109,7 @@
 
   .like-btn.liked::before {
     color: red;
-    -webkit-text-stroke: 0; 
+    -webkit-text-stroke: 1px #262626;
   }
   
   .post-stats {
@@ -94,6 +118,7 @@
     margin-bottom: 8px;
     display: flex;
     gap: 15px;
+    color: var(--text-primary);
   }
   
   .post-caption {
@@ -105,16 +130,16 @@
   .caption-username {
     font-weight: bold;
     margin-right: 5px;
-    color: #262626;
+    color: var(--text-primary);
   }
 
   .caption-text {
-    color: #262626;
+    color: var(--text-secondary);
   }
   
   .post-time {
     padding: 0 14px;
-    color: #8e8e8e;
+    color: var(--text-secondary);
     font-size: 12px;
     text-transform: uppercase;
   }
@@ -169,4 +194,7 @@
   margin-top: 8px;
   text-align: center;
 }
+  textarea::placeholder {
+    color: gray;
+  }
   

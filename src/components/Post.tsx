@@ -13,7 +13,8 @@ interface PostProps {
   likes?: number;
   comments?: number;
   timePosted?: string;
-  currentUserId?: number;
+  currentUserId?: string | number;
+
 }
 
 export default function Post({
@@ -24,6 +25,7 @@ export default function Post({
   likes = 5,
   comments = 2,
   timePosted = "2 hours ago",
+<<<<<<< HEAD
   currentUserId = 0
 }: PostProps) {
   const [currentLikes, setCurrentLikes] = useState(likes);
@@ -32,6 +34,17 @@ export default function Post({
   const [showComments, setShowComments] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+=======
+  id = 0,
+  currentUserId = ''
+}: PostProps) {
+  const [currentLikes, setCurrentLikes] = useState(likes);
+  const [isLiked, setIsLiked] = useState(false);
+  const [showComments, setShowComments] = useState(false);
+  const [commentText, setCommentText] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+>>>>>>> frontend
 
   const handleLike = () => {
     setCurrentLikes(isLiked ? currentLikes - 1 : currentLikes + 1);
@@ -40,11 +53,35 @@ export default function Post({
 
   const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+<<<<<<< HEAD
     if (!commentText.trim() || !currentUserId || !id) {
+=======
+    // Debug log
+    console.log('Submitting comment:', {
+      text: commentText,
+      currentUserId,
+      postId: id
+    });
+
+    if (!commentText.trim()) {
+>>>>>>> frontend
       setError('Please enter a comment');
       return;
     }
 
+<<<<<<< HEAD
+=======
+    if (!currentUserId) {
+      setError('You must be logged in to comment');
+      return;
+    }
+
+    if (!id) {
+      setError('Invalid post');
+      return;
+    }
+
+>>>>>>> frontend
     setIsSubmitting(true);
     setError(null);
 
@@ -55,7 +92,11 @@ export default function Post({
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+<<<<<<< HEAD
           text: commentText,
+=======
+          text: commentText.trim(),
+>>>>>>> frontend
           posterId: currentUserId,
           postId: id,
         }),
@@ -98,7 +139,11 @@ export default function Post({
           
         </button>
         <button 
+<<<<<<< HEAD
           className="action-btn comment-btn"
+=======
+          className="action-btn comment-btn" 
+>>>>>>> frontend
           onClick={() => setShowComments(!showComments)}
         >
           💬
@@ -129,7 +174,11 @@ export default function Post({
             <button 
               type="submit" 
               className="comment-submit"
+<<<<<<< HEAD
               disabled={isSubmitting || !commentText.trim()}
+=======
+              disabled={isSubmitting}
+>>>>>>> frontend
             >
               {isSubmitting ? 'Posting...' : 'Post'}
             </button>

@@ -1,22 +1,22 @@
 /* AccountPage.css, Hishita Shah hrs220004 */
 
-body, html {
+body.account-page-active {
     margin: 0;
     padding: 0;
-    height: 100%;
-    color: black;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    overflow-y: auto;
+    min-height: 100%;
+    background: linear-gradient(135deg, #2e0066 0%, #943fb1 100%);
+    background-attachment: fixed; 
+    color: white;
 }
 
 .account-container {
     min-height: 100vh;
-    padding: 150px 250px;
+    width: 100%;
+    padding: 150px 400px;
     display: flex;
     flex-direction: column;
     align-items: center;
     background: linear-gradient(135deg, #2e0066 0%, #943fb1 100%);
-
     box-sizing: border-box;
 }
 
@@ -27,7 +27,7 @@ body, html {
     align-items: center;
     gap: 30px;
     padding-bottom: 30px;
-    border-bottom: 1px solid #333;
+    border-bottom: 1px solid #ffffff;
     margin-bottom: 40px;
 }
 
@@ -44,8 +44,32 @@ body, html {
     height: 120px;
     border-radius: 50%;
     object-fit: cover;
-    border: 3px solid #555;
+    border: 3px solid #ffffff;
     transition: opacity 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.2);
+    color: white;
+    font-size: 1.2rem;
+}
+
+.profile-text {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.2rem;
+    font-weight: 400;
+    pointer-events: none;
+    padding-left: 0;
+    padding-bottom: 0;
+    transform: translate(-5px, -25px);
 }
 
 .delete-text-overlay {
@@ -122,37 +146,337 @@ body, html {
 
 .post-img {
     width: 100%;
-    height: 250px;
+    height: 100%;
     object-fit: cover;
     border-radius: 12px;
     border: 1px solid #444;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition: transform 0.3s ease;
 }
 
-.post-img:hover {
-    transform: scale(1.03);
-    box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
-}
-
-.delete-btn {
+.post-overlay {
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
-    color: white;
-    font-size: 1.2rem;
-    border: none;
-    border-radius: 12px;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 1rem;
     opacity: 0;
     transition: opacity 0.3s ease;
+}
+
+.post-container:hover .post-overlay {
+    opacity: 1;
+}
+
+.post-container:hover .post-img {
+    transform: scale(1.05);
+}
+
+.post-info {
+    color: white;
+}
+
+.post-caption {
+    margin: 0;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+.post-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.post-tag {
+    background-color: rgba(255, 255, 255, 0.2);
+    padding: 0.2rem 0.6rem;
+    border-radius: 1rem;
+    font-size: 0.8rem;
+}
+
+.post-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.edit-btn,
+.delete-btn {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 0.5rem;
     cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.3s ease;
+}
+
+.edit-btn {
+    background-color: #007bff;
+    color: white;
+}
+
+.edit-btn:hover {
+    background-color: #0056b3;
+}
+
+.delete-btn {
+    background-color: #dc3545;
+    color: white;
+}
+
+.delete-btn:hover {
+    background-color: #c82333;
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background-color: #fff;
+    padding: 2rem;
+    border-radius: 1rem;
+    width: 90%;
+    max-width: 500px;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.modal-content h3 {
+    margin-top: 0;
+}
+
+.preview-img {
+    width: 100%;
+    border-radius: 0.5rem;
+}
+
+.comment-box {
+    width: 100%;
+    padding: 0.8rem;
+    resize: vertical;
+    min-height: 5rem;
+    border-radius: 0.5rem;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+}
+
+.tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.tag-btn {
+    padding: 0.4rem 1rem;
+    border: 1px solid #aaa;
+    border-radius: 2rem;
+    background-color: #eee;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.tag-btn.selected {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.confirm-btn,
+.cancel-btn {
+    padding: 0.7rem 1.2rem;
+    font-size: 1rem;
+    border-radius: 0.6rem;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.confirm-btn {
+    background-color: #28a745;
+    color: white;
+}
+
+.cancel-btn {
+    background-color: #dc3545;
+    color: white;
+}
+
+/* Loading indicator */
+.loading-indicator {
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 4px;
+    position: fixed;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    font-weight: bold;
+}
+
+/* Error message */
+.error-message {
+    background-color: rgba(255, 0, 0, 0.8);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 4px;
+    position: fixed;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    font-weight: bold;
+    max-width: 80%;
+    text-align: center;
+}
+
+/* Disabled button */
+.upload-btn.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Styles for post hover overlay with delete button */
+.post-hover-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    border-radius: 12px;
+}
+
+.post-container:hover .post-hover-overlay {
+    opacity: 1;
+}
+
+.post-hover-actions {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 2;
+}
+
+.post-delete-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: rgba(220, 53, 69, 0.8);
+    color: white;
+    border: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 24px;
+    padding: 0;
+    line-height: 1;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+.post-delete-btn:hover {
+    background-color: rgba(220, 53, 69, 1);
+    transform: scale(1.1);
+}
+
+.delete-icon {
+    font-weight: bold;
+    font-size: 28px;
+    line-height: 1;
+}
+
+/* Add a new class for the view button container */
+.post-view-container {
+    position: absolute;
+    bottom: 10px;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    padding: 0 10px;
+    box-sizing: border-box;
+}
+
+.post-view-btn, .post-edit-btn {
+    padding: 10px 20px;
+    background-color: rgba(255, 255, 255, 0.8);
+    color: #333;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.2s ease;
+    min-width: 100px;
+}
+
+.post-view-btn:hover, .post-edit-btn:hover {
+    background-color: rgba(255, 255, 255, 1);
+    transform: scale(1.05);
+}
+
+.modal-close-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    border: none;
     display: flex;
     align-items: center;
     justify-content: center;
+    cursor: pointer;
+    font-size: 20px;
+    font-weight: bold;
+    transition: all 0.2s ease;
 }
 
-.post-container:hover .delete-btn {
-    opacity: 1;
+.modal-close-btn:hover {
+    background-color: rgba(0, 0, 0, 0.7);
+    transform: scale(1.1);
+}
+
+.expanded-post-modal {
+    position: relative;
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    margin-top: 50px;
+    width: 600px;
+    max-width: 90%;
+    box-sizing: border-box;
+    max-height: 90vh;
+    overflow-y: auto;
 }
