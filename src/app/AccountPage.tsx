@@ -13,8 +13,8 @@ const AccountPage = () => {
     id: 1,
     username: currentUser?.username || "user123",
     bio: "Lover of code and coffee ☕",
-    followers: 120,
-    following: 80,
+    followers: 5,
+    following: 2,
     profilePic: currentUser?.pictureURL || "/images/profile-pic.jpg",
     posts: [
       {
