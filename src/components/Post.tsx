@@ -1,6 +1,4 @@
-/* Written by Megan Chacko - msc220005
-*
-*/
+/* Written by Megan Chacko - msc220005 */
 
 import { useState } from 'react';
 import '../styles/Post.css'; 
@@ -14,27 +12,15 @@ interface PostProps {
   comments?: number;
   timePosted?: string;
   currentUserId?: string | number;
-
 }
 
 export default function Post({
-  id = 0,
   username = "user1234!",
   imageUrl = "../../images/mountain.jpg",
   caption = "Mountain view!",
   likes = 5,
   comments = 2,
   timePosted = "2 hours ago",
-<<<<<<< HEAD
-  currentUserId = 0
-}: PostProps) {
-  const [currentLikes, setCurrentLikes] = useState(likes);
-  const [isLiked, setIsLiked] = useState(false);
-  const [commentText, setCommentText] = useState('');
-  const [showComments, setShowComments] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-=======
   id = 0,
   currentUserId = ''
 }: PostProps) {
@@ -44,7 +30,6 @@ export default function Post({
   const [commentText, setCommentText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
->>>>>>> frontend
 
   const handleLike = () => {
     setCurrentLikes(isLiked ? currentLikes - 1 : currentLikes + 1);
@@ -53,35 +38,32 @@ export default function Post({
 
   const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-<<<<<<< HEAD
+
     if (!commentText.trim() || !currentUserId || !id) {
-=======
-    // Debug log
-    console.log('Submitting comment:', {
-      text: commentText,
-      currentUserId,
-      postId: id
-    });
+      console.log('Submitting comment:', {
+        text: commentText,
+        currentUserId,
+        postId: id
+      });
 
-    if (!commentText.trim()) {
->>>>>>> frontend
-      setError('Please enter a comment');
+      if (!commentText.trim()) {
+        setError('Please enter a comment');
+        return;
+      }
+
+      if (!currentUserId) {
+        setError('You must be logged in to comment');
+        return;
+      }
+
+      if (!id) {
+        setError('Invalid post');
+        return;
+      }
+
       return;
     }
 
-<<<<<<< HEAD
-=======
-    if (!currentUserId) {
-      setError('You must be logged in to comment');
-      return;
-    }
-
-    if (!id) {
-      setError('Invalid post');
-      return;
-    }
-
->>>>>>> frontend
     setIsSubmitting(true);
     setError(null);
 
@@ -92,11 +74,7 @@ export default function Post({
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-<<<<<<< HEAD
-          text: commentText,
-=======
           text: commentText.trim(),
->>>>>>> frontend
           posterId: currentUserId,
           postId: id,
         }),
@@ -109,7 +87,7 @@ export default function Post({
       }
 
       setCommentText('');
-      // You might want to refresh the comments list here
+      // Optionally refresh comments here
     } catch (error) {
       console.error('Error posting comment:', error);
       setError(error instanceof Error ? error.message : 'Failed to post comment');
@@ -136,14 +114,10 @@ export default function Post({
           className={`action-btn like-btn ${isLiked ? 'liked' : ''}`}
           onClick={handleLike}
         >
-          
+          ❤️
         </button>
         <button 
-<<<<<<< HEAD
           className="action-btn comment-btn"
-=======
-          className="action-btn comment-btn" 
->>>>>>> frontend
           onClick={() => setShowComments(!showComments)}
         >
           💬
@@ -157,7 +131,7 @@ export default function Post({
       
       <div className="post-caption">
         <span className="caption-username">{username}</span>
-        <span className="caption-text">{caption}</span>
+        <span className="caption-text"> {caption}</span>
       </div>
       
       {showComments && (
@@ -174,11 +148,7 @@ export default function Post({
             <button 
               type="submit" 
               className="comment-submit"
-<<<<<<< HEAD
               disabled={isSubmitting || !commentText.trim()}
-=======
-              disabled={isSubmitting}
->>>>>>> frontend
             >
               {isSubmitting ? 'Posting...' : 'Post'}
             </button>
