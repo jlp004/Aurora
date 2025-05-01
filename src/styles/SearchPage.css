@@ -1,5 +1,11 @@
 /* John Phelan - jlp220005 */
 
+body {
+  margin: 0;
+  height: 100vh; 
+  background: linear-gradient(135deg,rgb(26, 22, 78) 0%,rgb(122, 50, 124) 100%);
+}
+
 .posts-found-container{
     display: flex;
     flex-wrap: wrap;

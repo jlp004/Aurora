@@ -3,6 +3,7 @@ import {useNavigate} from 'react-router-dom'
 import {ReactNode, useState} from 'react'
 import {auth, provider, signInWithPopup} from '../../services/firebase'
 import { loginUser } from '../../lib/api'
+import { useUser } from '../userData'
 
 // Charitha
 
@@ -12,6 +13,7 @@ const Login = () => {
     const [password, setPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
+    const { setCurrentUser } = useUser();
     
     const handleLogin = async (event: React.FormEvent) => {
         event.preventDefault();
@@ -23,10 +25,20 @@ const Login = () => {
             
             console.log('Login successful:', response);
             
+            // Save the complete user data including ID to context
+            setCurrentUser({
+                id: response.user?.id || 'user_' + Date.now(), // Generate a unique ID if none provided
+                username: username,
+                email: email,
+                pictureURL: response.user?.pictureURL || '/images/profile-pic.jpg',
+                profileDesc: response.user?.profileDesc || 'Lover of code and coffee ☕' // Include bio
+            });
+            
+            // Store to localStorage happens in the UserProvider
+            
             alert('Logged in successfully!');
             navigate('/home');
         } catch (err) {
-            // Handle API errors with specific error messages
             console.error('Login error:', err);
             if (err instanceof Error) {
                 alert(err.message);
@@ -37,37 +49,48 @@ const Login = () => {
             setIsLoading(false);
         }
     };
-    /*
-    const handleFirebaseAuth = async () => {   //firebase auth handler
-        try {
-            const result = await signInWithPopup(auth, provider)
-            alert("Logged in successfully!")
-            navigate("/home")
-        } catch (error) {
-            console.error("Login failed: ", error)
-            alert("Login failed.")
-        }
-    }*/
-//testing
-
-    // return(
-    // <>
-    //   <button id="login-btn" className="btn btn-class-primary" onClick={handleFirebaseAuth}>Login</button>
-    // </>)
+    
+    const handleQuickLogin = () => {
+        // Set a mock user with unique ID
+        setCurrentUser({
+            id: 'user_' + Date.now(), // Generate a unique ID
+            username: username || 'demo_user',
+            email: email || 'demo@example.com',
+            pictureURL: '/images/profile-pic.jpg',
+            profileDesc: 'Lover of code and coffee ☕' // Default bio
+        });
+        
+        navigate('/home');
+    };
+    
     return (
-        //Currently the formatting of the buttons is absolute and looks different based on the screen it's being run on, just an FYI!
-
         <div className="background">
             <header>
-                <h1 style={{
+                <div style={{
                     display: "flex",
-                    fontSize: "10rem",
-                    fontWeight: "bold",
-                    textShadow: "0 2px 4px rgba(0,0,0,0.3)",
-                    textAlign: "center",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    width: "100%"
                 }}>
-                    Aurora
-                </h1>
+                    <img 
+                        src="/images/logo.png" 
+                        alt="Aurora Logo" 
+                        style={{
+                            width: '150px',
+                            height: 'auto',
+                            marginBottom: '20px'
+                        }}
+                    />
+                    <h1 style={{
+                        fontSize: "6rem",
+                        fontWeight: "bold",
+                        textShadow: "0 2px 4px var(--dropdown-shadow)",
+                        textAlign: "center",
+                        margin: 0
+                    }}>
+                        Aurora
+                    </h1>
+                </div>
             </header>
 
             <main style={{
@@ -121,7 +144,7 @@ const Login = () => {
                         style={{
                             padding: '12px',
                             background: 'rgb(122, 50, 124)',
-                            color: 'white',
+                            color: '#dcdcdc',
                             border: 'none',
                             borderRadius: '8px',
                             fontWeight: 'bold',
@@ -132,7 +155,7 @@ const Login = () => {
                         Login
                     </button>
                     {/* Go back to Login page */}
-                    <p style={{ marginTop: '10px', fontSize: '0.9rem', textAlign: "center" }}>
+                    <p style={{ marginTop: '10px', fontSize: '0.9rem', textAlign: "center", color: 'var(--text-primary)' }}>
                         Don't have an account? {''}
                         <span
                             style={{ color: 'rgb(122, 50, 124)', cursor: 'pointer', textDecoration: 'underline' }}
@@ -165,36 +188,7 @@ const Login = () => {
                 Go to Home
             </button>
 
-            {/*
-            <button //this button helps you login using your google account
-                id="login-btn"
-                className="btn btn-class-primary"
-                onClick={handleFirebaseAuth} //using firebase for the google account login
-
-                style={{
-                    position: 'absolute',
-                    top: '300px',
-                    width: '200px', // Wider button
-                    padding: '12px 0', // Adjusted padding for width
-                }}
-            >
-                Login
-            </button>
-
-            <button //this button is for the create account page
-                id="createAccount-btn"
-                className="btn btn-create-Account"
-                onClick={() => navigate('/signup')}
-                style={{
-                    position: 'absolute', //formatting the position of the button to align it with the login button
-                    top: '360px',
-                    width: '200px', // Wider button
-                    padding: '12px 0' // Adjusted padding for width
-                }}
-            >
-                Create Account
-            </button>
-            */}
+            
         </div>
     );
 }

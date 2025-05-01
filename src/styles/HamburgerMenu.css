@@ -8,7 +8,7 @@
 
 .dropdownmenu {
     display: flex;
-    background-color: rgb(201, 201, 201);
+    background-color: var(--sidebar-bg);
     position: fixed;
     top: 0;
     left: 0;
@@ -17,10 +17,11 @@
     align-items: flex-start;
     justify-content: flex-start;
     transition: all 0.5s ease;
+    border-right: 1px solid var(--border-color);
 }
 
-.collapsible-container{
-    display:flex;
+.collapsible-container {
+    display: flex;
     flex-direction: column;
     align-items: flex-start;
     justify-content: center;
@@ -37,7 +38,7 @@
  */
 
 .dash {
-    background-color: black;
+    background-color: var(--text-primary);
     width: 1.5rem;
     height: 2px;
     margin: 3px 0;
@@ -73,12 +74,20 @@
     flex-direction: column;
     opacity: 0;
     transition: opacity 0.3s ease, transform 0.5s ease;
-    transform: translateX(-150%);  /* Initially off-screen */
+    transform: translateX(-150%);
     font-size: 2rem;
-    gap: 3rem;  
+    gap: 3rem;
     align-items: center;
 }
 
+.expandableText span {
+    color: var(--text-primary) !important;
+    transition: color 0.3s ease;
+}
+
+.expandableText span:hover {
+    color: var(--accent-primary) !important;
+}
 
 .expandableText.visible {
     opacity: 1;

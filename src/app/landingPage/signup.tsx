@@ -5,6 +5,7 @@ import './landingStyles.css'
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createUser } from '../../lib/api';
+import { useUser } from '../userData';
 
 const Signup = () => {
     // Track input values
@@ -13,6 +14,7 @@ const Signup = () => {
     const [password, setPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
+    const { setCurrentUser } = useUser();
 
     // Handles form submission
     const handleSignup = async (e: React.FormEvent) => {
@@ -23,11 +25,20 @@ const Signup = () => {
             // Use the API utility to create a user
             const user = await createUser(username, email, password);
             
-            // If we got here, the account was created successfully
+            // Save the new user to context
+            setCurrentUser({
+                id: user?.id || 'user_' + Date.now(), // Use the user ID from API or generate one
+                username: username,
+                email: email,
+                pictureURL: user?.pictureURL || '/images/profile-pic.jpg',
+                profileDesc: user?.profileDesc || 'Lover of code and coffee ☕' // Default bio
+            });
+            
+            // the account was created successfully
             alert('Account Created');
             navigate('/home');
         } catch (err) {
-            // Handle API errors with specific error messages
+            // Handle API errors 
             console.error('Signup error', err);
             if (err instanceof Error) {
                 alert(err.message);
@@ -42,15 +53,31 @@ const Signup = () => {
     return ( 
         <div className="background">
             <header>
-                <h1 style={{
+                <div style={{
                     display: "flex",
-                    fontSize: "10rem",
-                    fontWeight: "bold",
-                    textShadow: "0 2px 4px rgba(0,0,0,0.3)",
-                    textAlign: "center",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    width: "100%"
                 }}>
-                    Aurora
-                </h1>
+                    <img 
+                        src="/images/logo.png" 
+                        alt="Aurora Logo" 
+                        style={{
+                            width: '150px',
+                            height: 'auto',
+                            marginBottom: '20px'
+                        }}
+                    />
+                    <h1 style={{
+                        fontSize: "6rem",
+                        fontWeight: "bold",
+                        textShadow: "0 2px 4px rgba(0,0,0,0.3)",
+                        textAlign: "center",
+                        margin: 0
+                    }}>
+                        Aurora
+                    </h1>
+                </div>
             </header>
 
             <main style={{
@@ -106,7 +133,7 @@ const Signup = () => {
                         style={{
                             padding: '12px',
                             background: 'rgb(122, 50, 124)',
-                            color: 'white',
+                            color: '#dcdcdc',
                             border: 'none',
                             borderRadius: '8px',
                             fontWeight: 'bold',
@@ -117,7 +144,7 @@ const Signup = () => {
                         Create Account
                     </button>
                     {/* Go back to Login page */}
-                    <p style={{ marginTop: '10px', fontSize: '0.9rem', textAlign: "center" }}>
+                    <p style={{ marginTop: '10px', fontSize: '0.9rem', textAlign: "center", color: 'var(--text-primary)'}}>
                         Already have an account? {''}
                         <span
                             style={{ color: 'rgb(122, 50, 124)', cursor: 'pointer', textDecoration: 'underline' }}
