@@ -2,6 +2,8 @@
  * API utility functions for the frontend
  */
 
+const API_BASE_URL = 'http://localhost:5173';
+
 // User API functions
 
 /**
@@ -18,7 +20,7 @@ export const createUser = async (username: string, email: string, password: stri
     });
     
     console.log('API: Received signup response status:', response.status);
-    
+        
     // Debug response
     const responseText = await response.text();
     console.log('API: Response text:', responseText);
@@ -31,7 +33,7 @@ export const createUser = async (username: string, email: string, password: stri
       console.error('API: Failed to parse response as JSON:', parseError);
       throw new Error(`Server returned invalid JSON: ${responseText}`);
     }
-    
+
     if (!response.ok) {
       throw new Error(data.message || 'Failed to create account');
     }
@@ -58,6 +60,7 @@ export const loginUser = async (username: string, password: string) => {
     
     console.log('API: Received login response status:', response.status);
     
+        
     // Debug response
     const responseText = await response.text();
     console.log('API: Response text:', responseText);
@@ -70,7 +73,7 @@ export const loginUser = async (username: string, password: string) => {
       console.error('API: Failed to parse response as JSON:', parseError);
       throw new Error(`Server returned invalid JSON: ${responseText}`);
     }
-    
+
     if (!response.ok) {
       throw new Error(data.message || 'Login failed');
     }
