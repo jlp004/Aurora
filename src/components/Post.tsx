@@ -114,7 +114,6 @@ export default function Post({
           className={`action-btn like-btn ${isLiked ? 'liked' : ''}`}
           onClick={handleLike}
         >
-          ❤️
         </button>
         <button 
           className="action-btn comment-btn"
