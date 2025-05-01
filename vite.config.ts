@@ -12,12 +12,12 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      // Proxy API requests to Express server
       '/api': {
         target: 'http://localhost:3001',
         changeOrigin: true,
         secure: false,
-      },
-    },
+        rewrite: (path) => path.replace(/^\/api/, '/api')
+      }
+    }
   },
 })

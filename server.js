@@ -41,7 +41,6 @@ const upload = multer({
   }
 });
 
-// Middleware
 app.use(cors());
 app.use(express.json());
 // Serve static files from the public directory
@@ -192,31 +191,33 @@ app.post('/api/login', async (req, res) => {
 });
 
 // Get user by username
-app.get('/api/user/:username', async (req, res) => {
+app.get('/api/User/:username', async (req, res) => {
   try {
     const { username } = req.params;
+    console.log('Searching for username:', username);
     
-    const user = await prisma.user.findUnique({
-      where: { username },
+    const users = await prisma.user.findMany({
+      where: {
+        username: {
+          contains: username
+        }
+      },
       select: {
         id: true,
         username: true,
         email: true,
-        // Don't return password
+        pictureURL: true,
+        profileDesc: true
       }
     });
     
-    if (!user) {
-      return res.status(404).json({ 
-        message: 'User not found' 
-      });
-    }
+    console.log('Found users:', users);
     
-    return res.status(200).json(user);
+    return res.status(200).json({ users });
   } catch (error) {
-    console.error('Error fetching user:', error);
+    console.error('Error fetching users:', error);
     return res.status(500).json({ 
-      message: 'Failed to fetch user' 
+      message: 'Failed to fetch users' 
     });
   }
 });

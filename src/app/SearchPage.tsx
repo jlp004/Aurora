@@ -1,4 +1,3 @@
-// Written by Charitha Sarraju and John Phelan
 import { useLocation } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import Header from '../components/Header'
@@ -19,23 +18,53 @@ const SearchPage = () => {
   const query = params.get('query')
 
   const [posts, setPosts] = useState([])
+  const [users, setUsers] = useState([]) 
+  const [searchType, setSearchType] = useState<'posts' | 'users'>('posts') 
 
   useEffect(() => {
-    const fetchPosts = async () => {
-      if (!query) return
+    if (!query) return
 
+    const fetchPosts = async () => {
       try {
         const res = await fetch(`/api/posts/search?q=${encodeURIComponent(query)}`)
         const data = await res.json()
         setPosts(data.posts || [])
-        console.log("Search results:", data) 
+        console.log("Post search results:", data)
       } catch (err) {
         console.error("Failed to fetch posts:", err)
       }
     }
 
-    fetchPosts()
-  }, [query])
+    const fetchUsers = async () => {
+      try {
+        console.log('Fetching users for query:', query)
+        const res = await fetch(`/api/User/${encodeURIComponent(query)}`)
+        console.log('Response status:', res.status)
+        if (!res.ok) {
+          throw new Error('Failed to fetch users')
+        }
+        const data = await res.json()
+        console.log("Raw API response:", data)
+        
+        // Handle both array and single user responses
+        const usersArray = Array.isArray(data.users) ? data.users : 
+                          data.users ? [data.users] : 
+                          data.id ? [data] : [];
+        
+        console.log("Processed users array:", usersArray)
+        setUsers(usersArray)
+      } catch (err) {
+        console.error("Failed to fetch users:", err)
+        setUsers([])
+      }
+    }
+
+    if (searchType === 'posts') {
+      fetchPosts()
+    } else {
+      fetchUsers()
+    }
+  }, [query, searchType]) 
 
   return (
     <div style={{ 
@@ -50,11 +79,9 @@ const SearchPage = () => {
       right: 0,
       bottom: 0,
       background: 'linear-gradient(135deg, rgb(26, 22, 78) 0%, rgb(122, 50, 124) 100%)',
-      zIndex: 0,      //set at bottom of z index
+      zIndex: 0,
       overflowY: 'auto' 
     }}>
-
-      
       <style>{customStyles}</style>
       <Header />
       
@@ -64,38 +91,84 @@ const SearchPage = () => {
           <b>Search results for "{query}"</b>
         </h1>
       </div>
-      <div style={{display: 'flex'}}>
-        <button className="search-by-button">
-            Search Posts
+
+      <div style={{display: 'flex', gap: '10px', marginBottom: '1rem'}}>
+        <button 
+          className="search-by-button"
+          onClick={() => setSearchType('posts')}
+          style={{ background: searchType === 'posts' ? '#fff' : '#ccc' }}
+        >
+          Search Posts
         </button>
-        <button className="search-by-button">
-            Search Users
+        <button 
+          className="search-by-button"
+          onClick={() => setSearchType('users')}
+          style={{ background: searchType === 'users' ? '#fff' : '#ccc' }}
+        >
+          Search Users
         </button>
       </div>
 
-      
-      <div className="post-feed">
-        {posts.length === 0 ? (
-          <p style={{ color: '#fff', textAlign: 'center', width: '100%' }}>
-            No posts found.
-          </p>
-        ) : (
-          posts.map((post: any) => (
-            <Post
-              key={post.id}
-              username={post.user?.username || "Unknown"} 
-              imageUrl={post.pictureURL || "../../images/img4.png"} 
-              caption={post.title}
-              likes={post.likes || 0}
-              comments={post.Comment?.length || 0}
-              timePosted={new Date(post.createdAt).toLocaleString() || "Unknown"}
-            />
-          ))
-        )}
-      </div>
+      {searchType === 'posts' ? (
+        <div className="post-feed">
+          {posts.length === 0 ? (
+            <p style={{ color: '#fff', textAlign: 'center', width: '100%' }}>
+              No posts found.
+            </p>
+          ) : (
+            posts.map((post: any) => (
+              <Post
+                key={post.id}
+                username={post.user?.username || "Unknown"} 
+                imageUrl={post.pictureURL || "../../images/img4.png"} 
+                caption={post.title}
+                likes={post.likes || 0}
+                comments={post.Comment?.length || 0}
+                timePosted={new Date(post.createdAt).toLocaleString() || "Unknown"}
+              />
+            ))
+          )}
+        </div>
+      ) : (
+        <div className="user-results" style={{ width: '100%', maxWidth: '600px', padding: '0 20px' }}>
+          {users.length === 0 ? (
+            <p style={{ color: '#fff', textAlign: 'center' }}>
+              No users found.
+            </p>
+          ) : (
+            users.map((user: any) => {
+              console.log('Rendering user:', user)
+              return (
+                <div key={user.id} style={{ 
+                  backgroundColor: '#fff', 
+                  padding: '1rem', 
+                  borderRadius: '8px', 
+                  marginBottom: '1rem',
+                  display: 'flex',
+                  alignItems: 'center'
+                }}>
+                  <img 
+                    src={user.pictureURL || '../../images/default-user.png'} 
+                    alt="Profile" 
+                    style={{ 
+                      width: '50px', 
+                      height: '50px', 
+                      borderRadius: '50%',
+                      marginRight: '1rem'
+                    }} 
+                  />
+                  <div>
+                    <h3 style={{ margin: 0 }}>{user.username}</h3>
+                    <p style={{ margin: '0.5rem 0 0 0' }}>{user.profileDesc || "No bio provided."}</p>
+                  </div>
+                </div>
+              )
+            })
+          )}
+        </div>
+      )}
     </div>
   )
 }
 
 export default SearchPage
-/////////////////////////////////////////////
