@@ -1,18 +1,16 @@
-/* Written by Megan Chacko - msc220005
-*
-*/
+/* Written by Megan Chacko - msc220005 */
 
 import { useState } from 'react';
 import '../styles/Post.css'; 
 
 interface PostProps {
+  id?: number;
   username?: string;
   imageUrl?: string;
   caption?: string;
   likes?: number;
   comments?: number;
   timePosted?: string;
-  id?: number;
   currentUserId?: string | number;
 }
 
@@ -40,25 +38,29 @@ export default function Post({
 
   const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Debug log
-    console.log('Submitting comment:', {
-      text: commentText,
-      currentUserId,
-      postId: id
-    });
 
-    if (!commentText.trim()) {
-      setError('Please enter a comment');
-      return;
-    }
+    if (!commentText.trim() || !currentUserId || !id) {
+      console.log('Submitting comment:', {
+        text: commentText,
+        currentUserId,
+        postId: id
+      });
 
-    if (!currentUserId) {
-      setError('You must be logged in to comment');
-      return;
-    }
+      if (!commentText.trim()) {
+        setError('Please enter a comment');
+        return;
+      }
 
-    if (!id) {
-      setError('Invalid post');
+      if (!currentUserId) {
+        setError('You must be logged in to comment');
+        return;
+      }
+
+      if (!id) {
+        setError('Invalid post');
+        return;
+      }
+
       return;
     }
 
@@ -85,7 +87,7 @@ export default function Post({
       }
 
       setCommentText('');
-      // You might want to refresh the comments list here
+      // Optionally refresh comments here
     } catch (error) {
       console.error('Error posting comment:', error);
       setError(error instanceof Error ? error.message : 'Failed to post comment');
@@ -112,10 +114,10 @@ export default function Post({
           className={`action-btn like-btn ${isLiked ? 'liked' : ''}`}
           onClick={handleLike}
         >
-          
+          ❤️
         </button>
         <button 
-          className="action-btn comment-btn" 
+          className="action-btn comment-btn"
           onClick={() => setShowComments(!showComments)}
         >
           💬
@@ -129,7 +131,7 @@ export default function Post({
       
       <div className="post-caption">
         <span className="caption-username">{username}</span>
-        <span className="caption-text">{caption}</span>
+        <span className="caption-text"> {caption}</span>
       </div>
       
       {showComments && (
@@ -146,7 +148,7 @@ export default function Post({
             <button 
               type="submit" 
               className="comment-submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || !commentText.trim()}
             >
               {isSubmitting ? 'Posting...' : 'Post'}
             </button>
