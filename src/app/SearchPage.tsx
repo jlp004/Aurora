@@ -53,15 +53,27 @@ const SearchPage = () => {
       zIndex: 0,      //set at bottom of z index
       overflowY: 'auto' 
     }}>
+
+      
       <style>{customStyles}</style>
       <Header />
+      
       <div style={{ width: '100%', maxWidth: '1000px', padding: '0 20px' }}>
         <h1 
-          style={{ color: '#fff', fontSize: '40px', textAlign: 'center', marginTop: '6rem' }}>
+          style={{ color: '#fff', fontSize: '40px', textAlign: 'center', marginTop: '6rem', marginBottom: '1rem'}}>
           <b>Search results for "{query}"</b>
         </h1>
       </div>
+      <div style={{display: 'flex'}}>
+        <button className="search-by-button">
+            Search Posts
+        </button>
+        <button className="search-by-button">
+            Search Users
+        </button>
+      </div>
 
+      
       <div className="post-feed">
         {posts.length === 0 ? (
           <p style={{ color: '#fff', textAlign: 'center', width: '100%' }}>

@@ -1,6 +1,8 @@
 import prisma from '@/lib/db'
 import { NextRequest, NextResponse } from 'next/server';
 
+// Written by John Phelan -- jlp220005
+
 // GET - Get a posts item by user id
 // PUT - Update an existing post
 // POST - Add a post
@@ -20,7 +22,7 @@ export async function GET(req: NextRequest, res: NextResponse) {
     const { user_id } = body
 
     if(!user_id) {
-      return NextResponse.json({ error: "Product ID is missing."}, { status: 400 })
+      return NextResponse.json({ error: "Post ID is missing."}, { status: 400 })
     }
 
     const posts = await findUser(user_id)

@@ -33,11 +33,10 @@ export async function search(req: NextRequest) {
       return NextResponse.json({ posts: [] });  // If no query, return empty posts array
     }
 
-    // Search posts where the title contains the query
     const posts = await prisma.post.findMany({
       where: {
         title: {
-          contains: query,   // Case insensitive by default in SQLite
+          contains: query,  
         }
       },
       include: {

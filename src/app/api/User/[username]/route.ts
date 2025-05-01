@@ -8,7 +8,7 @@ export async function GET(
 ) {
   const username = context.params.username
 
-  const user = await prisma.user.findUnique({
+  const user = await prisma.user.findMany({
     where: { username },
     include: { posts: true, comments: true }
   })
