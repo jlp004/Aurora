@@ -5,7 +5,7 @@ import { useUser } from './userData';
 
 const Home = () => {
   const { currentUser } = useUser();
-
+  
   return (
     <div className="home-container">
       <Header />
