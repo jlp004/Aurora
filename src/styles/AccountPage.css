@@ -1,244 +1,232 @@
 /* AccountPage.css, Hishita Shah hrs220004 */
 
-body.account-page-active {
+.account-page-active {
     margin: 0;
     padding: 0;
-    min-height: 100%;
-    background: linear-gradient(135deg, #2e0066 0%, #943fb1 100%);
-    background-attachment: fixed; 
+    min-height: 100vh;
+    background: linear-gradient(135deg, rgb(26, 22, 78) 0%, rgb(122, 50, 124) 100%);
     color: white;
 }
 
 .account-container {
     min-height: 100vh;
     width: 100%;
-    padding: 150px 400px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 80px 20px 40px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    background: linear-gradient(135deg, #2e0066 0%, #943fb1 100%);
-    box-sizing: border-box;
 }
 
 .profile-header {
     width: 100%;
-    max-width: 1000px;
+    max-width: 900px;
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 30px;
-    padding-bottom: 30px;
-    border-bottom: 1px solid #ffffff;
-    margin-bottom: 40px;
+    text-align: center;
+    margin: 0 auto 40px;
 }
 
 .profile-pic-container {
     position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    margin-bottom: 20px;
     cursor: pointer;
 }
 
 .profile-pic {
-    width: 120px;
-    height: 120px;
+    width: 150px;
+    height: 150px;
     border-radius: 50%;
-    object-fit: cover;
-    border: 3px solid #ffffff;
-    transition: opacity 0.3s ease;
+    border: 2px solid white;
     display: flex;
     align-items: center;
     justify-content: center;
-    background-color: rgba(0, 0, 0, 0.2);
-    color: white;
     font-size: 1.2rem;
+    color: white;
+    background: rgba(255, 255, 255, 0.1);
 }
 
-.profile-text {
+.profile-pic-overlay {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.5);
+    color: white;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
-    font-size: 1.2rem;
-    font-weight: 400;
-    pointer-events: none;
-    padding-left: 0;
-    padding-bottom: 0;
-    transform: translate(-5px, -25px);
-}
-
-.delete-text-overlay {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    color: white;
-    font-weight: bold;
-    font-size: 1rem;
-    background-color: rgba(0, 0, 0, 0.5);
-    padding: 4px 10px;
-    border-radius: 6px;
     opacity: 0;
-    transition: opacity 0.3s ease;
-    pointer-events: none;
+    transition: opacity 0.2s ease;
 }
 
-.profile-pic-container:hover .delete-text-overlay {
+.profile-pic-container:hover .profile-pic-overlay {
     opacity: 1;
 }
 
+.user-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
 .user-info h2 {
-    margin: 0;
     font-size: 2rem;
+    color: white;
+    margin: 0;
 }
 
 .user-info p {
-    margin: 6px 0;
+    margin: 5px 0;
     font-size: 1.1rem;
-    color: #bbb;
+    color: rgba(255, 255, 255, 0.8);
 }
 
 .stats {
     display: flex;
-    gap: 25px;
-    margin-top: 12px;
+    gap: 30px;
+    margin: 15px 0;
     font-size: 1rem;
-    color: #ccc;
+}
+
+.stats span {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.stats strong {
+    margin-right: 5px;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 15px;
+    margin-top: 20px;
 }
 
 .upload-btn {
-    margin-top: 10px;
-    background-color: #333;
+    background: rgba(0, 0, 0, 0.3);
     color: white;
-    padding: 8px 15px;
-    border-radius: 5px;
+    padding: 12px 20px;
+    border-radius: 8px;
     cursor: pointer;
-    font-size: 0.9rem;
-    transition: background-color 0.3s;
+    font-size: 1rem;
+    border: none;
+    transition: background-color 0.2s ease;
 }
 
 .upload-btn:hover {
-    background-color: #555;
+    background: rgba(0, 0, 0, 0.4);
+}
+
+.profile-divider {
+    width: 100%;
+    max-width: 900px;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.1);
+    margin: 30px 0;
 }
 
 .image-grid {
     width: 100%;
-    max-width: 1000px;
+    max-width: 900px;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 20px;
-    margin-top: 20px;
-    min-height: 200px;
+    padding: 20px 0;
 }
 
 .post-container {
     position: relative;
-    width: 100%;
-    height: 250px;
-    overflow: hidden;
+    aspect-ratio: 1;
     border-radius: 12px;
+    overflow: hidden;
 }
 
 .post-img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    border-radius: 12px;
-    border: 1px solid #444;
-    transition: transform 0.3s ease;
 }
 
-.post-overlay {
+.post-hover-overlay {
     position: absolute;
     top: 0;
     left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.7);
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    padding: 1rem;
+    padding: 20px;
     opacity: 0;
-    transition: opacity 0.3s ease;
+    transition: opacity 0.2s ease;
 }
 
-.post-container:hover .post-overlay {
+.post-container:hover .post-hover-overlay {
     opacity: 1;
-}
-
-.post-container:hover .post-img {
-    transform: scale(1.05);
-}
-
-.post-info {
-    color: white;
-}
-
-.post-caption {
-    margin: 0;
-    font-size: 0.9rem;
-    margin-bottom: 0.5rem;
-}
-
-.post-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-}
-
-.post-tag {
-    background-color: rgba(255, 255, 255, 0.2);
-    padding: 0.2rem 0.6rem;
-    border-radius: 1rem;
-    font-size: 0.8rem;
 }
 
 .post-actions {
     display: flex;
-    gap: 0.5rem;
+    gap: 10px;
+    justify-content: center;
 }
 
-.edit-btn,
-.delete-btn {
-    padding: 0.5rem 1rem;
+.post-action-btn {
+    padding: 8px 16px;
     border: none;
-    border-radius: 0.5rem;
+    border-radius: 6px;
     cursor: pointer;
-    font-weight: 500;
-    transition: background-color 0.3s ease;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+    background: rgba(255, 255, 255, 0.9);
+    color: rgb(59, 14, 89);
 }
 
-.edit-btn {
-    background-color: #007bff;
+.post-action-btn.view-btn {
+    background: rgba(255, 255, 255, 0.9);
+}
+
+.post-action-btn.edit-btn {
+    background: rgba(255, 255, 255, 0.7);
+}
+
+.post-action-btn.delete-btn {
+    background: rgba(255, 59, 48, 0.9);
     color: white;
+    font-size: 1.5rem;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.edit-btn:hover {
-    background-color: #0056b3;
+.post-action-btn:hover {
+    transform: scale(1.05);
+    background: rgba(255, 255, 255, 1);
 }
 
-.delete-btn {
-    background-color: #dc3545;
-    color: white;
+.post-action-btn.delete-btn:hover {
+    background: rgba(255, 59, 48, 1);
 }
 
-.delete-btn:hover {
-    background-color: #c82333;
-}
-
+/* Modal styles */
 .modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
     width: 100vw;
     height: 100vh;
-    background-color: rgba(0, 0, 0, 0.5);
+    background: rgba(59, 14, 89, 0.9);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -246,237 +234,215 @@ body.account-page-active {
 }
 
 .modal-content {
-    background-color: #fff;
-    padding: 2rem;
-    border-radius: 1rem;
+    background: rgb(59, 14, 89);
+    padding: 30px;
+    border-radius: 16px;
     width: 90%;
-    max-width: 500px;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.modal-close {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
     display: flex;
-    flex-direction: column;
-    gap: 1rem;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s ease;
 }
 
-.modal-content h3 {
-    margin-top: 0;
+.modal-close:hover {
+    background: rgba(255, 255, 255, 0.2);
 }
 
-.preview-img {
+.modal-preview-img {
     width: 100%;
-    border-radius: 0.5rem;
+    max-height: 400px;
+    object-fit: contain;
+    border-radius: 12px;
+    margin: 20px 0;
 }
 
-.comment-box {
+.modal-caption {
     width: 100%;
-    padding: 0.8rem;
-    resize: vertical;
-    min-height: 5rem;
-    border-radius: 0.5rem;
-    border: 1px solid #ccc;
+    min-height: 100px;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.2);
+    color: white;
     font-size: 1rem;
+    margin: 15px 0;
+    resize: vertical;
 }
 
-.tags {
+.modal-tags {
+    margin: 20px 0;
+}
+
+.tag-buttons {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
+    gap: 10px;
+    margin-top: 10px;
 }
 
 .tag-btn {
-    padding: 0.4rem 1rem;
-    border: 1px solid #aaa;
-    border-radius: 2rem;
-    background-color: #eee;
+    padding: 8px 16px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: transparent;
+    color: white;
     cursor: pointer;
-    font-size: 0.9rem;
+    transition: all 0.2s ease;
 }
 
-.tag-btn.selected {
-    background-color: #007bff;
+.tag-btn.active {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: white;
+}
+
+.tag-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.1);
     color: white;
-    border-color: #007bff;
+    margin: 0 5px 5px 0;
 }
 
 .modal-actions {
     display: flex;
-    justify-content: space-between;
-    gap: 1rem;
-}
-
-.confirm-btn,
-.cancel-btn {
-    padding: 0.7rem 1.2rem;
-    font-size: 1rem;
-    border-radius: 0.6rem;
-    border: none;
-    cursor: pointer;
-    font-weight: bold;
-}
-
-.confirm-btn {
-    background-color: #28a745;
-    color: white;
-}
-
-.cancel-btn {
-    background-color: #dc3545;
-    color: white;
-}
-
-/* Loading indicator */
-.loading-indicator {
-    background-color: rgba(0, 0, 0, 0.7);
-    color: white;
-    padding: 10px 20px;
-    border-radius: 4px;
-    position: fixed;
-    top: 80px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 1000;
-    font-weight: bold;
-}
-
-/* Error message */
-.error-message {
-    background-color: rgba(255, 0, 0, 0.8);
-    color: white;
-    padding: 10px 20px;
-    border-radius: 4px;
-    position: fixed;
-    top: 80px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 1000;
-    font-weight: bold;
-    max-width: 80%;
-    text-align: center;
-}
-
-/* Disabled button */
-.upload-btn.disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-
-/* Styles for post hover overlay with delete button */
-.post-hover-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    border-radius: 12px;
-}
-
-.post-container:hover .post-hover-overlay {
-    opacity: 1;
-}
-
-.post-hover-actions {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    z-index: 2;
-}
-
-.post-delete-btn {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background-color: rgba(220, 53, 69, 0.8);
-    color: white;
-    border: none;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-size: 24px;
-    padding: 0;
-    line-height: 1;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-}
-
-.post-delete-btn:hover {
-    background-color: rgba(220, 53, 69, 1);
-    transform: scale(1.1);
-}
-
-.delete-icon {
-    font-weight: bold;
-    font-size: 28px;
-    line-height: 1;
-}
-
-/* Add a new class for the view button container */
-.post-view-container {
-    position: absolute;
-    bottom: 10px;
-    left: 0;
-    width: 100%;
-    display: flex;
-    justify-content: center;
+    justify-content: flex-end;
     gap: 10px;
-    padding: 0 10px;
-    box-sizing: border-box;
+    margin-top: 20px;
 }
 
-.post-view-btn, .post-edit-btn {
+.modal-btn {
     padding: 10px 20px;
-    background-color: rgba(255, 255, 255, 0.8);
-    color: #333;
+    border-radius: 8px;
     border: none;
-    border-radius: 20px;
     cursor: pointer;
-    font-weight: bold;
+    font-size: 1rem;
     transition: all 0.2s ease;
-    min-width: 100px;
 }
 
-.post-view-btn:hover, .post-edit-btn:hover {
-    background-color: rgba(255, 255, 255, 1);
-    transform: scale(1.05);
-}
-
-.modal-close-btn {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    background-color: rgba(0, 0, 0, 0.5);
+.modal-btn.cancel {
+    background: rgba(255, 255, 255, 0.1);
     color: white;
-    border: none;
+}
+
+.modal-btn.confirm {
+    background: white;
+    color: rgb(59, 14, 89);
+}
+
+.modal-btn:hover {
+    transform: translateY(-2px);
+}
+
+.comments-section {
+    margin-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 20px;
+}
+
+.comment-tabs {
     display: flex;
-    align-items: center;
-    justify-content: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.tab-btn {
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: none;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
     cursor: pointer;
-    font-size: 20px;
-    font-weight: bold;
+    transition: background-color 0.2s ease;
+}
+
+.tab-btn.active {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.comments-list {
+    max-height: 300px;
+    overflow-y: auto;
+    padding: 10px;
+}
+
+.comment-form {
+    margin-top: 15px;
+}
+
+.comment-form textarea {
+    width: 100%;
+    min-height: 80px;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.2);
+    color: white;
+    font-size: 1rem;
+    margin-bottom: 10px;
+    resize: vertical;
+}
+
+.comment-form button {
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: none;
+    background: white;
+    color: rgb(59, 14, 89);
+    cursor: pointer;
     transition: all 0.2s ease;
 }
 
-.modal-close-btn:hover {
-    background-color: rgba(0, 0, 0, 0.7);
-    transform: scale(1.1);
+.comment-form button:hover {
+    transform: translateY(-2px);
 }
 
-.expanded-post-modal {
-    position: relative;
-    background-color: white;
-    padding: 20px;
-    border-radius: 10px;
-    margin-top: 50px;
-    width: 600px;
-    max-width: 90%;
-    box-sizing: border-box;
-    max-height: 90vh;
-    overflow-y: auto;
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .image-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+    }
+    
+    .stats {
+        gap: 20px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .image-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .upload-btn {
+        width: 100%;
+        text-align: center;
+    }
 }

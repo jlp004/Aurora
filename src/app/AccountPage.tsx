@@ -7,12 +7,11 @@ import Comment from "../components/Comment";
 import { useUser } from './userData';
 
 const AccountPage = () => {
-  // Get the current user from context
   const { currentUser } = useUser();
   
   const [user, setUser] = useState({
     id: 1,
-    username: currentUser?.username || "user123!",
+    username: currentUser?.username || "user123",
     bio: "Lover of code and coffee ☕",
     followers: 120,
     following: 80,
@@ -45,6 +44,18 @@ const AccountPage = () => {
     ]
   });
 
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [newPostComment, setNewPostComment] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingPost, setEditingPost] = useState<any>(null);
+  const [selectedPost, setSelectedPost] = useState<any>(null);
+  const [commentTab, setCommentTab] = useState<'view' | 'post'>('view');
+  const [newComment, setNewComment] = useState("");
+
+  const predefinedTags = ["Nature", "Food", "Travel", "Fashion", "Other"];
+
   useEffect(() => {
     if (currentUser) {
       setUser(prev => ({
@@ -58,66 +69,39 @@ const AccountPage = () => {
   }, [currentUser]);
 
   useEffect(() => {
-    // Add the class to body when component mounts
     document.body.classList.add('account-page-active');
-    
-    // Remove the class when component unmounts
     return () => {
       document.body.classList.remove('account-page-active');
     };
   }, []);
 
-  const predefinedTags = ["Nature", "Food", "Travel", "Fashion", "Other"];
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [newPostComment, setNewPostComment] = useState<string>("");
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [editingPost, setEditingPost] = useState<any>(null);
-  const [uploadLoading, setUploadLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [selectedPost, setSelectedPost] = useState<any>(null);
-  const [commentTab, setCommentTab] = useState<'view' | 'post'>('view');
-  const [newComment, setNewComment] = useState<string>("");
-
   const handleProfilePicChange = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
+    
     try {
-      setUploadLoading(true);
-      setError("");
-      
-      // Create a URL for the selected file (for offline support)
       const imageUrl = URL.createObjectURL(file);
+      setUser({ ...user, profilePic: imageUrl });
       
       try {
-        // Try to upload to API if available
         const formData = new FormData();
         formData.append('image', file);
         formData.append('userId', currentUser?.id.toString() || user.id.toString());
         
-        const response = await fetch('/api/upload/profile', { method: 'POST', body: formData });
+        const response = await fetch('/api/upload/profile', { 
+          method: 'POST', 
+          body: formData 
+        });
         
         if (response.ok) {
-          const contentType = response.headers.get("content-type");
-          if (contentType?.includes("application/json")) {
-            const data = await response.json();
-            // If API returns a URL, use it instead of local URL
-            setUser({ ...user, profilePic: data.imageUrl });
-            return;
-          }
+          const data = await response.json();
+          setUser({ ...user, profilePic: data.imageUrl });
         }
       } catch (err) {
         console.error('API upload error:', err);
-        // Continue with local URL
       }
-      
-      // Use the local URL if API call fails
-      setUser({ ...user, profilePic: imageUrl });
     } catch (err) {
-      setError(err.message || 'Failed to upload profile picture');
-    } finally {
-      setUploadLoading(false);
+      console.error('Failed to upload profile picture:', err);
     }
   };
 
@@ -130,38 +114,11 @@ const AccountPage = () => {
     if (!file) return;
     
     try {
-      setUploadLoading(true);
-      setError("");
-      
-     
-      let imageUrl = "";
-      
-      try {
-        const formData = new FormData();
-        formData.append('image', file);
-        const response = await fetch('/api/upload/post', { method: 'POST', body: formData });
-        
-        if (response.ok) {
-          const contentType = response.headers.get("content-type");
-          if (contentType?.includes("application/json")) {
-            const data = await response.json();
-            imageUrl = data.imageUrl;
-          }
-        }
-      } catch (err) {
-        console.error('API upload error:', err);
-      }
-      
-      if (!imageUrl) {
-        imageUrl = URL.createObjectURL(file);
-      }
-      
+      const imageUrl = URL.createObjectURL(file);
       setSelectedImage(imageUrl);
       setIsModalOpen(true);
     } catch (err) {
-      setError('Failed to process image: ' + (err instanceof Error ? err.message : String(err)));
-    } finally {
-      setUploadLoading(false);
+      console.error('Failed to process image:', err);
     }
   };
 
@@ -169,17 +126,25 @@ const AccountPage = () => {
     if (!selectedImage) return;
     
     try {
-      setUploadLoading(true);
+      const newPost = {
+        id: Date.now(),
+        image: selectedImage,
+        caption: newPostComment,
+        tags: selectedTags,
+        comments: []
+      };
       
-      let newPostId = Date.now();
-      let newPostData = null;
-      
+      setUser(prev => ({ 
+        ...prev, 
+        posts: [newPost, ...prev.posts] 
+      }));
+
       try {
-        // Attempt the API call, but don't require it to succeed
         const postData = {
           userId: currentUser?.id || user.id,
           title: newPostComment,
-          pictureURL: selectedImage
+          pictureURL: selectedImage,
+          tags: selectedTags
         };
         
         const response = await fetch('/api/posts', {
@@ -188,36 +153,21 @@ const AccountPage = () => {
           body: JSON.stringify(postData)
         });
         
-        // If API call succeeds, use the returned data
         if (response.ok) {
-          const contentType = response.headers.get("content-type");
-          if (contentType?.includes("application/json")) {
-            const data = await response.json();
-            newPostId = data.id || newPostId;
-            newPostData = data;
-          }
+          const data = await response.json();
+          const updatedPost = { ...newPost, ...data };
+          setUser(prev => ({
+            ...prev,
+            posts: prev.posts.map(p => p.id === newPost.id ? updatedPost : p)
+          }));
         }
       } catch (err) {
         console.error('API error:', err);
       }
       
-      // Create a new post with the data
-      const newPost = {
-        id: newPostId,
-        image: selectedImage,
-        caption: newPostComment,
-        tags: selectedTags,
-        comments: [],
-        userId: currentUser?.id || user.id
-      };
-      
-      // Add the new post to the user's posts
-      setUser(prev => ({ ...prev, posts: [newPost, ...prev.posts] }));
       closeModal();
     } catch (err) {
-      setError('Failed to create post: ' + (err instanceof Error ? err.message : String(err)));
-    } finally {
-      setUploadLoading(false);
+      console.error('Failed to create post:', err);
     }
   };
 
@@ -252,15 +202,13 @@ const AccountPage = () => {
     setCommentTab('view');
   };
 
-  // Add a function to handle post deletion
   const handleDeletePost = (postId: number) => {
-    // Confirm before deleting
     if (window.confirm('Are you sure you want to delete this post?')) {
-      // Filter out the post with the matching ID
-      const updatedPosts = user.posts.filter(post => post.id !== postId);
-      setUser({ ...user, posts: updatedPosts });
+      setUser(prev => ({
+        ...prev,
+        posts: prev.posts.filter(post => post.id !== postId)
+      }));
       
-      // Try to send delete request to backend if available
       try {
         fetch(`/api/posts/${postId}`, {
           method: 'DELETE',
@@ -274,179 +222,180 @@ const AccountPage = () => {
   return (
     <div className="account-container">
       <Header />
-
-      {error && <div className="error-message">{error}</div>}
-      {uploadLoading && <div className="loading-indicator">Uploading...</div>}
-
+      
       <div className="profile-header">
-        <div className="profile-pic-container" onClick={!uploadLoading ? handleRemoveProfilePic : undefined}>
-          <img src={user.profilePic || "/images/default-profile.jpg"} alt="" className="profile-pic" />
-          <div className="profile-text">Profile</div>
-          <div className="delete-text-overlay">Delete</div>
-          <label htmlFor="profile-pic-upload" className={`upload-btn ${uploadLoading ? 'disabled' : ''}`}>
-            {uploadLoading ? 'Uploading...' : 'Upload Profile Photo'}
-          </label>
-          <input id="profile-pic-upload" type="file" accept="image/png, image/jpeg, image/jpg, image/gif" onChange={handleProfilePicChange} style={{ display: 'none' }} disabled={uploadLoading} />
+        <div className="profile-pic-container" onClick={handleRemoveProfilePic}>
+          {user.profilePic ? (
+            <img src={user.profilePic} alt="" className="profile-pic" />
+          ) : (
+            <div className="profile-pic">Profile</div>
+          )}
+          <div className="profile-pic-overlay">Click to remove</div>
         </div>
 
         <div className="user-info">
           <h2>{user.username}</h2>
           <p>{user.bio}</p>
+          
           <div className="stats">
             <span><strong>{user.posts.length}</strong> Posts</span>
             <span><strong>{user.followers}</strong> Followers</span>
             <span><strong>{user.following}</strong> Following</span>
           </div>
-          <div style={{ marginTop: '10px' }}>
-            <label htmlFor="post-upload" className={`upload-btn ${uploadLoading ? 'disabled' : ''}`}>{uploadLoading ? 'Uploading...' : 'Create New Post'}</label>
-            <input id="post-upload" type="file" accept="image/png, image/jpeg, image/jpg, image/gif" onChange={handleCreatePost} style={{ display: 'none' }} disabled={uploadLoading} />
+
+          <div className="action-buttons">
+            <label className="upload-btn" htmlFor="profile-pic-upload">
+              Upload Profile Photo
+            </label>
+            <input
+              id="profile-pic-upload"
+              type="file"
+              accept="image/*"
+              onChange={handleProfilePicChange}
+              style={{ display: 'none' }}
+            />
+            
+            <label className="upload-btn" htmlFor="post-upload">
+              Create New Post
+            </label>
+            <input
+              id="post-upload"
+              type="file"
+              accept="image/*"
+              onChange={handleCreatePost}
+              style={{ display: 'none' }}
+            />
           </div>
         </div>
       </div>
 
+      <div className="profile-divider" />
+
       <div className="image-grid">
-        {user.posts.length === 0 ? (
-          <p className="no-posts-msg">You haven't posted anything yet.</p>
-        ) : (
-          user.posts.map((post) => (
-            <div key={post.id} className="post-container">
-              <img src={post.image} alt={post.caption} className="post-img" />
-              
-              {/* Delete button overlay */}
-              <div className="post-hover-overlay">
-                <div className="post-hover-actions">
-                  <button 
-                    className="post-delete-btn" 
-                    onClick={(e) => {
-                      e.stopPropagation(); // Prevent opening the post
-                      handleDeletePost(post.id);
-                    }}
-                    aria-label="Delete post"
-                  >
-                    <span className="delete-icon">×</span>
-                  </button>
-                </div>
-                
-                <div className="post-view-container">
-                  <button 
-                    className="post-view-btn"
-                    onClick={() => setSelectedPost(post)}
-                    aria-label="View post"
-                  >
-                    View Post
-                  </button>
-                  <button 
-                    className="post-edit-btn"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setEditingPost(post);
-                      setSelectedImage(post.image);
-                      setNewPostComment(post.caption);
-                      setSelectedTags(post.tags);
-                      setIsEditModalOpen(true);
-                    }}
-                    aria-label="Edit post"
-                  >
-                    Edit Post
-                  </button>
-                </div>
+        {user.posts.map((post) => (
+          <div key={post.id} className="post-container">
+            <img src={post.image} alt={post.caption} className="post-img" />
+            <div className="post-hover-overlay">
+              <div className="post-actions">
+                <button 
+                  onClick={() => setSelectedPost(post)}
+                  className="post-action-btn view-btn"
+                  aria-label="View post"
+                >
+                  View
+                </button>
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setEditingPost(post);
+                    setSelectedImage(post.image);
+                    setNewPostComment(post.caption);
+                    setSelectedTags(post.tags);
+                    setIsEditModalOpen(true);
+                  }}
+                  className="post-action-btn edit-btn"
+                  aria-label="Edit post"
+                >
+                  Edit
+                </button>
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeletePost(post.id);
+                  }}
+                  className="post-action-btn delete-btn"
+                  aria-label="Delete post"
+                >
+                  ×
+                </button>
               </div>
             </div>
-          ))
-        )}
+          </div>
+        ))}
       </div>
 
       {/* Post Creation Modal */}
       {isModalOpen && selectedImage && (
-        <div className="modal-overlay" onClick={closeModal} style={{ backgroundColor: 'rgba(168, 85, 247, 0.3)', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-          <div className="expanded-post-modal" onClick={(e) => e.stopPropagation()} style={{ backgroundColor: 'white', padding: '20px', borderRadius: '10px', marginTop: '50px', width: '600px', maxWidth: '90%', boxSizing: 'border-box', maxHeight: '90vh', overflowY: 'auto' }}>
+        <div className="modal-overlay" onClick={closeModal}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <button className="modal-close" onClick={closeModal}>×</button>
             <h2>Create New Post</h2>
-            <div className="post-preview">
-              <img src={selectedImage} alt="Post preview" className="preview-img" style={{ maxWidth: '100%', maxHeight: '300px', objectFit: 'contain' }} />
+            <img src={selectedImage} alt="Preview" className="modal-preview-img" />
+            <textarea
+              placeholder="Write your caption..."
+              value={newPostComment}
+              onChange={e => setNewPostComment(e.target.value)}
+              className="modal-caption"
+            />
+            <div className="modal-tags">
+              <h3>Select Tags</h3>
+              <div className="tag-buttons">
+                {predefinedTags.map(tag => (
+                  <button
+                    key={tag}
+                    onClick={() => {
+                      if (selectedTags.includes(tag)) {
+                        setSelectedTags(selectedTags.filter(t => t !== tag));
+                      } else {
+                        setSelectedTags([...selectedTags, tag]);
+                      }
+                    }}
+                    className={`tag-btn ${selectedTags.includes(tag) ? 'active' : ''}`}
+                  >
+                    {tag}
+                  </button>
+                ))}
+              </div>
             </div>
-            <div className="post-form" style={{ marginTop: '20px' }}>
-              <textarea 
-                placeholder="Write your caption here..." 
-                value={newPostComment} 
-                onChange={(e) => setNewPostComment(e.target.value)}
-                style={{ width: '100%', padding: '10px', minHeight: '100px', borderRadius: '6px', marginBottom: '15px' }}
-              />
-              
-              <div className="tag-selection" style={{ marginBottom: '15px' }}>
-                <p style={{ marginBottom: '8px', fontWeight: 'bold' }}>Tags:</p>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                  {predefinedTags.map(tag => (
-                    <button
-                      key={tag}
-                      onClick={() => {
-                        if (selectedTags.includes(tag)) {
-                          setSelectedTags(selectedTags.filter(t => t !== tag));
-                        } else {
-                          setSelectedTags([...selectedTags, tag]);
-                        }
-                      }}
-                      style={{
-                        padding: '6px 12px',
-                        borderRadius: '20px',
-                        background: selectedTags.includes(tag) ? '#a855f7' : '#f3f4f6',
-                        color: selectedTags.includes(tag) ? 'white' : 'black',
-                        border: 'none',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      {tag}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-                <button 
-                  onClick={closeModal}
-                  style={{ padding: '8px 16px', borderRadius: '6px', border: '1px solid #d1d5db', background: 'white', cursor: 'pointer' }}
-                >
-                  Cancel
-                </button>
-                <button 
-                  onClick={confirmPost}
-                  style={{ padding: '8px 16px', borderRadius: '6px', background: '#a855f7', color: 'white', border: 'none', cursor: 'pointer' }}
-                >
-                  Post
-                </button>
-              </div>
+            <div className="modal-actions">
+              <button onClick={closeModal} className="modal-btn cancel">Cancel</button>
+              <button onClick={confirmPost} className="modal-btn confirm">Post</button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Selected Post Modal */}
+      {/* View Post Modal */}
       {selectedPost && (
-        <div className="modal-overlay" onClick={closeModal} style={{ backgroundColor: 'rgba(168, 85, 247, 0.3)', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-          <div className="expanded-post-modal" onClick={(e) => e.stopPropagation()}>
-            <button className="modal-close-btn" onClick={closeModal} aria-label="Close modal">×</button>
-            <h2>Comments</h2>
-            <div className="post-preview">
-              <img src={selectedPost.image} alt="Post preview" className="preview-img" />
+        <div className="modal-overlay" onClick={closeModal}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <button className="modal-close" onClick={closeModal}>×</button>
+            <img src={selectedPost.image} alt="Post" className="modal-preview-img" />
+            <p className="modal-caption">{selectedPost.caption}</p>
+            <div className="modal-tags">
+              {selectedPost.tags.map(tag => (
+                <span key={tag} className="tag-badge">{tag}</span>
+              ))}
             </div>
-            <div className="comment-box">
-              <div className="tab-buttons" style={{ display: 'flex', justifyContent: 'center', gap: '20px', marginBottom: '20px' }}>
-                <button onClick={() => setCommentTab('view')} className={commentTab === 'view' ? 'active' : ''} style={{ backgroundColor: '#a855f7', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '6px', cursor: 'pointer' }}>View Comments</button>
-                <button onClick={() => setCommentTab('post')} className={commentTab === 'post' ? 'active' : ''} style={{ backgroundColor: '#a855f7', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '6px', cursor: 'pointer' }}>Post a Comment</button>
+            <div className="comments-section">
+              <div className="comment-tabs">
+                <button 
+                  onClick={() => setCommentTab('view')}
+                  className={`tab-btn ${commentTab === 'view' ? 'active' : ''}`}
+                >
+                  View Comments
+                </button>
+                <button 
+                  onClick={() => setCommentTab('post')}
+                  className={`tab-btn ${commentTab === 'post' ? 'active' : ''}`}
+                >
+                  Add Comment
+                </button>
               </div>
               {commentTab === 'view' ? (
                 <div className="comments-list">
-                  {selectedPost.comments?.length === 0 ? (
-                    <p>No comments yet.</p>
-                  ) : (
-                    selectedPost.comments.map(comment => (
-                      <Comment key={comment.id} poster={comment.poster} text={comment.text} />
-                    ))
-                  )}
+                  {selectedPost.comments?.map(comment => (
+                    <Comment key={comment.id} poster={comment.poster} text={comment.text} />
+                  ))}
                 </div>
               ) : (
-                <div className="post-comment-form" style={{ backgroundColor: 'rgba(168, 85, 247, 0.1)', padding: '16px', borderRadius: '8px' }}> 
-                  <textarea placeholder="Write your comment here..." style={{ color: 'black' }} value={newComment} onChange={(e) => setNewComment(e.target.value)} />
-                  <button onClick={handlePostComment} style={{ backgroundColor: '#a855f7', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '6px', cursor: 'pointer', marginTop: '10px' }}>Post comment →</button>
+                <div className="comment-form">
+                  <textarea
+                    placeholder="Write a comment..."
+                    value={newComment}
+                    onChange={e => setNewComment(e.target.value)}
+                  />
+                  <button onClick={handlePostComment}>Post Comment</button>
                 </div>
               )}
             </div>
@@ -456,71 +405,53 @@ const AccountPage = () => {
 
       {/* Edit Post Modal */}
       {isEditModalOpen && editingPost && (
-        <div className="modal-overlay" onClick={closeModal} style={{ backgroundColor: 'rgba(168, 85, 247, 0.3)', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-          <div className="expanded-post-modal" onClick={(e) => e.stopPropagation()}>
-            <button className="modal-close-btn" onClick={closeModal} aria-label="Close modal">×</button>
+        <div className="modal-overlay" onClick={closeModal}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <button className="modal-close" onClick={closeModal}>×</button>
             <h2>Edit Post</h2>
-            <div className="post-preview">
-              <img src={editingPost.image} alt="Post preview" className="preview-img" style={{ maxWidth: '100%', maxHeight: '300px', objectFit: 'contain' }} />
+            <img src={editingPost.image} alt="Preview" className="modal-preview-img" />
+            <textarea
+              placeholder="Edit caption..."
+              value={newPostComment}
+              onChange={e => setNewPostComment(e.target.value)}
+              className="modal-caption"
+            />
+            <div className="modal-tags">
+              <h3>Edit Tags</h3>
+              <div className="tag-buttons">
+                {predefinedTags.map(tag => (
+                  <button
+                    key={tag}
+                    onClick={() => {
+                      if (selectedTags.includes(tag)) {
+                        setSelectedTags(selectedTags.filter(t => t !== tag));
+                      } else {
+                        setSelectedTags([...selectedTags, tag]);
+                      }
+                    }}
+                    className={`tag-btn ${selectedTags.includes(tag) ? 'active' : ''}`}
+                  >
+                    {tag}
+                  </button>
+                ))}
+              </div>
             </div>
-            <div className="post-form" style={{ marginTop: '20px' }}>
-              <textarea 
-                placeholder="Write your caption here..." 
-                value={newPostComment} 
-                onChange={(e) => setNewPostComment(e.target.value)}
-                style={{ width: '100%', padding: '10px', minHeight: '100px', borderRadius: '6px', marginBottom: '15px' }}
-              />
-              
-              <div className="tag-selection" style={{ marginBottom: '15px' }}>
-                <p style={{ marginBottom: '8px', fontWeight: 'bold' }}>Tags:</p>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                  {predefinedTags.map(tag => (
-                    <button
-                      key={tag}
-                      onClick={() => {
-                        if (selectedTags.includes(tag)) {
-                          setSelectedTags(selectedTags.filter(t => t !== tag));
-                        } else {
-                          setSelectedTags([...selectedTags, tag]);
-                        }
-                      }}
-                      style={{
-                        padding: '6px 12px',
-                        borderRadius: '20px',
-                        background: selectedTags.includes(tag) ? '#a855f7' : '#f3f4f6',
-                        color: selectedTags.includes(tag) ? 'white' : 'black',
-                        border: 'none',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      {tag}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-                <button 
-                  onClick={closeModal}
-                  style={{ padding: '8px 16px', borderRadius: '6px', border: '1px solid #d1d5db', background: 'white', cursor: 'pointer' }}
-                >
-                  Cancel
-                </button>
-                <button 
-                  onClick={() => {
-                    const updatedPosts = user.posts.map(p => 
-                      p.id === editingPost.id 
-                        ? { ...p, caption: newPostComment, tags: selectedTags }
-                        : p
-                    );
-                    setUser({ ...user, posts: updatedPosts });
-                    closeModal();
-                  }}
-                  style={{ padding: '8px 16px', borderRadius: '6px', background: '#a855f7', color: 'white', border: 'none', cursor: 'pointer' }}
-                >
-                  Save Changes
-                </button>
-              </div>
+            <div className="modal-actions">
+              <button onClick={closeModal} className="modal-btn cancel">Cancel</button>
+              <button 
+                onClick={() => {
+                  const updatedPosts = user.posts.map(p => 
+                    p.id === editingPost.id 
+                      ? { ...p, caption: newPostComment, tags: selectedTags }
+                      : p
+                  );
+                  setUser({ ...user, posts: updatedPosts });
+                  closeModal();
+                }} 
+                className="modal-btn confirm"
+              >
+                Save Changes
+              </button>
             </div>
           </div>
         </div>

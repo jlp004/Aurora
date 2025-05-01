@@ -100,7 +100,6 @@ const ChatsPage: React.FC = () => {
 };
 
 export default ChatsPage;
-
 // ——— Inline layout styles ——————————
 
 const containerStyle: React.CSSProperties = {
@@ -133,3 +132,4 @@ const emptyStateStyle: React.CSSProperties = {
   justifyContent: "center",
   height: "100%",
 };
+

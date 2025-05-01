@@ -60,6 +60,11 @@ const HamburgerMenu = () => {
                     Settings
             </span>
             <span 
+                    onClick={() => navigate("/leaderboard")}
+                    style={{ color: 'black', fontWeight: 'bold', cursor: 'pointer' }}>
+                    Leaderboard
+            </span>
+            <span 
                     onClick={() => navigate('/logout')}     //this makes sure the log out function is applied when clicked on the log out button
                     style={{ color: 'black', fontWeight: 'bold', cursor: 'pointer' }}>
                     Log Out

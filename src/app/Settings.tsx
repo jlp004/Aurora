@@ -83,71 +83,73 @@ const SettingsPage = () => {
   };
 
   return (
-    <div className="settings-container">
-      <Header />
+    <div className="settings-page-wrapper">
+      <div className="settings-container">
+        <Header />
 
-      <h2 className="settings-title">Settings</h2>
+        <h2 className="settings-title">Settings</h2>
 
-      <div className="settings-section">
-        <h3>Profile Settings</h3>
-        <label>
-          Username:
-          <input 
-            type="text" 
-            value={username} 
-            onChange={e => setUsername(e.target.value)} 
-          />
-        </label>
-        <label>
-          Bio:
-          <textarea 
-            value={bio} 
-            onChange={e => setBio(e.target.value)} 
-          />
-        </label>
+        <div className="settings-section">
+          <h3>Profile Settings</h3>
+          <label>
+            Username:
+            <input 
+              type="text" 
+              value={username} 
+              onChange={e => setUsername(e.target.value)} 
+            />
+          </label>
+          <label>
+            Bio:
+            <textarea 
+              value={bio} 
+              onChange={e => setBio(e.target.value)} 
+            />
+          </label>
+        </div>
+
+        <div className="settings-section">
+          <h3>Privacy</h3>
+          <label>
+            <input 
+              type="checkbox" 
+              checked={isPrivate} 
+              onChange={() => setIsPrivate(!isPrivate)} 
+            />
+            Private Account
+          </label>
+        </div>
+
+        <div className="settings-section">
+          <h3>Notifications</h3>
+          <label>
+            <input 
+              type="checkbox" 
+              checked={emailNotifs} 
+              onChange={() => setEmailNotifs(!emailNotifs)} 
+            />
+            Email Notifications
+          </label>
+          <label>
+            <input 
+              type="checkbox" 
+              checked={pushNotifs} 
+              onChange={() => setPushNotifs(!pushNotifs)} 
+            />
+            Push Notifications
+          </label>
+        </div>
+
+        
+        <button className="delete-button" onClick={handleDeleteAccount}> 
+          Delete Account
+        </button>
+        
+
+        <button className="save-button" onClick={handleSave}>
+          Save Changes
+        </button>
       </div>
-
-      <div className="settings-section">
-        <h3>Privacy</h3>
-        <label>
-          <input 
-            type="checkbox" 
-            checked={isPrivate} 
-            onChange={() => setIsPrivate(!isPrivate)} 
-          />
-          Private Account
-        </label>
-      </div>
-
-      <div className="settings-section">
-        <h3>Notifications</h3>
-        <label>
-          <input 
-            type="checkbox" 
-            checked={emailNotifs} 
-            onChange={() => setEmailNotifs(!emailNotifs)} 
-          />
-          Email Notifications
-        </label>
-        <label>
-          <input 
-            type="checkbox" 
-            checked={pushNotifs} 
-            onChange={() => setPushNotifs(!pushNotifs)} 
-          />
-          Push Notifications
-        </label>
-      </div>
-
-      
-      <button className="delete-button" onClick={handleDeleteAccount}> 
-        Delete Account
-      </button>
-      
-
-      <button className="save-button" onClick={handleSave}>
-        Save Changes
-      </button>
     </div>
   );
 };

@@ -14,6 +14,7 @@ import Logout from './app/logOut';
 import AccountPage from './app/AccountPage';
 import Settings from './app/Settings';
 import ChatsPage from './app/ChatsPage';
+import Leaderboard from './app/Leaderboard';
 
 function App() {  
   return (
@@ -21,19 +22,20 @@ function App() {
       <ThemeProvider>
         <Routes>
           <Route path="/" element={<Navigate to="/login" />} />
-          <Route path="/login" element={<Login />}></Route>
-          <Route path="/home" element={<Home />}></Route>
-          <Route path="/search" element={<Search />}></Route>
+          <Route path="/login" element={<Login />} />
+          <Route path="/home" element={<Home />} />
+          <Route path="/search" element={<Search />} />
           <Route path="/logout" element={<Logout />} />
-          <Route path="*" element = {<PageNotFound />} />
-          <Route path="/account" element={<AccountPage/>}></Route>
-          <Route path="/settings" element={<Settings/>}/>
-          <Route path="/signup" element={<Signup/>} />
-          <Route path="/chats" element={<ChatsPage/> } />
+          <Route path="/account" element={<AccountPage />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/chats" element={<ChatsPage />} />
+          <Route path="/leaderboard" element={<Leaderboard />} />
+          <Route path="*" element={<PageNotFound />} />
         </Routes>
       </ThemeProvider>
     </UserProvider>
-  )
+  );
 }
 
-export default App
+export default App;
