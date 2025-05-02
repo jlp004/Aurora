@@ -28,6 +28,7 @@ function App() {
           <Route path="/search" element={<Search />} />
           <Route path="/logout" element={<Logout />} />
           <Route path="/account" element={<AccountPage />} />
+          <Route path="/account/query" element={<UserProfile />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/chats" element={<ChatsPage />} />

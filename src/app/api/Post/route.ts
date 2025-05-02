@@ -1,24 +1,48 @@
 import prisma from '@/lib/db'
 import { NextRequest, NextResponse } from 'next/server';
 
-// GET - Get all posts (not recommended if database ever gets large)
-
+// GET - Get all posts or filter by userId
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const isSearch = searchParams.get("search");
+    const userId = searchParams.get("userId");
     
     // If search parameter is present, use the search function
     if (isSearch === "true") {
       return search(req);
     }
     
+    // If userId is provided, filter posts by userId
+    if (userId) {
+      const posts = await prisma.post.findMany({
+        where: {
+          userId: Number(userId)
+        },
+        include: {
+          user: true
+        },
+        orderBy: {
+          id: 'desc'
+        }
+      });
+      return NextResponse.json({ data: posts }, { status: 200 });
+    }
+    
     // Otherwise return all posts
-    const posts = await prisma.post.findMany()
-    return NextResponse.json({ message: "Posts fetched: ", data: posts }, { status: 200 } )
+    const posts = await prisma.post.findMany({
+      include: {
+        user: true
+      },
+      orderBy: {
+        id: 'desc'
+      }
+    });
+    return NextResponse.json({ data: posts }, { status: 200 });
   }
   catch (error) {
-    return NextResponse.json({ message: error instanceof Error ? error.message : "Failed to retrieve posts" }, { status: 500})
+    console.error('Error fetching posts:', error);
+    return NextResponse.json({ error: error instanceof Error ? error.message : "Failed to retrieve posts" }, { status: 500 });
   }
 }
 
