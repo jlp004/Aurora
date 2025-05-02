@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import '../styles/Post.css'; 
+import { Link } from 'react-router-dom';
 
 interface PostProps {
   id?: number;
@@ -100,8 +101,12 @@ export default function Post({
     <div className="post">
       <div className="post-header">
         <div className="post-user">
-          <div className="user-avatar">{username.charAt(0)}</div>
-          <span className="username">{username}</span>
+          <Link to={`/account/query?userID=${username}`} className="user-link">
+            <div className="user-avatar">{username.charAt(0)}</div>
+            <span className="username">{username}</span>
+          </Link>
+          {/* <div className="user-avatar">{username.charAt(0)}</div>
+          <span className="username">{username}</span> */}
         </div>
       </div>
       

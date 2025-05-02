@@ -15,6 +15,7 @@ import AccountPage from './app/AccountPage';
 import Settings from './app/Settings';
 import ChatsPage from './app/ChatsPage';
 import Leaderboard from './app/Leaderboard';
+import UserProfile from './app/UserProfile';
 
 function App() {  
   return (
@@ -31,6 +32,7 @@ function App() {
           <Route path="/signup" element={<Signup />} />
           <Route path="/chats" element={<ChatsPage />} />
           <Route path="/leaderboard" element={<Leaderboard />} />
+          <Route path="/profile" element={<UserProfile />} />
           <Route path="*" element={<PageNotFound />} />
         </Routes>
       </ThemeProvider>

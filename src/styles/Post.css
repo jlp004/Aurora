@@ -102,7 +102,7 @@
 .like-btn::before 
 {
     content: "♥";
-    color: transparent;
+    color: white;
     -webkit-text-stroke: 1px #262626; 
     font-size: 24px;
 }
