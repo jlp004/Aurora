@@ -161,7 +161,7 @@ const AccountPage = () => {
         // Remove the /public prefix from the image URL
         const newImageUrl = data.imageUrl.replace('/public', '');
         
-        // Update user context
+        // Update user context first
         if (currentUser) {
           const updatedUser = { ...currentUser, pictureURL: newImageUrl };
           setCurrentUser(updatedUser);
@@ -177,10 +177,18 @@ const AccountPage = () => {
         // Force an immediate update of the image
         const imgElement = document.querySelector('.profile-pic') as HTMLImageElement;
         if (imgElement) {
+          // Create a new image object to preload
+          const newImage = new Image();
+          newImage.src = newImageUrl;
+          
+          // Update the DOM immediately
           imgElement.src = newImageUrl;
-          // Force a re-render by temporarily changing the src
-          imgElement.src = '';
-          imgElement.src = newImageUrl;
+          
+          // Force a re-render after a short delay
+          setTimeout(() => {
+            imgElement.src = '';
+            imgElement.src = newImageUrl;
+          }, 100);
         }
       } else {
         const errorData = await response.json();
