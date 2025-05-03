@@ -1,89 +1,165 @@
-// Chat room with preloaded messages - Lydia
-
+// Chat room with real messages
 import { useState, useEffect } from "react";
-import { users, currentUser } from '../app/userData';
 import { useTheme } from '../context/ThemeContext';
 
 interface Message {
-    sender: 'me' | 'them';
-    text: string;
-    timestamp: string;
+    id: number;
+    content: string;
+    senderId: number;
+    receiverId: number;
+    createdAt: string;
+    sender: {
+        username: string;
+        pictureURL: string | null;
+    };
+    receiver: {
+        username: string;
+        pictureURL: string | null;
+    };
 }
 
-// Simulated messages between users
-const messageStore: { [userId: string]: Message[] } = {
-    '1': [
-        { sender: 'them', text: 'Hey! How are you?', timestamp: '2:30 PM' },
-        { sender: 'me', text: 'I am good! How about you?', timestamp: '2:32 PM' },
-    ],
-    '2': [
-        { sender: 'them', text: 'You ready for the project presentation?', timestamp: '8:30 AM' },
-        { sender: 'me', text: 'Almost ready! 5 more minutes', timestamp: '8:32 AM' },
-    ],
-    '3': [
-        { sender: 'them',
-             text: "Hey there! It's been a while, hope you are doing well. I'm reaching out to see if you're interested in collaborating together",
-            timestamp: '3:34 PM' },
-    ],
-};
+interface User {
+    id: number;
+    username: string;
+    pictureURL: string | null;
+}
 
-const ChatRoom = ({ userId }: { userId: string }) => {
+interface ChatRoomProps {
+    userId: number;
+    onChatSent?: () => void;
+}
+
+const ChatRoom = ({ userId, onChatSent }: ChatRoomProps) => {
     const [messages, setMessages] = useState<Message[]>([]);
     const [newMessage, setNewMessage] = useState('');
+    const [currentUser, setCurrentUser] = useState<User | null>(null);
+    const [recipient, setRecipient] = useState<User | null>(null);
     const { theme } = useTheme();
     const isDarkMode = theme === 'dark';
 
+    // Get current user from localStorage
+    useEffect(() => {
+        const storedUser = localStorage.getItem('currentUser');
+        console.log('Stored user:', storedUser); // Debug log
+        if (storedUser) {
+            try {
+                const parsedUser = JSON.parse(storedUser);
+                console.log('Parsed user:', parsedUser); // Debug log
+                setCurrentUser(parsedUser);
+            } catch (error) {
+                console.error('Error parsing stored user:', error);
+            }
+        }
+    }, []);
+
     // Load messages when a new user is selected
     useEffect(() => {
-        setMessages(messageStore[userId] || []);
-    }, [userId]);
+        const fetchMessages = async () => {
+            if (!currentUser) {
+                console.log('No current user available'); // Debug log
+                return;
+            }
+            
+            try {
+                console.log('Fetching messages between users:', currentUser.id, userId); // Debug log
+                const response = await fetch(`/api/chat/history?user1Id=${currentUser.id}&user2Id=${userId}`);
+                const data = await response.json();
+                console.log('Received messages:', data); // Debug log
+                setMessages(data.messages);
+            } catch (error) {
+                console.error('Error fetching messages:', error);
+            }
+        };
 
-    const sendMessage = () => {
-        if (!newMessage) return;
-        const now = new Date();
-        const time = now.toLocaleDateString([], { hour: '2-digit', minute: '2-digit' });
+        const fetchRecipient = async () => {
+            try {
+                console.log('Fetching recipient:', userId); // Debug log
+                const response = await fetch(`/api/User/${userId}`);
+                const data = await response.json();
+                console.log('Received recipient data:', data); // Debug log
+                if (data.users && data.users.length > 0) {
+                    setRecipient(data.users[0]);
+                } else {
+                    console.error('No user found with ID:', userId);
+                }
+            } catch (error) {
+                console.error('Error fetching recipient:', error);
+            }
+        };
 
-        const updated: Message[] = [...messages, { sender: 'me', text: newMessage, timestamp: time, }];
-        setMessages(updated);
-        setNewMessage('');
+        fetchMessages();
+        fetchRecipient();
+    }, [userId, currentUser]);
+
+    const sendMessage = async () => {
+        if (!newMessage || !currentUser) {
+            console.log('Cannot send message:', { newMessage, currentUser }); // Debug log
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/chat/send', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    content: newMessage,
+                    senderId: currentUser.id,
+                    receiverId: userId
+                }),
+            });
+
+            const sentMessage = await response.json();
+            setMessages(prev => [...prev, sentMessage]);
+            setNewMessage('');
+            if (onChatSent) onChatSent();
+        } catch (error) {
+            console.error('Error sending message:', error);
+        }
     };
 
-    const recipient = users[userId];  // User you're chatting with
+    if (!currentUser) {
+        return <div style={{ color: 'white', padding: '20px' }}>Please log in to chat</div>;
+    }
+
+    if (!recipient) {
+        return <div style={{ color: 'white', padding: '20px' }}>Loading recipient information...</div>;
+    }
 
     return (
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-            {/** Chat message */}
+            {/** Chat header */}
             <div style={{ 
                 display: 'flex',
                 alignItems: 'center',
                 marginBottom: '20px',
                 borderBottom: isDarkMode ? '1px solid rgba(0, 0, 0, 0.3)' : '1px solid #ccc',
                 paddingBottom: '10px',
-                }}>
-                    <img
-                        src={recipient.avatar}
-                        alt={recipient.username}
-                        style={{ width: '40px', height: '40px', borderRadius: '50%', marginRight: '10px' }}
-                    />
-                    <h3>{recipient.username}</h3>
+            }}>
+                <img
+                    src={recipient.pictureURL || '/images/default-avatar.png'}
+                    alt={recipient.username}
+                    style={{ width: '40px', height: '40px', borderRadius: '50%', marginRight: '10px' }}
+                />
+                <h3 style={{ color: 'white' }}>{recipient.username}</h3>
             </div>
             
             {/** Messages */}
             <div style={{ flex: 1, overflowY: 'auto', marginBottom: '10px' }}>
-                {messages.map((msg, i) => {
-                    const isMe = msg.sender === 'me';
-                    const avatar = isMe ? currentUser.avatar: recipient.avatar;
-                    const align = isMe ? 'flex-end' : 'flex-start';
+                {messages.map((msg) => {
+                    const isMe = msg.senderId === currentUser.id;
+                    const avatar = isMe ? currentUser.pictureURL : recipient.pictureURL;
 
                     return (
-                        <div key={i} style={{
+                        <div key={msg.id} style={{
                             display: 'flex',
                             flexDirection: isMe ? 'row-reverse' : 'row',
                             alignItems: 'center',
                             marginBottom: '12px',
                         }}>
                             <img
-                                src={avatar}
+                                src={avatar || '/images/default-avatar.png'}
                                 alt="avatar"
                                 style={{
                                     width: '32px',
@@ -106,22 +182,22 @@ const ChatRoom = ({ userId }: { userId: string }) => {
                                 maxWidth: '70%',
                                 textAlign: 'left',
                             }}>
-                                {msg.text}
+                                {msg.content}
                             </div>
 
                             {/** Timestamp */}
                             <span style={{ fontSize: '0.75rem', color: 'lightgray', marginTop: '4px' }}>
-                                {msg.timestamp}
+                                {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             </span>
                         </div>
                     );
-                })};
+                })}
             </div>
 
             {/** Message input */}
             <form 
                 onSubmit={(e) => {
-                    e.preventDefault();     // Prevent page reload
+                    e.preventDefault();
                     sendMessage();
                 }}
                 style={{ 

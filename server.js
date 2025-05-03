@@ -195,17 +195,15 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
-// Get user by username
-app.get('/api/User/:username', async (req, res) => {
+// Get user by ID
+app.get('/api/User/:id', async (req, res) => {
   try {
-    const { username } = req.params;
-    console.log('Searching for username:', username);
+    const { id } = req.params;
+    console.log('Searching for user ID:', id);
     
-    const users = await prisma.user.findMany({
+    const user = await prisma.user.findUnique({
       where: {
-        username: {
-          contains: username
-        }
+        id: Number(id)
       },
       select: {
         id: true,
@@ -216,13 +214,23 @@ app.get('/api/User/:username', async (req, res) => {
       }
     });
     
-    console.log('Found users:', users);
+    console.log('Found user:', user);
     
-    return res.status(200).json({ users });
+    if (!user) {
+      return res.status(404).json({ 
+        message: 'User not found',
+        users: []
+      });
+    }
+    
+    return res.status(200).json({ 
+      users: [user]
+    });
   } catch (error) {
-    console.error('Error fetching users:', error);
+    console.error('Error fetching user:', error);
     return res.status(500).json({ 
-      message: 'Failed to fetch users' 
+      message: 'Failed to fetch user',
+      users: []
     });
   }
 });
@@ -596,6 +604,179 @@ app.use((err, req, res, next) => {
     });
   }
   next();
+});
+
+// === Chat Endpoints ===
+
+// Get chat history between two users
+app.get('/api/chat/history', async (req, res) => {
+  try {
+    const { user1Id, user2Id } = req.query;
+    
+    if (!user1Id || !user2Id) {
+      return res.status(400).json({ 
+        message: 'Both user IDs are required' 
+      });
+    }
+
+    const messages = await prisma.message.findMany({
+      where: {
+        OR: [
+          {
+            AND: [
+              { senderId: Number(user1Id) },
+              { receiverId: Number(user2Id) }
+            ]
+          },
+          {
+            AND: [
+              { senderId: Number(user2Id) },
+              { receiverId: Number(user1Id) }
+            ]
+          }
+        ]
+      },
+      include: {
+        sender: {
+          select: {
+            username: true,
+            pictureURL: true
+          }
+        },
+        receiver: {
+          select: {
+            username: true,
+            pictureURL: true
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'asc'
+      }
+    });
+
+    return res.status(200).json({ messages });
+  } catch (error) {
+    console.error('Error fetching chat history:', error);
+    return res.status(500).json({ 
+      message: 'Failed to fetch chat history' 
+    });
+  }
+});
+
+// Send a message
+app.post('/api/chat/send', async (req, res) => {
+  try {
+    const { content, senderId, receiverId } = req.body;
+    
+    if (!content || !senderId || !receiverId) {
+      return res.status(400).json({ 
+        message: 'Content, sender ID, and receiver ID are required' 
+      });
+    }
+
+    const message = await prisma.message.create({
+      data: {
+        content,
+        senderId: Number(senderId),
+        receiverId: Number(receiverId)
+      },
+      include: {
+        sender: {
+          select: {
+            username: true,
+            pictureURL: true
+          }
+        },
+        receiver: {
+          select: {
+            username: true,
+            pictureURL: true
+          }
+        }
+      }
+    });
+
+    return res.status(201).json(message);
+  } catch (error) {
+    console.error('Error sending message:', error);
+    return res.status(500).json({ 
+      message: 'Failed to send message' 
+    });
+  }
+});
+
+// Search users for chat
+app.get('/api/chat/search-users', async (req, res) => {
+  try {
+    const { query } = req.query;
+    
+    if (!query) {
+      return res.status(400).json({ 
+        message: 'Search query is required' 
+      });
+    }
+
+    const users = await prisma.user.findMany({
+      where: {
+        username: {
+          contains: query
+        }
+      },
+      select: {
+        id: true,
+        username: true,
+        pictureURL: true
+      }
+    });
+
+    return res.status(200).json({ users });
+  } catch (error) {
+    console.error('Error searching users:', error);
+    return res.status(500).json({ 
+      message: 'Failed to search users' 
+    });
+  }
+});
+
+// Get recent chat users for a user
+app.get('/api/chat/recent/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    // Find all users who have chatted with this user, ordered by most recent message
+    const recentChats = await prisma.message.findMany({
+      where: {
+        OR: [
+          { senderId: Number(userId) },
+          { receiverId: Number(userId) }
+        ]
+      },
+      orderBy: { createdAt: 'desc' },
+      select: {
+        senderId: true,
+        receiverId: true,
+        sender: { select: { id: true, username: true, pictureURL: true } },
+        receiver: { select: { id: true, username: true, pictureURL: true } },
+        createdAt: true
+      }
+    });
+
+    // Get unique users (other than current user), most recent first
+    const seen = new Set();
+    const users = [];
+    for (const msg of recentChats) {
+      const otherUser = msg.senderId === Number(userId) ? msg.receiver : msg.sender;
+      if (!seen.has(otherUser.id) && otherUser.id !== Number(userId)) {
+        seen.add(otherUser.id);
+        users.push({ ...otherUser, lastMessageAt: msg.createdAt });
+      }
+    }
+
+    res.json({ users });
+  } catch (error) {
+    console.error('Error fetching recent chats:', error);
+    res.status(500).json({ message: 'Failed to fetch recent chats' });
+  }
 });
 
 // Start server

@@ -28,6 +28,9 @@ model User {
   // Following relationships
   followingUsers  User[]    @relation("UserFollows")
   followedByUsers User[]    @relation("UserFollows")
+  // Chat relationships
+  sentMessages     Message[] @relation("SentMessages")
+  receivedMessages Message[] @relation("ReceivedMessages")
 }
 
 enum Role {
@@ -69,4 +72,14 @@ model Comment {
   replies  Comment[] @relation("CommentReplies")
 
   createdAt DateTime @default(now())
+}
+
+model Message {
+  id          Int      @id @default(autoincrement())
+  content     String
+  senderId    Int
+  receiverId  Int
+  sender      User     @relation("SentMessages", fields: [senderId], references: [id])
+  receiver    User     @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  createdAt   DateTime @default(now())
 }

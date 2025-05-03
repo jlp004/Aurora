@@ -1,33 +1,72 @@
 /** src/app/ChatsPage.tsx */
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaSearch } from "react-icons/fa";
 import { BsMessenger } from "react-icons/bs";
-import ChatRoom from "./ChatRoom";         // adjust path if needed
+import ChatRoom from "./ChatRoom";
 import Header from "../components/Header";
 import styles from "../styles/ChatsPage.module.css";
 import { useTheme } from '../context/ThemeContext';
 
 interface User {
-  id: string;
+  id: number;
   username: string;
-  avatar: string;
+  pictureURL: string | null;
 }
 
-const existingUsers: User[] = [
-  { id: "1", username: "Jane Doe",        avatar: "/images/img1.png" },
-  { id: "2", username: "John Smith",      avatar: "/images/img2.png" },
-  { id: "3", username: "Lauren Anderson", avatar: "/images/img3.png" },
-];
-
 const ChatsPage: React.FC = () => {
-  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm]         = useState("");
+  const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [users, setUsers] = useState<User[]>([]);
+  const [recentChats, setRecentChats] = useState<User[]>([]);
   const { theme } = useTheme();
   const isDarkMode = theme === 'dark';
 
-  const filteredUsers = existingUsers.filter(user =>
-    user.username.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Get current user from localStorage
+  const currentUser = React.useMemo(() => {
+    const stored = localStorage.getItem('currentUser');
+    return stored ? JSON.parse(stored) : null;
+  }, []);
+
+  // Fetch recent chats for sidebar
+  useEffect(() => {
+    if (!currentUser) return;
+    const fetchRecentChats = async () => {
+      try {
+        const res = await fetch(`/api/chat/recent/${currentUser.id}`);
+        const data = await res.json();
+        setRecentChats(data.users || []);
+      } catch (err) {
+        console.error('Error fetching recent chats:', err);
+      }
+    };
+    fetchRecentChats();
+  }, [currentUser]);
+
+  // Fetch users when search term changes
+  useEffect(() => {
+    if (!searchTerm) {
+      setUsers([]);
+      return;
+    }
+    const fetchUsers = async () => {
+      try {
+        const response = await fetch(`/api/chat/search-users?query=${searchTerm}`);
+        const data = await response.json();
+        setUsers(data.users);
+      } catch (error) {
+        console.error('Error fetching users:', error);
+      }
+    };
+    fetchUsers();
+  }, [searchTerm]);
+
+  // When a message is sent, refresh recent chats
+  const handleChatSent = () => {
+    if (!currentUser) return;
+    fetch(`/api/chat/recent/${currentUser.id}`)
+      .then(res => res.json())
+      .then(data => setRecentChats(data.users || []));
+  };
 
   return (
     <div style={containerStyle}>
@@ -50,42 +89,80 @@ const ChatsPage: React.FC = () => {
           />
         </div>
 
+        {/* ── Recent Chats ──────────────────────────── */}
+        {(!searchTerm && recentChats.length > 0) && (
+          <>
+            <div style={{ color: 'white', fontWeight: 600, margin: '10px 0 5px 0', fontSize: '1rem' }}>Recent</div>
+            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+              {recentChats.map(user => (
+                <li
+                  key={user.id}
+                  onClick={() => setSelectedUserId(user.id)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px',
+                    padding: '10px',
+                    cursor: 'pointer',
+                    borderBottom: isDarkMode ? '1px solid rgba(0, 0, 0, 0.3)' : '1px solid #eee',
+                    color: 'white',
+                  }}
+                >
+                  <img
+                    src={user.pictureURL || '/images/default-avatar.png'}
+                    alt={user.username}
+                    style={{
+                      width: '40px',
+                      height: '40px',
+                      borderRadius: '50%',
+                      marginRight: '10px',
+                    }}
+                  />
+                  <span>{user.username}</span>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+
         {/* ── Inline Filtered User List ─────────────── */}
-        <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-          {filteredUsers.map(user => (
-            <li
-              key={user.id}
-              onClick={() => setSelectedUserId(user.id)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '10px',
-                padding: '10px',
-                cursor: 'pointer',
-                borderBottom: isDarkMode ? '1px solid rgba(0, 0, 0, 0.3)' : '1px solid #eee',
-                color: 'white',
-              }}
-            >
-              <img
-                src={user.avatar}
-                alt={user.username}
+        {searchTerm && (
+          <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+            {users.map(user => (
+              <li
+                key={user.id}
+                onClick={() => setSelectedUserId(user.id)}
                 style={{
-                  width: '40px',
-                  height: '40px',
-                  borderRadius: '50%',
-                  marginRight: '10px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  padding: '10px',
+                  cursor: 'pointer',
+                  borderBottom: isDarkMode ? '1px solid rgba(0, 0, 0, 0.3)' : '1px solid #eee',
+                  color: 'white',
                 }}
-              />
-              <span>{user.username}</span>
-            </li>
-          ))}
-        </ul>
+              >
+                <img
+                  src={user.pictureURL || '/images/default-avatar.png'}
+                  alt={user.username}
+                  style={{
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '50%',
+                    marginRight: '10px',
+                  }}
+                />
+                <span>{user.username}</span>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
       {/** Right panel: Chat room or placeholder */}
       <div style={chatRoomStyle}>
         {selectedUserId ? (
-          <ChatRoom userId={selectedUserId} />
+          <ChatRoom userId={selectedUserId} onChatSent={handleChatSent} />
         ) : (
           <div style={emptyStateStyle}>
             <BsMessenger size={64} color="rgba(255,255,255,0.3)" />
