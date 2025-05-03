@@ -29,7 +29,7 @@ const SettingsPage = () => {
   }, [currentUser]);
 
   const handleSave = async () => {
-    if (!currentUser?.username) {
+    if (!username) {
       setError('No username found');
       return;
     }
@@ -39,9 +39,11 @@ const SettingsPage = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ username, email, password, bio }),
+        body: JSON.stringify({ oldUsername: currentUser?.username, username, email, password, bio }),
       });
       if (response.ok) {
+        const updatedUser = await response.json();
+        setCurrentUser(updatedUser);
         alert('Settings saved successfully!');
         setPassword('');
       } else {

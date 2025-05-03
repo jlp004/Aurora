@@ -45,6 +45,7 @@ model Post {
   Comment    Comment[]
   likes      Int       @default(0)
   likedBy    User[]    @relation("PostLikes")
+  createdAt  DateTime  @default(now())
 }
 
 model Tag {

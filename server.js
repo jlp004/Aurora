@@ -259,17 +259,26 @@ app.put('/api/user/:id', async (req, res) => {
 // Update user email, password, and bio
 app.post('/api/User/update', async (req, res) => {
   try {
-    const { username, email, password, bio } = req.body;
-    if (!username) {
-      return res.status(400).json({ message: 'Username is required' });
+    const { oldUsername, username, email, password, bio } = req.body;
+    if (!oldUsername || !username) {
+      return res.status(400).json({ message: 'Old and new username are required' });
     }
-    const user = await prisma.user.findUnique({ where: { username } });
+    // Find user by old username
+    const user = await prisma.user.findUnique({ where: { username: oldUsername } });
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
+    // If username is changing, check for uniqueness
+    if (oldUsername !== username) {
+      const existingUser = await prisma.user.findUnique({ where: { username } });
+      if (existingUser) {
+        return res.status(409).json({ message: 'Username already taken' });
+      }
+    }
     const updatedUser = await prisma.user.update({
-      where: { username },
+      where: { username: oldUsername },
       data: {
+        ...(username && { username }),
         ...(email && { email }),
         ...(password && { password }),
         ...(bio && { profileDesc: bio }),
