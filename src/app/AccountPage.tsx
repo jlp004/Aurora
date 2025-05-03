@@ -53,6 +53,8 @@ const AccountPage = () => {
   const [selectedPost, setSelectedPost] = useState<any>(null);
   const [commentTab, setCommentTab] = useState<'view' | 'post'>('view');
   const [newComment, setNewComment] = useState("");
+  const [uploadLoading, setUploadLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const predefinedTags = ["Nature", "Food", "Travel", "Fashion", "Other"];
 
@@ -74,6 +76,35 @@ const AccountPage = () => {
       document.body.classList.remove('account-page-active');
     };
   }, []);
+
+  useEffect(() => {
+    const fetchUserPosts = async () => {
+      try {
+        console.log('Fetching posts for user ID:', user.id);
+        const response = await fetch(`http://localhost:3001/api/posts/${user.id}`);
+        console.log('API Response:', response);
+        if (response.ok) {
+          const posts = await response.json();
+          console.log('Received posts:', posts);
+          const formattedPosts = posts.map((post: any) => ({
+            id: post.id,
+            image: post.pictureURL,
+            caption: post.title,
+            tags: post.tags || [],
+            comments: []
+          }));
+          console.log('Formatted posts:', formattedPosts);
+          setUser(prev => ({ ...prev, posts: formattedPosts }));
+        } else {
+          console.error('Failed to fetch posts:', response.status, response.statusText);
+        }
+      } catch (err) {
+        console.error('Error fetching posts:', err);
+      }
+    };
+
+    fetchUserPosts();
+  }, [user.id]);
 
   const handleProfilePicChange = async (event) => {
     const file = event.target.files[0];
@@ -112,62 +143,83 @@ const AccountPage = () => {
   const handleCreatePost = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
-    
+
     try {
-      const imageUrl = URL.createObjectURL(file);
-      setSelectedImage(imageUrl);
+      setUploadLoading(true);
+      setError("");
+
+      const formData = new FormData();
+      formData.append('image', file);
+      const response = await fetch('/api/upload/post', { method: 'POST', body: formData });
+
+      if (!response.ok) {
+        throw new Error('Failed to upload image');
+      }
+
+      const data = await response.json();
+      if (!data.imageUrl) {
+        throw new Error('No image URL returned from server');
+      }
+
+      setSelectedImage(data.imageUrl);
       setIsModalOpen(true);
     } catch (err) {
-      console.error('Failed to process image:', err);
+      console.error('API upload error:', err);
+      setError('Failed to process image: ' + (err instanceof Error ? err.message : String(err)));
+    } finally {
+      setUploadLoading(false);
     }
   };
+
 
   const confirmPost = async () => {
     if (!selectedImage) return;
     
     try {
-      const newPost = {
-        id: Date.now(),
-        image: selectedImage,
-        caption: newPostComment,
-        tags: selectedTags,
-        comments: []
+      console.log('Creating post with data:', {
+        userId: currentUser?.id || user.id,
+        title: newPostComment,
+        pictureURL: selectedImage,
+        tags: selectedTags
+      });
+
+      const postData = {
+        userId: currentUser?.id || user.id,
+        title: newPostComment,
+        pictureURL: selectedImage,
+        tags: selectedTags
       };
       
-      setUser(prev => ({ 
-        ...prev, 
-        posts: [newPost, ...prev.posts] 
-      }));
-
-      try {
-        const postData = {
-          userId: currentUser?.id || user.id,
-          title: newPostComment,
-          pictureURL: selectedImage,
-          tags: selectedTags
-        };
-        
-        const response = await fetch('/api/posts', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(postData)
-        });
-        
-        if (response.ok) {
-          const data = await response.json();
-          const updatedPost = { ...newPost, ...data };
-          setUser(prev => ({
-            ...prev,
-            posts: prev.posts.map(p => p.id === newPost.id ? updatedPost : p)
-          }));
-        }
-      } catch (err) {
-        console.error('API error:', err);
-      }
+      const response = await fetch('http://localhost:3001/api/posts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(postData)
+      });
       
-      closeModal();
+      console.log('Create post response:', response);
+      
+      if (response.ok) {
+        const newPost = await response.json();
+        console.log('Created post:', newPost);
+        setUser(prev => ({ 
+          ...prev, 
+          posts: [{
+            id: newPost.id,
+            image: newPost.pictureURL,
+            caption: newPost.title,
+            tags: newPost.tags || [],
+            comments: []
+          }, ...prev.posts] 
+        }));
+        closeModal();
+      } else {
+        const errorData = await response.json();
+        console.error('Failed to create post:', errorData);
+        throw new Error('Failed to create post');
+      }
     } catch (err) {
       console.error('Failed to create post:', err);
+      setError('Failed to create post: ' + (err instanceof Error ? err.message : String(err)));
     }
   };
 
@@ -202,19 +254,32 @@ const AccountPage = () => {
     setCommentTab('view');
   };
 
-  const handleDeletePost = (postId: number) => {
+  const handleDeletePost = async (postId: number) => {
     if (window.confirm('Are you sure you want to delete this post?')) {
-      setUser(prev => ({
-        ...prev,
-        posts: prev.posts.filter(post => post.id !== postId)
-      }));
-      
       try {
-        fetch(`/api/posts/${postId}`, {
+        console.log('Attempting to delete post:', postId);
+        const response = await fetch(`http://localhost:3001/api/posts/${postId}`, {
           method: 'DELETE',
-        }).catch(err => console.error('API error:', err));
+        });
+        
+        console.log('Delete response:', response);
+        const responseData = await response.json();
+        console.log('Delete response data:', responseData);
+        
+        if (response.ok) {
+          console.log('Post deleted successfully, updating UI');
+          // Only update the UI if the server deletion was successful
+          setUser(prev => ({
+            ...prev,
+            posts: prev.posts.filter(post => post.id !== postId)
+          }));
+        } else {
+          console.error('Failed to delete post:', responseData);
+          throw new Error('Failed to delete post');
+        }
       } catch (err) {
         console.error('Error deleting post:', err);
+        setError('Failed to delete post: ' + (err instanceof Error ? err.message : String(err)));
       }
     }
   };

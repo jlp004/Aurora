@@ -342,6 +342,30 @@ app.put('/api/posts/:id', async (req, res) => {
   }
 });
 
+// Delete a post
+app.delete('/api/posts/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // First delete any comments associated with the post
+    await prisma.comment.deleteMany({
+      where: { postId: Number(id) }
+    });
+    
+    // Then delete the post
+    const post = await prisma.post.delete({
+      where: { id: Number(id) }
+    });
+    
+    return res.status(200).json({ message: 'Post deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting post:', error);
+    return res.status(500).json({ 
+      message: 'Failed to delete post' 
+    });
+  }
+});
+
 // === File Upload Endpoints ===
 
 // Upload profile picture

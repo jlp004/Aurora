@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
           id: 'desc'
         }
       });
-      return NextResponse.json({ data: posts }, { status: 200 });
+      return NextResponse.json(posts, { status: 200 });
     }
     
     // Otherwise return all posts
@@ -38,7 +38,7 @@ export async function GET(req: NextRequest) {
         id: 'desc'
       }
     });
-    return NextResponse.json({ data: posts }, { status: 200 });
+    return NextResponse.json(posts, { status: 200 });
   }
   catch (error) {
     console.error('Error fetching posts:', error);
