@@ -4,6 +4,15 @@ import { useState, useEffect } from 'react';
 import '../styles/Post.css'; 
 import { Link } from 'react-router-dom';
 
+interface Comment {
+  id: number;
+  text: string;
+  poster: {
+    username: string;
+  };
+  createdAt: string;
+}
+
 interface PostProps {
   id?: number;
   username?: string;
@@ -71,6 +80,8 @@ export default function Post({
   const [commentText, setCommentText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [postComments, setPostComments] = useState<Comment[]>([]);
+  const [commentCount, setCommentCount] = useState(comments);
   
   // Initialize timestamp from localStorage or prop
   const [timestamp, setTimestamp] = useState(() => {
@@ -86,6 +97,35 @@ export default function Post({
   const [displayTime, setDisplayTime] = useState(() => 
     formatTimeAgo(calculateTimeDiff(timestamp))
   );
+
+  // Fetch comments when showComments is true
+  useEffect(() => {
+    if (showComments && id) {
+      fetchComments();
+    }
+  }, [showComments, id]);
+
+  const fetchComments = async () => {
+    try {
+      const response = await fetch(`http://localhost:3001/api/Comment/post/${id}`);
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(`Failed to fetch comments: ${response.status} ${text}`);
+      }
+      const comments = await response.json();
+      if (!Array.isArray(comments)) {
+        throw new Error('Comments response is not an array');
+      }
+      setPostComments(comments);
+      setCommentCount(comments.length);
+      setError(null);
+    } catch (error) {
+      console.error('Error fetching comments:', error);
+      setPostComments([]);
+      setCommentCount(0);
+      setError(error instanceof Error ? error.message : 'Failed to load comments');
+    }
+  };
 
   // Store timestamp in localStorage when it changes
   useEffect(() => {
@@ -134,7 +174,7 @@ export default function Post({
     setError(null);
 
     try {
-      const response = await fetch('/api/Comment/post/' + id, {
+      const response = await fetch(`http://localhost:3001/api/Comment/post/` + id, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -151,6 +191,9 @@ export default function Post({
         throw new Error(data.error || 'Failed to post comment');
       }
 
+      const newComment = await response.json();
+      setPostComments(prev => [...prev, newComment]);
+      setCommentCount(prev => prev + 1);
       setCommentText('');
     } catch (error) {
       console.error('Error posting comment:', error);
@@ -191,7 +234,7 @@ export default function Post({
       
       <div className="post-stats">
         <span className="likes">{currentLikes} likes</span>
-        <span className="comments">{comments} comments</span>
+        <span className="comments">{commentCount} comments</span>
       </div>
       
       <div className="post-caption">
@@ -201,6 +244,15 @@ export default function Post({
       
       {showComments && (
         <div className="comments-section">
+          {error && <div className="error-message">{error}</div>}
+          <div className="comments-list">
+            {postComments.map(comment => (
+              <div key={comment.id} className="comment">
+                <span className="comment-username">{comment.poster?.username || 'Unknown'}</span>
+                <span className="comment-text">{comment.text}</span>
+              </div>
+            ))}
+          </div>
           <form onSubmit={handleCommentSubmit} className="comment-form">
             <input
               type="text"
@@ -218,7 +270,6 @@ export default function Post({
               {isSubmitting ? 'Posting...' : 'Post'}
             </button>
           </form>
-          {error && <div className="error-message">{error}</div>}
         </div>
       )}
       

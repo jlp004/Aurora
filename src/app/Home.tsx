@@ -2,6 +2,7 @@ import Header from "../components/Header";
 import Post from '../components/Post';
 import '../styles/Home.css';
 import { useEffect, useState } from 'react';
+import { useUser } from './userData';
 
 interface PostData {
   id: number;
@@ -12,9 +13,11 @@ interface PostData {
     username: string;
   };
   createdAt: string;
+  comments: number;
 }
 
 const Home = () => {
+  const { currentUser } = useUser();
   const [posts, setPosts] = useState<PostData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -104,6 +107,8 @@ const Home = () => {
             caption={post.title}
             username={post.user.username}
             timePosted={post.createdAt}
+            currentUserId={currentUser?.id}
+            comments={post.comments}
           />
         ))}
       </div>

@@ -303,6 +303,9 @@ app.get('/api/posts', async (req, res) => {
           select: {
             username: true
           }
+        },
+        _count: {
+          select: { Comment: true }
         }
       },
       orderBy: {
@@ -310,9 +313,14 @@ app.get('/api/posts', async (req, res) => {
       }
     });
     
-    // Send the raw timestamps without modification
+    // Add a comments property to each post for the count
+    const postsWithCommentCount = posts.map(post => ({
+      ...post,
+      comments: post._count.Comment
+    }));
+
     return res.status(200).json({ 
-      data: posts
+      data: postsWithCommentCount
     });
   } catch (error) {
     console.error('Error fetching posts:', error);
@@ -530,6 +538,21 @@ app.post('/api/upload/post', upload.single('image'), async (req, res) => {
   }
 });
 
+// Get all comments for a specific post
+app.get('/api/Comment/post/:postId', async (req, res) => {
+  const { postId } = req.params;
+  try {
+    const comments = await prisma.comment.findMany({
+      where: { postId: Number(postId) },
+      include: { poster: true }
+    });
+    res.status(200).json(comments);
+  } catch (error) {
+    console.error('Error fetching comments:', error);
+    res.status(500).json({ error: 'Failed to fetch comments' });
+  }
+});
+
 // Create a comment for a specific post
 app.post('/api/Comment/post/:postId', async (req, res) => {
   const { postId } = req.params;
@@ -546,7 +569,8 @@ app.post('/api/Comment/post/:postId', async (req, res) => {
         posterId: Number(posterId),
         postId: Number(postId),
         parentId: parentId ?? null
-      }
+      },
+      include: { poster: true }
     });
 
     res.status(201).json(comment);
@@ -555,7 +579,6 @@ app.post('/api/Comment/post/:postId', async (req, res) => {
     res.status(500).json({ error: 'Failed to create comment' });
   }
 });
-
 
 // Error handling middleware for multer
 app.use((err, req, res, next) => {

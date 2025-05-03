@@ -198,3 +198,28 @@
     color: gray;
   }
   
+.comments-list {
+  margin-bottom: 16px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.comment {
+  padding: 8px 0;
+  border-bottom: 1px solid #dbdbdb;
+}
+
+.comment:last-child {
+  border-bottom: none;
+}
+
+.comment-username {
+  font-weight: bold;
+  margin-right: 8px;
+  color: var(--text-primary);
+}
+
+.comment-text {
+  color: var(--text-secondary);
+}
+  
