@@ -17,6 +17,8 @@ const SettingsPage = () => {
   const [emailNotifs, setEmailNotifs] = useState(true);
   const [pushNotifs, setPushNotifs] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [email, setEmail] = useState(currentUser?.email || '');
+  const [password, setPassword] = useState('');
 
   // Update form when currentUser changes
   useEffect(() => {
@@ -27,42 +29,26 @@ const SettingsPage = () => {
   }, [currentUser]);
 
   const handleSave = async () => {
-    if (!currentUser?.id) {
-      setError('No user ID found');
+    if (!currentUser?.username) {
+      setError('No username found');
       return;
     }
-
     try {
-      const response = await fetch(`http://localhost:3001/api/user/${currentUser.id}`, {
-        method: 'PUT',
+      const response = await fetch('/api/User/update', {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          username,
-          profileDesc: bio
-        })
+        body: JSON.stringify({ username, email, password, bio }),
       });
-      
       if (response.ok) {
-        const updatedUser = await response.json();
-        console.log('User updated:', updatedUser);
-        
-        // Update the user context
-        setCurrentUser({
-          ...currentUser,
-          username: updatedUser.username,
-          profileDesc: updatedUser.profileDesc
-        });
-        
         alert('Settings saved successfully!');
+        setPassword('');
       } else {
         const errorData = await response.json();
-        console.error('Failed to update user:', errorData);
-        throw new Error('Failed to update user settings');
+        setError('Failed to save settings: ' + (errorData.message || 'Unknown error'));
       }
     } catch (err) {
-      console.error('Error updating user:', err);
       setError('Failed to save settings: ' + (err instanceof Error ? err.message : String(err)));
     }
   };
@@ -129,22 +115,24 @@ const SettingsPage = () => {
       </div>
 
       <div className="settings-section">
-        <h3>Notifications</h3>
+        <h3>Account Details</h3>
         <label>
-          <input 
-            type="checkbox" 
-            checked={emailNotifs} 
-            onChange={() => setEmailNotifs(!emailNotifs)} 
+          Change Email:
+          <input
+            type="email"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            placeholder="Enter new email"
           />
-          Email Notifications
         </label>
         <label>
-          <input 
-            type="checkbox" 
-            checked={pushNotifs} 
-            onChange={() => setPushNotifs(!pushNotifs)} 
+          Change Password:
+          <input
+            type="password"
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            placeholder="Enter new password"
           />
-          Push Notifications
         </label>
       </div>
 

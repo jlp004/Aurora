@@ -256,6 +256,33 @@ app.put('/api/user/:id', async (req, res) => {
   }
 });
 
+// Update user email, password, and bio
+app.post('/api/User/update', async (req, res) => {
+  try {
+    const { username, email, password, bio } = req.body;
+    if (!username) {
+      return res.status(400).json({ message: 'Username is required' });
+    }
+    const user = await prisma.user.findUnique({ where: { username } });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    const updatedUser = await prisma.user.update({
+      where: { username },
+      data: {
+        ...(email && { email }),
+        ...(password && { password }),
+        ...(bio && { profileDesc: bio }),
+      }
+    });
+    const { password: _, ...userWithoutPassword } = updatedUser;
+    return res.status(200).json(userWithoutPassword);
+  } catch (error) {
+    console.error('Error updating user:', error);
+    return res.status(500).json({ message: 'Failed to update user: ' + error.message });
+  }
+});
+
 // === Post Endpoints ===
 
 // Get all posts
