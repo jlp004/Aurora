@@ -31,6 +31,7 @@ interface PostWithUser {
     pictureURL: string;
     userId: number;
     likes: number;
+    createdAt: string;
     user: {
         username: string;
     };
@@ -103,7 +104,7 @@ export default function UserProfile() {
                     caption: post.title,
                     likes: post.likes,
                     comments: 0, // need to do something else to fetch comments properly
-                    timePosted: new Date().toLocaleDateString() // Using current date as fallback
+                    timePosted: post.createdAt // Use the actual createdAt timestamp as is
                 }));
 
                 console.log('Transformed posts:', transformedPosts);

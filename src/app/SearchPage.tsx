@@ -124,7 +124,7 @@ const SearchPage = () => {
                 caption={post.title}
                 likes={post.likes || 0}
                 comments={post.Comment?.length || 0}
-                timePosted={new Date(post.createdAt).toLocaleString() || "Unknown"}
+                timePosted={post.createdAt}
               />
             ))
           )}

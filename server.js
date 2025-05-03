@@ -270,11 +270,14 @@ app.get('/api/posts', async (req, res) => {
         }
       },
       orderBy: {
-        id: 'desc'
+        createdAt: 'desc'
       }
     });
     
-    return res.status(200).json({ data: posts });
+    // Send the raw timestamps without modification
+    return res.status(200).json({ 
+      data: posts
+    });
   } catch (error) {
     console.error('Error fetching posts:', error);
     return res.status(500).json({ 
@@ -331,10 +334,22 @@ app.get('/api/posts/:userId', async (req, res) => {
             username: true
           }
         }
+      },
+      orderBy: {
+        createdAt: 'desc'
       }
     });
     
-    return res.status(200).json(posts);
+    // Format the posts with ISO string dates
+    const formattedPosts = posts.map(post => {
+      const createdAt = post.createdAt.toISOString();
+      return {
+        ...post,
+        createdAt
+      };
+    });
+    
+    return res.status(200).json(formattedPosts);
   } catch (error) {
     console.error('Error fetching posts:', error);
     return res.status(500).json({ 
@@ -356,13 +371,13 @@ app.post('/api/posts', async (req, res) => {
       });
     }
     
-    // Create post with only the fields that exist in the schema
+    // Create post with explicit timestamp
     const post = await prisma.post.create({
       data: {
         title,
         pictureURL: pictureURL || '',
         userId: Number(userId),
-        // Note: tags field is removed as it doesn't match how tags are related in the schema
+        createdAt: new Date().toISOString() // Store as ISO string
       }
     });
     

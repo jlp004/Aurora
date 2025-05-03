@@ -19,23 +19,55 @@ const Home = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        const response = await fetch('http://localhost:3001/api/posts');
-        if (!response.ok) {
-          throw new Error('Failed to fetch posts');
-        }
-        const data = await response.json();
-        setPosts(data.data || []);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch posts');
-      } finally {
-        setLoading(false);
+  const fetchPosts = async () => {
+    try {
+      const response = await fetch('http://localhost:3001/api/posts');
+      if (!response.ok) {
+        throw new Error('Failed to fetch posts');
       }
-    };
+      const data = await response.json();
+      
+      // Ensure each post has a valid timestamp
+      const postsWithValidDates = data.data?.map((post: PostData) => {
+        // If no createdAt, use current time as fallback
+        if (!post.createdAt) {
+          console.error('Post missing createdAt:', post);
+          return {
+            ...post,
+            createdAt: new Date().toISOString()
+          };
+        }
+        
+        // Ensure the timestamp is a valid ISO string
+        try {
+          const date = new Date(post.createdAt);
+          if (isNaN(date.getTime())) {
+            throw new Error('Invalid date');
+          }
+          return post;
+        } catch (err) {
+          console.error('Invalid createdAt format:', post.createdAt);
+          return {
+            ...post,
+            createdAt: new Date().toISOString()
+          };
+        }
+      }) || [];
 
+      setPosts(postsWithValidDates);
+    } catch (err) {
+      console.error('Error fetching posts:', err);
+      setError(err instanceof Error ? err.message : 'Failed to fetch posts');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchPosts();
+    // Refresh posts every minute
+    const intervalId = setInterval(fetchPosts, 60000);
+    return () => clearInterval(intervalId);
   }, []);
 
   if (loading) {
@@ -67,10 +99,11 @@ const Home = () => {
         {posts.map((post) => (
           <Post
             key={post.id}
+            id={post.id}
             imageUrl={post.pictureURL}
             caption={post.title}
             username={post.user.username}
-            timePosted={new Date(post.createdAt).toLocaleDateString()}
+            timePosted={post.createdAt}
           />
         ))}
       </div>

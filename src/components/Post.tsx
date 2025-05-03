@@ -1,6 +1,6 @@
 /* Written by Megan Chacko - msc220005 */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import '../styles/Post.css'; 
 import { Link } from 'react-router-dom';
 
@@ -11,9 +11,49 @@ interface PostProps {
   caption?: string;
   likes?: number;
   comments?: number;
-  timePosted?: string;
+  timePosted?: string | Date;
   currentUserId?: string | number;
 }
+
+const getStoredTimestamp = (postId: number): string | null => {
+  return localStorage.getItem(`post_${postId}_timestamp`);
+};
+
+const storeTimestamp = (postId: number, timestamp: string) => {
+  localStorage.setItem(`post_${postId}_timestamp`, timestamp);
+};
+
+const ensureDate = (timestamp: string | Date): Date => {
+  return timestamp instanceof Date ? timestamp : new Date(timestamp);
+};
+
+const calculateTimeDiff = (timestamp: string | Date): number => {
+  const postDate = ensureDate(timestamp);
+  return Math.floor((new Date().getTime() - postDate.getTime()) / 1000);
+};
+
+const formatTimeAgo = (seconds: number): string => {
+  if (seconds < 0) return 'just now';
+  
+  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+  
+  if (minutes < 1) {
+    return `${seconds} ${seconds === 1 ? 'second' : 'seconds'} ago`;
+  }
+  if (hours < 1) {
+    return `${minutes} ${minutes === 1 ? 'minute' : 'minutes'} ago`;
+  }
+  if (days < 1) {
+    return `${hours} ${hours === 1 ? 'hour' : 'hours'} ago`;
+  }
+  if (days < 7) {
+    return `${days} ${days === 1 ? 'day' : 'days'} ago`;
+  }
+  
+  return ensureDate(new Date(Date.now() - seconds * 1000)).toLocaleDateString();
+};
 
 export default function Post({
   username = "user1234!",
@@ -21,7 +61,7 @@ export default function Post({
   caption = "Mountain view!",
   likes = 5,
   comments = 2,
-  timePosted = "2 hours ago",
+  timePosted = new Date(),
   id = 0,
   currentUserId = ''
 }: PostProps) {
@@ -31,6 +71,40 @@ export default function Post({
   const [commentText, setCommentText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // Initialize timestamp from localStorage or prop
+  const [timestamp, setTimestamp] = useState(() => {
+    if (!id) return ensureDate(timePosted);
+    const storedTime = getStoredTimestamp(id);
+    if (storedTime) return new Date(storedTime);
+    
+    const initialTime = ensureDate(timePosted);
+    storeTimestamp(id, initialTime.toISOString());
+    return initialTime;
+  });
+
+  const [displayTime, setDisplayTime] = useState(() => 
+    formatTimeAgo(calculateTimeDiff(timestamp))
+  );
+
+  // Store timestamp in localStorage when it changes
+  useEffect(() => {
+    if (id) {
+      storeTimestamp(id, timestamp.toISOString());
+    }
+  }, [id, timestamp]);
+
+  // Update the display time every second
+  useEffect(() => {
+    const updateTime = () => {
+      const diff = calculateTimeDiff(timestamp);
+      setDisplayTime(formatTimeAgo(diff));
+    };
+
+    updateTime(); // Initial update
+    const interval = setInterval(updateTime, 1000);
+    return () => clearInterval(interval);
+  }, [timestamp]);
 
   const handleLike = () => {
     setCurrentLikes(isLiked ? currentLikes - 1 : currentLikes + 1);
@@ -41,27 +115,18 @@ export default function Post({
     e.preventDefault();
 
     if (!commentText.trim() || !currentUserId || !id) {
-      console.log('Submitting comment:', {
-        text: commentText,
-        currentUserId,
-        postId: id
-      });
-
       if (!commentText.trim()) {
         setError('Please enter a comment');
         return;
       }
-
       if (!currentUserId) {
         setError('You must be logged in to comment');
         return;
       }
-
       if (!id) {
         setError('Invalid post');
         return;
       }
-
       return;
     }
 
@@ -69,7 +134,7 @@ export default function Post({
     setError(null);
 
     try {
-      const response = await fetch('/api/Comment', {
+      const response = await fetch('/api/Comment/post/' + id, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -81,14 +146,12 @@ export default function Post({
         }),
       });
 
-      const data = await response.json();
-
       if (!response.ok) {
+        const data = await response.json();
         throw new Error(data.error || 'Failed to post comment');
       }
 
       setCommentText('');
-      // Optionally refresh comments here
     } catch (error) {
       console.error('Error posting comment:', error);
       setError(error instanceof Error ? error.message : 'Failed to post comment');
@@ -105,8 +168,6 @@ export default function Post({
             <div className="user-avatar">{username.charAt(0)}</div>
             <span className="username">{username}</span>
           </Link>
-          {/* <div className="user-avatar">{username.charAt(0)}</div>
-          <span className="username">{username}</span> */}
         </div>
       </div>
       
@@ -161,7 +222,7 @@ export default function Post({
         </div>
       )}
       
-      <div className="post-time">{timePosted}</div>
+      <div className="post-time">{displayTime}</div>
     </div>
   );
 }
