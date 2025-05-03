@@ -33,13 +33,12 @@ const SettingsPage = () => {
     }
 
     try {
-      const response = await fetch('http://localhost:3001/api/user/update', {
+      const response = await fetch(`http://localhost:3001/api/user/${currentUser.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          id: currentUser.id,
           username,
           profileDesc: bio
         })

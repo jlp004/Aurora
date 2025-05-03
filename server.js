@@ -227,6 +227,35 @@ app.get('/api/User/:username', async (req, res) => {
   }
 });
 
+// Update user settings
+app.put('/api/user/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { username, profileDesc } = req.body;
+    
+    console.log('Updating user:', { id, username, profileDesc });
+    
+    const updatedUser = await prisma.user.update({
+      where: { id: Number(id) },
+      data: {
+        ...(username && { username }),
+        ...(profileDesc && { profileDesc })
+      }
+    });
+    
+    // Don't return the password
+    const { password: _, ...userWithoutPassword } = updatedUser;
+    
+    return res.status(200).json(userWithoutPassword);
+  } catch (error) {
+    console.error('Error updating user:', error);
+    return res.status(500).json({ 
+      message: 'Failed to update user settings',
+      details: error.message 
+    });
+  }
+});
+
 // === Post Endpoints ===
 
 // Get all posts
