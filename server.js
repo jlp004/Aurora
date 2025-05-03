@@ -4,6 +4,11 @@ import cors from 'cors';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const prisma = new PrismaClient();
 const app = express();
@@ -223,6 +228,31 @@ app.get('/api/User/:username', async (req, res) => {
 });
 
 // === Post Endpoints ===
+
+// Get all posts
+app.get('/api/posts', async (req, res) => {
+  try {
+    const posts = await prisma.post.findMany({
+      include: {
+        user: {
+          select: {
+            username: true
+          }
+        }
+      },
+      orderBy: {
+        id: 'desc'
+      }
+    });
+    
+    return res.status(200).json({ data: posts });
+  } catch (error) {
+    console.error('Error fetching posts:', error);
+    return res.status(500).json({ 
+      message: 'Failed to fetch posts' 
+    });
+  }
+});
 
 // Search posts by query - MUST BE BEFORE :userId route
 app.get('/api/posts/search', async (req, res) => {
