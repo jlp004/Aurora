@@ -68,7 +68,7 @@ export default function Post({
   username = "user1234!",
   imageUrl = "../../images/mountain.jpg",
   caption = "Mountain view!",
-  likes = 5,
+  likes = 0,
   comments = 2,
   timePosted = new Date(),
   id = 0,
@@ -146,10 +146,60 @@ export default function Post({
     return () => clearInterval(interval);
   }, [timestamp]);
 
-  const handleLike = () => {
-    setCurrentLikes(isLiked ? currentLikes - 1 : currentLikes + 1);
-    setIsLiked(!isLiked);
+  // const handleLike = () => {
+  //   setCurrentLikes(isLiked ? currentLikes - 1 : currentLikes + 1);
+  //   setIsLiked(!isLiked);
+  // };
+  // Example: Fetch post data including likes when the component mounts
+  useEffect(() => {
+  const fetchPostData = async () => {
+    try {
+      const response = await fetch(`/api/Post/${id}`);
+      if (!response.ok) throw new Error('Failed to fetch post data');
+      const data = await response.json();
+      setCurrentLikes(data.likes);
+    } catch (error) {
+      console.error('Error fetching post data:', error);
+    }
   };
+
+    if (id) fetchPostData();
+  }, [id]);
+
+  const handleLike = async () => {
+    if (!currentUserId || !id) {
+      setError('You must be logged in to like a post');
+      return;
+    }
+
+    setIsLiked(!isLiked);
+    setCurrentLikes(prev => (isLiked ? prev - 1 : prev + 1));
+
+    try {
+      const response = await fetch(`http://localhost:3001/api/Post/${id}/like`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: currentUserId,
+          postId: id,
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to like post');
+      }
+      const responseData = await response.json();
+      setCurrentLikes(responseData.likes); // Update the likes count in the frontend
+      setIsLiked(!isLiked); // Toggle the like state
+    } catch (error) {
+      console.error('Error liking post:', error);
+      setError(error instanceof Error ? error.message : 'Failed to like post');
+    }
+  };
+
 
   const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
