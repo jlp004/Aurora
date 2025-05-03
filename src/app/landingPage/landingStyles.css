@@ -1,0 +1,49 @@
+﻿.header {
+    font-size: 3rem;
+    margin-bottom: 30px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    text-align: center;
+}
+
+.accountForm {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    background: var(--bg-primary);
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px var(--dropdown-shadow);
+    width: 350px;
+}
+
+.input {
+    background: var(--input-bg);
+    border: 2px solid var(--input-border);
+    color: var(--text-primary);
+    caret-color: var(--text-secondary);             /* cursor color *while* typing */
+
+    padding: 12px;
+    font-size: 1rem;
+    border-radius: 6px;
+}
+
+.input:focus {
+    border-color: var(--input-focus-border);
+    box-shadow: 0 0 0 2px var(--input-focus-shadow);
+    color: var(--text-primary);
+    caret-color: var(--text-secondary);             /* cursor color *while* typing */
+
+    outline: none;
+}
+
+.background {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    width: 100vw;
+    background: linear-gradient(135deg,rgb(26, 22, 78) 0%,rgb(122, 50, 124) 100%);
+    position: relative;
+    font-family: Arial, sans-serif;
+}

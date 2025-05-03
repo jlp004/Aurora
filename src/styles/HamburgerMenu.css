@@ -1,0 +1,95 @@
+/* John Phelan */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.dropdownmenu {
+    display: flex;
+    background-color: var(--sidebar-bg);
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 0rem;
+    height: 100vh;
+    align-items: flex-start;
+    justify-content: flex-start;
+    transition: all 0.5s ease;
+    border-right: 1px solid var(--border-color);
+}
+
+.collapsible-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.collapsible-container:hover {
+    cursor: pointer;
+}
+
+/* The dashes animation is handled through pure CSS / rotations / transformations
+ * It should be easier to render/manage than an animated image but it can break if
+ * You change probably anything related to the dashes in HamburgerMenu.css
+ */
+
+.dash {
+    background-color: var(--text-primary);
+    width: 1.5rem;
+    height: 2px;
+    margin: 3px 0;
+    transition: transform 0.2s ease;
+    transform-origin: center;
+    z-index: 99;
+}
+
+.rotated {
+    transform: rotate(45deg) translateY(6px) translateX(5px);
+    transform-origin: center;
+    transition: transform 0.2s ease;
+}
+
+.rotatedOpposite {
+    transform: rotate(-45deg) translateY(-6px) translateX(5px);
+    transform-origin: center;
+    transition: transform 0.2s ease;
+}
+
+.hidden {
+    opacity: 0;
+}
+
+.navExpand {
+    width: 15rem;
+    z-index: 0;
+}
+
+.expandableText {
+    display: flex;
+    margin-top: 5rem;
+    flex-direction: column;
+    opacity: 0;
+    transition: opacity 0.3s ease, transform 0.5s ease;
+    transform: translateX(-150%);
+    font-size: 2rem;
+    gap: 3rem;
+    align-items: center;
+}
+
+.expandableText span {
+    color: var(--text-primary) !important;
+    transition: color 0.3s ease;
+}
+
+.expandableText span:hover {
+    color: var(--accent-primary) !important;
+}
+
+.expandableText.visible {
+    opacity: 1;
+    transform: translateX(-30%);
+}
