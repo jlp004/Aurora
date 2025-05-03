@@ -16,6 +16,7 @@ const SettingsPage = () => {
   const [isPrivate, setIsPrivate] = useState(false);
   const [emailNotifs, setEmailNotifs] = useState(true);
   const [pushNotifs, setPushNotifs] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Update form when currentUser changes
   useEffect(() => {
@@ -25,37 +26,46 @@ const SettingsPage = () => {
     }
   }, [currentUser]);
 
-  const handleSave = () => {
-    // Update the user context with new values
-    if (currentUser) {
-      const updatedUser = {
-        ...currentUser,
-        username: username,
-        profileDesc: bio
-      };
-      
-      // Update user context (this will be stored in localStorage)
-      setCurrentUser(updatedUser);
-      
-      // Try to update the backend if available
-      try {
-        fetch('/api/user/update', {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            id: currentUser.id,
-            username,
-            bio
-          })
-        }).catch(err => console.error('API error:', err));
-      } catch (err) {
-        console.error('Error updating user:', err);
-      }
+  const handleSave = async () => {
+    if (!currentUser?.id) {
+      setError('No user ID found');
+      return;
     }
-    
-    alert('Settings saved!');
+
+    try {
+      const response = await fetch('http://localhost:3001/api/user/update', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id: currentUser.id,
+          username,
+          profileDesc: bio
+        })
+      });
+      
+      if (response.ok) {
+        const updatedUser = await response.json();
+        console.log('User updated:', updatedUser);
+        
+        // Update the user context
+        setCurrentUser({
+          ...currentUser,
+          username: updatedUser.username,
+          profileDesc: updatedUser.profileDesc
+        });
+        
+        alert('Settings saved successfully!');
+      } else {
+        const errorData = await response.json();
+        console.error('Failed to update user:', errorData);
+        throw new Error('Failed to update user settings');
+      }
+    } catch (err) {
+      console.error('Error updating user:', err);
+      setError('Failed to save settings: ' + (err instanceof Error ? err.message : String(err)));
+    }
   };
 
   const navigate = useNavigate();
@@ -139,6 +149,7 @@ const SettingsPage = () => {
         </label>
       </div>
 
+      {error && <div className="error-message">{error}</div>}
       
       <button className="delete-button" onClick={handleDeleteAccount}> 
         Delete Account

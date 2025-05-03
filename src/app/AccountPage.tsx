@@ -7,12 +7,12 @@ import Comment from "../components/Comment";
 import { useUser } from './userData';
 
 const AccountPage = () => {
-  const { currentUser } = useUser();
+  const { currentUser, setCurrentUser } = useUser();
   
   const [user, setUser] = useState({
-    id: 1,
+    id: currentUser?.id || 1,
     username: currentUser?.username || "user123",
-    bio: "Lover of code and coffee ☕",
+    bio: currentUser?.profileDesc || "Lover of code and coffee ☕",
     followers: 5,
     following: 2,
     profilePic: currentUser?.pictureURL || "/images/default_avatar.png",
@@ -63,12 +63,38 @@ const AccountPage = () => {
       setUser(prev => ({
         ...prev,
         id: typeof currentUser.id === 'string' ? parseInt(currentUser.id, 10) || 1 : currentUser.id,
-        username: currentUser.username,
+        username: currentUser.username || prev.username,
         profilePic: currentUser.pictureURL || prev.profilePic,
         bio: currentUser.profileDesc || prev.bio
       }));
     }
   }, [currentUser]);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (currentUser?.id) {
+        try {
+          const response = await fetch(`http://localhost:3001/api/user/${currentUser.id}`);
+          if (response.ok) {
+            const userData = await response.json();
+            setUser(prev => ({
+              ...prev,
+              id: userData.id,
+              username: userData.username || prev.username,
+              profilePic: userData.pictureURL || prev.profilePic,
+              bio: userData.profileDesc || prev.bio,
+              followers: userData.followers || prev.followers,
+              following: userData.following || prev.following
+            }));
+          }
+        } catch (err) {
+          console.error('Error fetching user data:', err);
+        }
+      }
+    };
+
+    fetchUserData();
+  }, [currentUser?.id]);
 
   useEffect(() => {
     document.body.classList.add('account-page-active');
@@ -113,28 +139,57 @@ const AccountPage = () => {
     if (!file) return;
     
     try {
-      const imageUrl = URL.createObjectURL(file);
-      setUser({ ...user, profilePic: imageUrl });
+      // Show preview immediately
+      const previewUrl = URL.createObjectURL(file);
+      setUser(prev => ({ ...prev, profilePic: previewUrl }));
       
-      try {
-        const formData = new FormData();
-        formData.append('image', file);
-        formData.append('userId', currentUser?.id.toString() || user.id.toString());
+      // Upload to server
+      const formData = new FormData();
+      formData.append('image', file);
+      formData.append('userId', currentUser?.id.toString() || user.id.toString());
+      
+      const response = await fetch('http://localhost:3001/api/upload/profile', { 
+        method: 'POST', 
+        body: formData 
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Profile picture uploaded:', data);
         
-        const response = await fetch('/api/upload/profile', { 
-          method: 'POST', 
-          body: formData 
-        });
+        // Update both local state and user context with the new image URL
+        // Remove the /public prefix from the image URL
+        const newImageUrl = data.imageUrl.replace('/public', '');
         
-        if (response.ok) {
-          const data = await response.json();
-          setUser({ ...user, profilePic: data.imageUrl });
+        // Update user context
+        if (currentUser) {
+          const updatedUser = { ...currentUser, pictureURL: newImageUrl };
+          setCurrentUser(updatedUser);
         }
-      } catch (err) {
-        console.error('API upload error:', err);
+        
+        // Update local state
+        setUser(prev => ({ 
+          ...prev, 
+          profilePic: newImageUrl,
+          username: prev.username
+        }));
+        
+        // Force an immediate update of the image
+        const imgElement = document.querySelector('.profile-pic') as HTMLImageElement;
+        if (imgElement) {
+          imgElement.src = newImageUrl;
+          // Force a re-render by temporarily changing the src
+          imgElement.src = '';
+          imgElement.src = newImageUrl;
+        }
+      } else {
+        const errorData = await response.json();
+        console.error('Failed to upload profile picture:', errorData);
+        throw new Error('Failed to upload profile picture');
       }
     } catch (err) {
       console.error('Failed to upload profile picture:', err);
+      setError('Failed to upload profile picture: ' + (err instanceof Error ? err.message : String(err)));
     }
   };
 
