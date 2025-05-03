@@ -15,7 +15,7 @@ const AccountPage = () => {
     bio: "Lover of code and coffee ☕",
     followers: 5,
     following: 2,
-    profilePic: currentUser?.pictureURL || "/images/profile-pic.jpg",
+    profilePic: currentUser?.pictureURL || "/images/default_avatar.png",
     posts: [
       {
         id: 1,
@@ -79,9 +79,11 @@ const AccountPage = () => {
 
   useEffect(() => {
     const fetchUserPosts = async () => {
+      if (!currentUser) return;
+      
       try {
-        console.log('Fetching posts for user ID:', user.id);
-        const response = await fetch(`http://localhost:3001/api/posts/${user.id}`);
+        console.log('Fetching posts for user ID:', currentUser.id);
+        const response = await fetch(`http://localhost:3001/api/posts/${currentUser.id}`);
         console.log('API Response:', response);
         if (response.ok) {
           const posts = await response.json();
@@ -104,7 +106,7 @@ const AccountPage = () => {
     };
 
     fetchUserPosts();
-  }, [user.id]);
+  }, [currentUser]);
 
   const handleProfilePicChange = async (event) => {
     const file = event.target.files[0];
