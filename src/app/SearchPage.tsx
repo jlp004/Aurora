@@ -212,16 +212,21 @@ const SearchPage = () => {
             users.map((user: any) => {
               console.log('Rendering user:', user)
               return (
-                <div key={user.id} style={{ 
-                  backgroundColor: 'var(--bg-primary)', 
-                  padding: '1rem', 
-                  borderRadius: '8px', 
-                  marginBottom: '1rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  color: 'var(--text-primary)',
-                  border: '1px solid var(--border-color)'
-                }}>
+                <div 
+                  key={user.id} 
+                  onClick={() => navigate(`/profile?userID=${user.username}`)}
+                  style={{ 
+                    backgroundColor: 'var(--bg-primary)', 
+                    padding: '1rem', 
+                    borderRadius: '8px', 
+                    marginBottom: '1rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    color: 'var(--text-primary)',
+                    border: '1px solid var(--border-color)',
+                    cursor: 'pointer'
+                  }}
+                >
                   <img 
                     src={user.pictureURL || '../../images/default-user.png'} 
                     alt="Profile" 

@@ -205,7 +205,18 @@ const SearchBar: React.FC<HeaderProps> = ({ onThemeToggle }) => {
 
                 {/* Suggestions dropdown */}
                 {isFocused && inputValue && (
-                    <div className="suggestions-dropdown">
+                    <div className="suggestions-dropdown" style={{
+                        background: '#181028',
+                        borderRadius: '8px',
+                        padding: '0',
+                        marginTop: '8px',
+                        minWidth: '260px',
+                        maxHeight: '300px',
+                        overflowY: 'auto',
+                        zIndex: 1000,
+                        boxShadow: 'none',
+                        border: 'none',
+                    }}>
                         {isLoading ? (
                             <div className="suggestion-loading">
                                 <div className="loading-line"></div>
@@ -213,29 +224,45 @@ const SearchBar: React.FC<HeaderProps> = ({ onThemeToggle }) => {
                                 <div className="loading-line"></div>
                             </div>
                         ) : (
-                            suggestions.map(suggestion => (
-                                <div 
-                                    key={suggestion.id} 
-                                    className="suggestion-item"
-                                    onClick={() => {
-                                        setInputValue(suggestion.text);
-                                        setSuggestions([]);
-                                        navigate(`/search?query=${suggestion.text}`);
-                                    }}
-                                >
-                                    <img 
-                                        src={suggestion.pictureURL || '/images/default-avatar.png'} 
-                                        alt={suggestion.text}
-                                        style={{
-                                            width: '30px',
-                                            height: '30px',
-                                            borderRadius: '50%',
-                                            marginRight: '10px'
+                            suggestions
+                                .filter(suggestion => suggestion.type === 'user')
+                                .map((suggestion) => (
+                                    <div
+                                        key={suggestion.id}
+                                        onMouseDown={() => {
+                                            navigate(`/profile?userID=${suggestion.text}`);
                                         }}
-                                    />
-                                    <span>{suggestion.text}</span>
-                                </div>
-                            ))
+                                        style={{
+                                            background: 'none',
+                                            padding: '10px 16px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            color: '#fff',
+                                            cursor: 'pointer',
+                                            border: 'none',
+                                            borderRadius: 0,
+                                            margin: 0,
+                                            transition: 'background 0.18s',
+                                        }}
+                                        onMouseEnter={e => e.currentTarget.style.background = '#232042'}
+                                        onMouseLeave={e => e.currentTarget.style.background = 'none'}
+                                    >
+                                        <img
+                                            src={suggestion.pictureURL || '/images/default-avatar.png'}
+                                            alt={suggestion.text}
+                                            style={{
+                                                width: '40px',
+                                                height: '40px',
+                                                borderRadius: '50%',
+                                                marginRight: '12px',
+                                                objectFit: 'cover',
+                                                background: '#fff',
+                                                border: 'none',
+                                            }}
+                                        />
+                                        <span style={{ fontWeight: 500, fontSize: '1rem', color: '#fff' }}>{suggestion.text}</span>
+                                    </div>
+                                ))
                         )}
                     </div>
                 )}
