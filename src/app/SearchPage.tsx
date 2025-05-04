@@ -53,7 +53,8 @@ const SearchPage = () => {
         
         const res = await fetch(url);
         if (!res.ok) {
-          throw new Error('Failed to fetch posts');
+          const errorData = await res.json();
+          throw new Error(errorData.message || 'Failed to fetch posts');
         }
         const data = await res.json();
         console.log("Raw post search results:", data);
@@ -62,7 +63,7 @@ const SearchPage = () => {
         const now = new Date();
         console.log('Current time for filtering:', now.toISOString());
         
-        const postsWithValidDates = data.posts.map((post: any) => {
+        const postsWithValidDates = data.data.map((post: any) => {
           const postDate = new Date(post.createdAt);
           const isValidDate = !isNaN(postDate.getTime());
           
@@ -76,57 +77,8 @@ const SearchPage = () => {
           };
         });
         
-        // Additional client-side filtering to ensure strict time ranges
-        let filteredPosts = postsWithValidDates;
-        if (timeFilter && timeFilter !== 'all') {
-          const cutoffTime = new Date();
-          switch (timeFilter) {
-            case 'lastMinute':
-              cutoffTime.setMinutes(cutoffTime.getMinutes() - 1);
-              break;
-            case 'lastDay':
-              cutoffTime.setHours(cutoffTime.getHours() - 24);
-              break;
-            case 'lastWeek':
-              cutoffTime.setDate(cutoffTime.getDate() - 7);
-              break;
-          }
-          
-          console.log('Filter details:', {
-            filter: timeFilter,
-            cutoffTime: cutoffTime.toISOString(),
-            currentTime: now.toISOString()
-          });
-          
-          filteredPosts = postsWithValidDates.filter(post => {
-            const postDate = new Date(post.createdAt);
-            const isInRange = postDate > cutoffTime && postDate <= now;
-            console.log('Post date check:', {
-              postId: post.id,
-              postDate: postDate.toISOString(),
-              isInRange,
-              cutoffTime: cutoffTime.toISOString(),
-              currentTime: now.toISOString()
-            });
-            return isInRange;
-          });
-          
-          console.log('Time filter results:', {
-            filter: timeFilter,
-            cutoffTime: cutoffTime.toISOString(),
-            currentTime: now.toISOString(),
-            postsBeforeFilter: postsWithValidDates.length,
-            postsAfterFilter: filteredPosts.length,
-            filteredPosts: filteredPosts.map(post => ({
-              id: post.id,
-              title: post.title,
-              createdAt: post.createdAt
-            }))
-          });
-        }
-        
-        console.log("Final processed posts:", filteredPosts);
-        setPosts(filteredPosts);
+        console.log("Final processed posts:", postsWithValidDates);
+        setPosts(postsWithValidDates);
       } catch (err) {
         console.error("Failed to fetch posts:", err);
         setPosts([]);
@@ -136,7 +88,7 @@ const SearchPage = () => {
     const fetchUsers = async () => {
       try {
         console.log('Fetching users for query:', query)
-        const res = await fetch(`/api/User/${encodeURIComponent(query)}`)
+        const res = await fetch(`http://localhost:3001/api/chat/search-users?query=${encodeURIComponent(query)}`)
         console.log('Response status:', res.status)
         if (!res.ok) {
           throw new Error('Failed to fetch users')
@@ -144,13 +96,7 @@ const SearchPage = () => {
         const data = await res.json()
         console.log("Raw API response:", data)
         
-        // Handle both array and single user responses
-        const usersArray = Array.isArray(data.users) ? data.users : 
-                          data.users ? [data.users] : 
-                          data.id ? [data] : [];
-        
-        console.log("Processed users array:", usersArray)
-        setUsers(usersArray)
+        setUsers(data.users || [])
       } catch (err) {
         console.error("Failed to fetch users:", err)
         setUsers([])

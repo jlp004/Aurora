@@ -368,54 +368,9 @@ app.get('/api/posts/search', async (req, res) => {
     const { q: query, timeFilter } = req.query;
     console.log('Search request:', { query, timeFilter });
 
-    // Calculate date filter based on timeFilter
-    let dateFilter = {};
-    if (timeFilter && timeFilter !== 'all') {
-      const cutoffTime = new Date();
-      switch (timeFilter) {
-        case 'lastMinute':
-          cutoffTime.setMinutes(cutoffTime.getMinutes() - 1);
-          break;
-        case 'lastDay':
-          cutoffTime.setHours(cutoffTime.getHours() - 24);
-          break;
-        case 'lastWeek':
-          cutoffTime.setDate(cutoffTime.getDate() - 7);
-          break;
-      }
-      dateFilter = {
-        createdAt: {
-          gt: cutoffTime,
-          lte: new Date()
-        }
-      };
-      console.log('Date filter:', {
-        timeFilter,
-        cutoffTime: cutoffTime.toISOString(),
-        currentTime: new Date().toISOString()
-      });
-    }
-
-    // Construct where clause based on whether there's a query
-    const whereClause = query
-      ? {
-          AND: [
-            {
-              OR: [
-                { title: { contains: query, mode: 'insensitive' } },
-                { content: { contains: query, mode: 'insensitive' } }
-              ]
-            },
-            dateFilter
-          ]
-        }
-      : dateFilter;
-
-    console.log('Where clause:', JSON.stringify(whereClause, null, 2));
-
-    // Perform the search
+    // First get all posts that match the query
     const posts = await prisma.post.findMany({
-      where: whereClause,
+      where: query ? { title: { contains: query } } : {},
       include: {
         user: {
           select: {
@@ -423,35 +378,65 @@ app.get('/api/posts/search', async (req, res) => {
             pictureURL: true
           }
         },
-        Comment: true
+        _count: {
+          select: { Comment: true }
+        }
       },
       orderBy: {
         createdAt: 'desc'
       }
     });
 
-    console.log('Search results:', {
-      query,
-      timeFilter,
-      postsFound: posts.length,
-      posts: posts.map(post => ({
+    // Then filter by time if needed
+    let filteredPosts = posts;
+    if (timeFilter && timeFilter !== 'all') {
+      const now = new Date();
+      const cutoffTime = new Date(now);
+      
+      switch (timeFilter) {
+        case 'lastMinute':
+          cutoffTime.setMinutes(now.getMinutes() - 1);
+          break;
+        case 'lastDay':
+          cutoffTime.setHours(now.getHours() - 24);
+          break;
+        case 'lastWeek':
+          cutoffTime.setDate(now.getDate() - 7);
+          break;
+      }
+      
+      console.log('Time filter:', {
+        filter: timeFilter,
+        cutoffTime: cutoffTime.toISOString(),
+        currentTime: now.toISOString()
+      });
+
+      filteredPosts = posts.filter(post => {
+        const postDate = new Date(post.createdAt);
+        return postDate >= cutoffTime && postDate <= now;
+      });
+
+      console.log('Posts after time filtering:', filteredPosts.map(post => ({
         id: post.id,
         title: post.title,
-        createdAt: post.createdAt
-      }))
-    });
+        createdAt: post.createdAt.toISOString()
+      })));
+    }
 
-    // Format dates to ISO strings
-    const formattedPosts = posts.map(post => ({
+    // Format dates to ISO strings and add comment count
+    const formattedPosts = filteredPosts.map(post => ({
       ...post,
       createdAt: post.createdAt.toISOString(),
-      updatedAt: post.updatedAt.toISOString()
+      comments: post._count.Comment
     }));
 
-    res.json({ posts: formattedPosts });
+    res.json({ data: formattedPosts });
   } catch (error) {
     console.error('Search error:', error);
-    res.status(500).json({ error: 'Failed to search posts' });
+    res.status(500).json({ 
+      message: 'Failed to search posts',
+      error: error.message 
+    });
   }
 });
 
