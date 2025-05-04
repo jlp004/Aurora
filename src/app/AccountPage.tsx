@@ -5,6 +5,7 @@ import Header from "../components/Header";
 import "../styles/HamburgerMenu.css";
 import Comment from "../components/Comment";
 import { useUser } from './userData';
+import { FaUser } from 'react-icons/fa';
 
 const AccountPage = () => {
   const { currentUser, setCurrentUser } = useUser();
@@ -204,7 +205,10 @@ const AccountPage = () => {
   };
 
   const handleRemoveProfilePic = () => {
-    setUser({ ...user, profilePic: "/images/default-profile.jpg" });
+    setUser({ ...user, profilePic: "" });
+    if (currentUser) {
+      setCurrentUser({ ...currentUser, pictureURL: "" });
+    }
   };
 
   const handleCreatePost = async (event) => {
@@ -404,7 +408,9 @@ const AccountPage = () => {
           {user.profilePic ? (
             <img src={user.profilePic} alt="" className="profile-pic" />
           ) : (
-            <div className="profile-pic">Profile</div>
+            <div className="profile-pic" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#fff', borderRadius: '50%', width: 120, height: 120 }}>
+              <FaUser style={{ fontSize: 64, color: '#a0a0a0' }} />
+            </div>
           )}
           <div className="profile-pic-overlay">Click to remove</div>
         </div>

@@ -14,6 +14,7 @@ import {
     FaSignOutAlt
 } from 'react-icons/fa'
 import { useTheme } from '../context/ThemeContext';
+import { useUser } from '../app/userData';
 
 // written by John Phelan - jlp220005
 // handles rendering the search bar and redirecting the user to the search page for the string input.
@@ -44,6 +45,7 @@ const SearchBar: React.FC<HeaderProps> = ({ onThemeToggle }) => {
     const userMenuRef = useRef<HTMLDivElement>(null)
     const navigate = useNavigate()
     const { theme, toggleTheme } = useTheme();
+    const { currentUser } = useUser();
 
     // Update current time every minute
     useEffect(() => {
@@ -332,8 +334,16 @@ const SearchBar: React.FC<HeaderProps> = ({ onThemeToggle }) => {
                 </div>
 
                 <div className="user-avatar" ref={userMenuRef}>
-                    <button onClick={() => setShowUserMenu(!showUserMenu)}>
-                        <FaUser />
+                    <button onClick={() => setShowUserMenu(!showUserMenu)} style={{ background: 'none', border: 'none', padding: 0 }}>
+                        {currentUser && currentUser.pictureURL ? (
+                            <img
+                                src={currentUser.pictureURL}
+                                alt="Profile"
+                                style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', background: '#fff' }}
+                            />
+                        ) : (
+                            <FaUser />
+                        )}
                     </button>
                     
                     {showUserMenu && (
