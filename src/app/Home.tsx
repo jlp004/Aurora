@@ -73,10 +73,19 @@ const Home = () => {
     return () => clearInterval(intervalId);
   }, []);
 
+  const predefinedTags = ["Nature", "Food", "Travel", "Fashion", "Sports"];
+
   if (loading) {
     return (
       <div className="home-container">
         <Header />
+        <div className="home-tags-bar">
+          <div className="tag-buttons">
+            {predefinedTags.map(tag => (
+              <button key={tag} className="tag-btn">{tag}</button>
+            ))}
+          </div>
+        </div>
         <div className="post-feed">
           <p>Loading posts...</p>
         </div>
@@ -88,6 +97,13 @@ const Home = () => {
     return (
       <div className="home-container">
         <Header />
+        <div className="home-tags-bar">
+          <div className="tag-buttons">
+            {predefinedTags.map(tag => (
+              <button key={tag} className="tag-btn">{tag}</button>
+            ))}
+          </div>
+        </div>
         <div className="post-feed">
           <p>Error: {error}</p>
         </div>
@@ -98,6 +114,13 @@ const Home = () => {
   return (
     <div className="home-container">
       <Header />
+      <div className="home-tags-bar">
+        <div className="tag-buttons">
+          {predefinedTags.map(tag => (
+            <button key={tag} className="tag-btn">{tag}</button>
+          ))}
+        </div>
+      </div>
       <div className="post-feed">
         {posts.map((post) => (
           <Post

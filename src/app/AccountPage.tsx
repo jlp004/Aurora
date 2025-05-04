@@ -58,7 +58,7 @@ const AccountPage = () => {
   const [postComments, setPostComments] = useState<any[]>([]);
   const [commentsLoaded, setCommentsLoaded] = useState(false);
 
-  const predefinedTags = ["Nature", "Food", "Travel", "Fashion", "Other"];
+  const predefinedTags = ["Nature", "Food", "Travel", "Fashion", "Sports"];
 
   useEffect(() => {
     if (currentUser) {
