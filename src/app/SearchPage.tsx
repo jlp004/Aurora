@@ -2,6 +2,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import Header from '../components/Header'
 import Post from '../components/Post'
+import { useTheme } from '../context/ThemeContext'
 
 // overwrite some stuff from posts-found-container
 const customStyles = `
@@ -18,6 +19,7 @@ const SearchPage = () => {
   const params = new URLSearchParams(location.search)
   const query = params.get('query')
   const timeFilter = params.get('timeFilter') || 'all'
+  const { theme } = useTheme()
 
   const [posts, setPosts] = useState([])
   const [users, setUsers] = useState([]) 
@@ -131,60 +133,33 @@ const SearchPage = () => {
       
       <div style={{ width: '100%', maxWidth: '1000px', padding: '0 20px' }}>
         <h1 
-          style={{ color: '#fff', fontSize: '40px', textAlign: 'center', marginTop: '6rem', marginBottom: '1rem'}}>
+          style={{ color: '#fff', fontSize: '40px', textAlign: 'center', marginTop: '6rem', marginBottom: '1rem'}}
+        >
           <b>{query ? `Search results for "${query}"` : 'All Posts'}</b>
         </h1>
         {searchType === 'posts' && (
           <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginBottom: '1rem' }}>
             <button 
+              className={`filter-btn${timeFilter === 'all' ? ' selected' : ''}`}
               onClick={() => handleTimeFilterChange('all')}
-              style={{ 
-                background: timeFilter === 'all' ? '#fff' : '#ccc',
-                padding: '8px 16px',
-                borderRadius: '4px',
-                border: 'none',
-                cursor: 'pointer',
-                color: timeFilter === 'all' ? '#000' : '#fff'
-              }}
             >
               All Time
             </button>
             <button 
+              className={`filter-btn${timeFilter === 'lastMinute' ? ' selected' : ''}`}
               onClick={() => handleTimeFilterChange('lastMinute')}
-              style={{ 
-                background: timeFilter === 'lastMinute' ? '#fff' : '#ccc',
-                padding: '8px 16px',
-                borderRadius: '4px',
-                border: 'none',
-                cursor: 'pointer',
-                color: timeFilter === 'lastMinute' ? '#000' : '#fff'
-              }}
             >
               Last Minute
             </button>
             <button 
+              className={`filter-btn${timeFilter === 'lastDay' ? ' selected' : ''}`}
               onClick={() => handleTimeFilterChange('lastDay')}
-              style={{ 
-                background: timeFilter === 'lastDay' ? '#fff' : '#ccc',
-                padding: '8px 16px',
-                borderRadius: '4px',
-                border: 'none',
-                cursor: 'pointer',
-                color: timeFilter === 'lastDay' ? '#000' : '#fff'
-              }}
             >
               Last 24 Hours
             </button>
             <button 
+              className={`filter-btn${timeFilter === 'lastWeek' ? ' selected' : ''}`}
               onClick={() => handleTimeFilterChange('lastWeek')}
-              style={{ 
-                background: timeFilter === 'lastWeek' ? '#fff' : '#ccc',
-                padding: '8px 16px',
-                borderRadius: '4px',
-                border: 'none',
-                cursor: 'pointer',
-                color: timeFilter === 'lastWeek' ? '#000' : '#fff'
-              }}
             >
               Last Week
             </button>
@@ -194,16 +169,14 @@ const SearchPage = () => {
 
       <div style={{display: 'flex', gap: '10px', marginBottom: '1rem'}}>
         <button 
-          className="search-by-button"
+          className={`search-by-button${searchType === 'posts' ? ' selected' : ''}`}
           onClick={() => setSearchType('posts')}
-          style={{ background: searchType === 'posts' ? '#fff' : '#ccc' }}
         >
           Search Posts
         </button>
         <button 
-          className="search-by-button"
+          className={`search-by-button${searchType === 'users' ? ' selected' : ''}`}
           onClick={() => setSearchType('users')}
-          style={{ background: searchType === 'users' ? '#fff' : '#ccc' }}
         >
           Search Users
         </button>
@@ -240,12 +213,14 @@ const SearchPage = () => {
               console.log('Rendering user:', user)
               return (
                 <div key={user.id} style={{ 
-                  backgroundColor: '#fff', 
+                  backgroundColor: 'var(--bg-primary)', 
                   padding: '1rem', 
                   borderRadius: '8px', 
                   marginBottom: '1rem',
                   display: 'flex',
-                  alignItems: 'center'
+                  alignItems: 'center',
+                  color: 'var(--text-primary)',
+                  border: '1px solid var(--border-color)'
                 }}>
                   <img 
                     src={user.pictureURL || '../../images/default-user.png'} 
@@ -258,8 +233,8 @@ const SearchPage = () => {
                     }} 
                   />
                   <div>
-                    <h3 style={{ margin: 0 }}>{user.username}</h3>
-                    <p style={{ margin: '0.5rem 0 0 0' }}>{user.profileDesc || "No bio provided."}</p>
+                    <h3 style={{ margin: 0, color: 'var(--text-primary)' }}>{user.username}</h3>
+                    <p style={{ margin: '0.5rem 0 0 0', color: 'var(--text-secondary)' }}>{user.profileDesc || "No bio provided."}</p>
                   </div>
                 </div>
               )
