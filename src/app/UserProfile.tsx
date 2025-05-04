@@ -45,6 +45,12 @@ export default function UserProfile() {
     const [error, setError] = useState<string | null>(null);
     const [user, setUser] = useState<UserType | null>(null);
 
+    // Get the actual logged-in user from localStorage
+    const currentUser = (() => {
+        const stored = localStorage.getItem('currentUser');
+        return stored ? JSON.parse(stored) : null;
+    })();
+
     useEffect(() => {
         if (!userID) {
             setError('No user ID provided');
@@ -57,8 +63,13 @@ export default function UserProfile() {
         const fetchPosts = async () => {
             try {
                 console.log('Fetching user data for:', userID);
-                //  fetch user data to get their posts
-                const userUrl = `/api/User/${encodeURIComponent(userID)}`;
+                // If userID is a number, fetch by ID, else by username
+                let userUrl;
+                if (!isNaN(Number(userID))) {
+                  userUrl = `/api/User/${encodeURIComponent(userID)}`;
+                } else {
+                  userUrl = `/api/User/username/${encodeURIComponent(userID)}`;
+                }
                 const userResponse = await fetch(userUrl);
                 
                 if (!userResponse.ok) {
@@ -97,21 +108,20 @@ export default function UserProfile() {
                 }
 
                 // Transform the posts data to match our PostType interface
-                const transformedPosts = postsData.map((post: PostWithUser) => ({
+                const transformedPosts = postsData.map((post: any) => ({
                     id: post.id,
                     username: user.username,
                     imageUrl: post.pictureURL,
                     caption: post.title,
                     likes: post.likes,
-                    comments: 0, // need to do something else to fetch comments properly
-                    timePosted: post.createdAt // Use the actual createdAt timestamp as is
+                    comments: post.comments ?? post._count?.Comment ?? 0,
+                    timePosted: post.createdAt
                 }));
 
                 console.log('Transformed posts:', transformedPosts);
                 setPosts(transformedPosts);
-            } catch (err) {
-                console.error('Error fetching posts:', err);
-                setError(err instanceof Error ? err.message : 'Failed to fetch posts');
+            } catch (err: any) {
+                setError(err.message || 'Failed to fetch user data');
             } finally {
                 setLoading(false);
             }
@@ -181,7 +191,7 @@ export default function UserProfile() {
                         <Post 
                             key={post.id} 
                             {...post}
-                            currentUserId={userID}
+                            currentUserId={currentUser?.id}
                         />
                     ))
                 )}

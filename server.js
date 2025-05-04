@@ -235,6 +235,30 @@ app.get('/api/User/:id', async (req, res) => {
   }
 });
 
+// Get user by username (for profile/account page)
+app.get('/api/User/username/:username', async (req, res) => {
+  try {
+    const { username } = req.params;
+    const user = await prisma.user.findUnique({
+      where: { username },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        pictureURL: true,
+        profileDesc: true
+      }
+    });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found', users: [] });
+    }
+    return res.status(200).json({ users: [user] });
+  } catch (error) {
+    console.error('Error fetching user by username:', error);
+    return res.status(500).json({ message: 'Failed to fetch user', users: [] });
+  }
+});
+
 // Update user settings
 app.put('/api/user/:id', async (req, res) => {
   try {
@@ -385,6 +409,9 @@ app.get('/api/posts/:userId', async (req, res) => {
           select: {
             username: true
           }
+        },
+        _count: {
+          select: { Comment: true }
         }
       },
       orderBy: {
@@ -392,12 +419,13 @@ app.get('/api/posts/:userId', async (req, res) => {
       }
     });
     
-    // Format the posts with ISO string dates
+    // Format the posts with ISO string dates and comment count
     const formattedPosts = posts.map(post => {
       const createdAt = post.createdAt.toISOString();
       return {
         ...post,
-        createdAt
+        createdAt,
+        comments: post._count.Comment
       };
     });
     
