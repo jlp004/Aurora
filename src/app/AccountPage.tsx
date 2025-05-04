@@ -251,14 +251,14 @@ const AccountPage = () => {
         userId: currentUser?.id || user.id,
         title: newPostComment,
         pictureURL: selectedImage,
-        tags: selectedTags
+        tag: selectedTags[0] || ''
       });
 
       const postData = {
         userId: currentUser?.id || user.id,
         title: newPostComment,
         pictureURL: selectedImage,
-        tags: selectedTags
+        tag: selectedTags[0] || ''
       };
       
       const response = await fetch('http://localhost:3001/api/posts', {
@@ -278,7 +278,7 @@ const AccountPage = () => {
             id: newPost.id,
             image: newPost.pictureURL,
             caption: newPost.title,
-            tags: newPost.tags || [],
+            tags: [newPost.tag].filter(Boolean),
             comments: []
           }, ...prev.posts] 
         }));
