@@ -324,7 +324,6 @@ const SearchBar: React.FC<HeaderProps> = ({ onThemeToggle }) => {
                     <button className="notifications-bell" onClick={handleMessagesClick}>
                         <FaFacebookMessenger />
                     </button>
-                    <span className="notifications-count">3</span>
                 </div>
 
                 <div className="user-avatar" ref={userMenuRef}>
