@@ -12,40 +12,16 @@ const customStyles = `
   }
 `;
 
-interface Post {
-  id: number;
-  title: string;
-  content: string;
-  createdAt: string;
-  updatedAt: string;
-  userId: number;
-  user: {
-    username: string;
-    pictureURL: string | null;
-  };
-  comments: number;
-}
-
-interface User {
-  id: number;
-  username: string;
-  pictureURL: string | null;
-  profileDesc: string | null;
-}
-
 const SearchPage = () => {
   const location = useLocation()
   const navigate = useNavigate()
   const params = new URLSearchParams(location.search)
-  const query = params.get('query') || ''
+  const query = params.get('query')
   const timeFilter = params.get('timeFilter') || 'all'
 
-  const [posts, setPosts] = useState<Post[]>([])
-  const [users, setUsers] = useState<User[]>([]) 
+  const [posts, setPosts] = useState([])
+  const [users, setUsers] = useState([]) 
   const [searchType, setSearchType] = useState<'posts' | 'users'>('posts') 
-  const [timeFilterParam, setTimeFilterParam] = useState('all')
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
 
   const getTimeFilterLabel = (filter: string) => {
     switch (filter) {
@@ -69,101 +45,115 @@ const SearchPage = () => {
   }
 
   useEffect(() => {
-    setTimeFilterParam(timeFilter);
-  }, [timeFilter]);
-
-  useEffect(() => {
     const fetchPosts = async () => {
       try {
-        setIsLoading(true);
-        setError(null);
+        console.log('Fetching posts with filter:', timeFilter);
+        const url = `http://localhost:3001/api/posts/search?${query ? `q=${encodeURIComponent(query)}&` : ''}timeFilter=${encodeURIComponent(timeFilter)}`;
+        console.log('Search URL:', url);
         
-        // Construct URL with timeFilter but omit query if empty
-        const searchUrl = query
-          ? `http://localhost:3001/api/posts/search?q=${encodeURIComponent(query)}&timeFilter=${timeFilter}`
-          : `http://localhost:3001/api/posts/search?timeFilter=${timeFilter}`;
-        
-        console.log('Fetching posts with URL:', searchUrl);
-        console.log('Current time:', new Date().toISOString());
-        
-        const response = await fetch(searchUrl);
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+        const res = await fetch(url);
+        if (!res.ok) {
+          throw new Error('Failed to fetch posts');
         }
-        const data = await response.json();
+        const data = await res.json();
+        console.log("Raw post search results:", data);
         
-        console.log('Raw post results:', data);
+        // Process and validate timestamps
+        const now = new Date();
+        console.log('Current time for filtering:', now.toISOString());
         
-        // Validate timestamps and filter posts
-        const validPosts = data.posts.filter((post: Post) => {
+        const postsWithValidDates = data.posts.map((post: any) => {
           const postDate = new Date(post.createdAt);
-          const isValid = !isNaN(postDate.getTime());
+          const isValidDate = !isNaN(postDate.getTime());
           
-          if (!isValid) {
-            console.warn('Invalid date found:', post.createdAt);
+          if (!isValidDate) {
+            console.warn('Invalid date found for post:', post);
           }
           
-          return isValid;
+          return {
+            ...post,
+            createdAt: isValidDate ? postDate.toISOString() : now.toISOString()
+          };
         });
         
-        console.log('Valid posts:', validPosts.length);
-        
-        // Additional client-side filtering based on timeFilter
-        let filteredPosts = validPosts;
-        if (timeFilter !== 'all') {
-          const now = new Date();
+        // Additional client-side filtering to ensure strict time ranges
+        let filteredPosts = postsWithValidDates;
+        if (timeFilter && timeFilter !== 'all') {
           const cutoffTime = new Date();
-          
           switch (timeFilter) {
             case 'lastMinute':
-              cutoffTime.setMinutes(now.getMinutes() - 1);
+              cutoffTime.setMinutes(cutoffTime.getMinutes() - 1);
               break;
             case 'lastDay':
-              cutoffTime.setHours(now.getHours() - 24);
+              cutoffTime.setHours(cutoffTime.getHours() - 24);
               break;
             case 'lastWeek':
-              cutoffTime.setDate(now.getDate() - 7);
+              cutoffTime.setDate(cutoffTime.getDate() - 7);
               break;
           }
           
-          filteredPosts = validPosts.filter((post: Post) => {
-            const postDate = new Date(post.createdAt);
-            return postDate >= cutoffTime && postDate <= now;
+          console.log('Filter details:', {
+            filter: timeFilter,
+            cutoffTime: cutoffTime.toISOString(),
+            currentTime: now.toISOString()
           });
           
-          console.log('Time filter details:', {
-            timeFilter,
+          filteredPosts = postsWithValidDates.filter(post => {
+            const postDate = new Date(post.createdAt);
+            const isInRange = postDate > cutoffTime && postDate <= now;
+            console.log('Post date check:', {
+              postId: post.id,
+              postDate: postDate.toISOString(),
+              isInRange,
+              cutoffTime: cutoffTime.toISOString(),
+              currentTime: now.toISOString()
+            });
+            return isInRange;
+          });
+          
+          console.log('Time filter results:', {
+            filter: timeFilter,
             cutoffTime: cutoffTime.toISOString(),
             currentTime: now.toISOString(),
-            postsBeforeFilter: validPosts.length,
-            postsAfterFilter: filteredPosts.length
+            postsBeforeFilter: postsWithValidDates.length,
+            postsAfterFilter: filteredPosts.length,
+            filteredPosts: filteredPosts.map(post => ({
+              id: post.id,
+              title: post.title,
+              createdAt: post.createdAt
+            }))
           });
         }
         
+        console.log("Final processed posts:", filteredPosts);
         setPosts(filteredPosts);
       } catch (err) {
-        console.error('Error fetching posts:', err);
-        setError('Failed to fetch posts');
-      } finally {
-        setIsLoading(false);
+        console.error("Failed to fetch posts:", err);
+        setPosts([]);
       }
     }
 
     const fetchUsers = async () => {
       try {
-        setIsLoading(true);
-        setError(null);
-        const response = await fetch(`http://localhost:3001/api/chat/search-users?query=${encodeURIComponent(query)}`);
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+        console.log('Fetching users for query:', query)
+        const res = await fetch(`/api/User/${encodeURIComponent(query)}`)
+        console.log('Response status:', res.status)
+        if (!res.ok) {
+          throw new Error('Failed to fetch users')
         }
-        const data = await response.json();
-        setUsers(data.users);
+        const data = await res.json()
+        console.log("Raw API response:", data)
+        
+        // Handle both array and single user responses
+        const usersArray = Array.isArray(data.users) ? data.users : 
+                          data.users ? [data.users] : 
+                          data.id ? [data] : [];
+        
+        console.log("Processed users array:", usersArray)
+        setUsers(usersArray)
       } catch (err) {
-        console.error('Error fetching users:', err);
-        setError('Failed to fetch users');
-      } finally {
-        setIsLoading(false);
+        console.error("Failed to fetch users:", err)
+        setUsers([])
       }
     }
 
@@ -172,7 +162,7 @@ const SearchPage = () => {
     } else {
       fetchUsers();
     }
-  }, [query, timeFilter, searchType]);
+  }, [query, searchType, timeFilter, location.search]);
 
   return (
     <div style={{ 
@@ -273,16 +263,7 @@ const SearchPage = () => {
         </button>
       </div>
 
-      {isLoading ? (
-        <div className="text-center py-8">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
-        </div>
-      ) : error ? (
-        <div className="text-center py-8">
-          <p className="text-red-600">{error}</p>
-        </div>
-      ) : searchType === 'posts' ? (
+      {searchType === 'posts' ? (
         <div className="post-feed">
           {posts.length === 0 ? (
             <p style={{ color: '#fff', textAlign: 'center', width: '100%' }}>
