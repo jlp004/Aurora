@@ -84,9 +84,12 @@
   }
   
   .post-actions {
-    padding: 10px 14px;
+    padding: 10px 0px;
     display: flex;
     gap: 15px;
+    justify-content: flex-start;
+    align-items: center;
+    margin: 0;
   }
   
   .action-btn {
@@ -95,30 +98,48 @@
     font-size: 24px;
     cursor: pointer;
     padding: 0;
-    -webkit-text-stroke: 1px #8e8e8e;
-    color: transparent;
+    margin: 0;
+    transition: transform 0.2s ease;
   }
   
-.like-btn::before 
-{
+  .action-btn:hover {
+    transform: scale(1.1);
+  }
+  
+.like-btn::before {
     content: "♥";
     color: white;
-    -webkit-text-stroke: 1px #262626; 
-    font-size: 24px;
+    -webkit-text-stroke: 1px #262626;
+    font-size: 32px;
+    display: inline-block;
+    transform: scale(1.2);
+    line-height: 1;
+    margin: 0;
 }
 
   .like-btn.liked::before {
     color: red;
     -webkit-text-stroke: 1px #262626;
+    transform: scale(1.2);
+  }
+  
+  .comment-btn::before {
+    content: "💬";
+    font-size: 28px;
+    display: inline-block;
+    line-height: 1;
+    transform: scale(1.1);
+    margin: 0;
   }
   
   .post-stats {
     padding: 0 14px;
     font-weight: bold;
-    margin-bottom: 8px;
+    margin: 8px 0;
     display: flex;
     gap: 15px;
     color: var(--text-primary);
+    justify-content: flex-start;
   }
   
   .post-caption {
@@ -144,9 +165,18 @@
     text-transform: uppercase;
   }
   
+.comment-form-section {
+  padding: 0 14px;
+  margin-top: 8px;
+  border-top: 1px solid var(--border-color);
+  padding-top: 12px;
+}
+
 .comments-section {
   padding: 0 14px;
   margin-top: 8px;
+  border-top: 1px solid var(--border-color);
+  padding-top: 12px;
 }
 
 .comment-form {
@@ -158,19 +188,21 @@
 .comment-input {
   flex: 1;
   padding: 8px 12px;
-  border: 1px solid #dbdbdb;
+  border: 1px solid var(--border-color);
   border-radius: 4px;
   font-size: 14px;
   outline: none;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
 }
 
 .comment-input:focus {
-  border-color: #262626;
+  border-color: var(--text-primary);
 }
 
 .comment-submit {
   padding: 8px 16px;
-  background-color: #0095f6;
+  background-color: var(--accent-color, #0095f6);
   color: white;
   border: none;
   border-radius: 4px;
@@ -180,11 +212,11 @@
 }
 
 .comment-submit:hover {
-  background-color: #0081d6;
+  background-color: var(--accent-color-hover, #0081d6);
 }
 
 .comment-submit:disabled {
-  background-color: #b2dffc;
+  background-color: var(--disabled-color, #b2dffc);
   cursor: not-allowed;
 }
 
@@ -221,5 +253,43 @@
 
 .comment-text {
   color: var(--text-secondary);
+}
+
+.post-actions-secondary {
+  padding: 0 14px;
+  margin: 8px 0;
+}
+
+.view-comments-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.2s ease;
+}
+
+.view-comments-btn:hover {
+  color: var(--text-primary);
+}
+
+.likes {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.likes-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.like-btn {
+  margin: 0;
+  padding: 0;
 }
   

@@ -77,6 +77,7 @@ export default function Post({
   const [currentLikes, setCurrentLikes] = useState(likes);
   const [isLiked, setIsLiked] = useState(false);
   const [showComments, setShowComments] = useState(false);
+  const [showCommentForm, setShowCommentForm] = useState(false);
   const [commentText, setCommentText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -272,13 +273,16 @@ export default function Post({
         <button 
           className={`action-btn like-btn ${isLiked ? 'liked' : ''}`}
           onClick={handleLike}
+          style={{ marginLeft: '-585px' }}
         >
         </button>
         <button 
           className="action-btn comment-btn"
-          onClick={() => setShowComments(!showComments)}
+          onClick={() => {
+            setShowCommentForm(!showCommentForm);
+            setShowComments(!showComments);
+          }}
         >
-          💬
         </button>
       </div>
       
@@ -290,6 +294,15 @@ export default function Post({
       <div className="post-caption">
         <span className="caption-username">{username}</span>
         <span className="caption-text"> {caption}</span>
+      </div>
+
+      <div className="post-actions-secondary">
+        <button 
+          className="view-comments-btn"
+          onClick={() => setShowComments(!showComments)}
+        >
+          {showComments ? 'Hide Comments' : 'View all comments'}
+        </button>
       </div>
       
       {showComments && (
@@ -303,6 +316,11 @@ export default function Post({
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {showCommentForm && (
+        <div className="comment-form-section">
           <form onSubmit={handleCommentSubmit} className="comment-form">
             <input
               type="text"
