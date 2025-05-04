@@ -25,13 +25,22 @@ const Login = () => {
             
             console.log('Login successful:', response);
             
+            // Fetch the complete user data from the database
+            const userResponse = await fetch(`/api/User/username/${username}`);
+            if (!userResponse.ok) {
+                throw new Error('Failed to fetch user data');
+            }
+            
+            const userData = await userResponse.json();
+            const user = userData.users[0];
+            
             // Save the complete user data including ID to context
             setCurrentUser({
-                id: response.user?.id || 'user_' + Date.now(), // Generate a unique ID if none provided
-                username: username,
-                email: email,
-                pictureURL: response.user?.pictureURL || '/images/profile-pic.jpg',
-                profileDesc: response.user?.profileDesc || 'Lover of code and coffee ☕' // Include bio
+                id: user?.id || 'user_' + Date.now(),
+                username: user?.username || username,
+                email: user?.email || email,
+                pictureURL: user?.pictureURL || '/images/profile-pic.jpg',
+                profileDesc: user?.profileDesc // Don't use default bio here
             });
             
             // Store to localStorage happens in the UserProvider
