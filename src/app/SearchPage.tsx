@@ -1,4 +1,4 @@
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import Header from '../components/Header'
 import Post from '../components/Post'
@@ -12,59 +12,167 @@ const customStyles = `
   }
 `;
 
+interface Post {
+  id: number;
+  title: string;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+  userId: number;
+  user: {
+    username: string;
+    pictureURL: string | null;
+  };
+  comments: number;
+}
+
+interface User {
+  id: number;
+  username: string;
+  pictureURL: string | null;
+  profileDesc: string | null;
+}
+
 const SearchPage = () => {
   const location = useLocation()
+  const navigate = useNavigate()
   const params = new URLSearchParams(location.search)
-  const query = params.get('query')
+  const query = params.get('query') || ''
+  const timeFilter = params.get('timeFilter') || 'all'
 
-  const [posts, setPosts] = useState([])
-  const [users, setUsers] = useState([]) 
+  const [posts, setPosts] = useState<Post[]>([])
+  const [users, setUsers] = useState<User[]>([]) 
   const [searchType, setSearchType] = useState<'posts' | 'users'>('posts') 
+  const [timeFilterParam, setTimeFilterParam] = useState('all')
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  const getTimeFilterLabel = (filter: string) => {
+    switch (filter) {
+      case 'lastMinute': return 'Last Minute';
+      case 'lastDay': return 'Last 24 Hours';
+      case 'lastWeek': return 'Last Week';
+      default: return 'All Time';
+    }
+  }
+
+  const handleTimeFilterChange = (newFilter: string) => {
+    console.log('Changing time filter to:', newFilter);
+    const newParams = new URLSearchParams();
+    if (query) {
+      newParams.set('query', query);
+    }
+    newParams.set('timeFilter', newFilter);
+    const newUrl = `/search?${newParams.toString()}`;
+    console.log('Navigating to:', newUrl);
+    navigate(newUrl);
+  }
 
   useEffect(() => {
-    if (!query) return
+    setTimeFilterParam(timeFilter);
+  }, [timeFilter]);
 
+  useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const res = await fetch(`/api/posts/search?q=${encodeURIComponent(query)}`)
-        const data = await res.json()
-        setPosts(data.posts || [])
-        console.log("Post search results:", data)
+        setIsLoading(true);
+        setError(null);
+        
+        // Construct URL with timeFilter but omit query if empty
+        const searchUrl = query
+          ? `http://localhost:3001/api/posts/search?q=${encodeURIComponent(query)}&timeFilter=${timeFilter}`
+          : `http://localhost:3001/api/posts/search?timeFilter=${timeFilter}`;
+        
+        console.log('Fetching posts with URL:', searchUrl);
+        console.log('Current time:', new Date().toISOString());
+        
+        const response = await fetch(searchUrl);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        
+        console.log('Raw post results:', data);
+        
+        // Validate timestamps and filter posts
+        const validPosts = data.posts.filter((post: Post) => {
+          const postDate = new Date(post.createdAt);
+          const isValid = !isNaN(postDate.getTime());
+          
+          if (!isValid) {
+            console.warn('Invalid date found:', post.createdAt);
+          }
+          
+          return isValid;
+        });
+        
+        console.log('Valid posts:', validPosts.length);
+        
+        // Additional client-side filtering based on timeFilter
+        let filteredPosts = validPosts;
+        if (timeFilter !== 'all') {
+          const now = new Date();
+          const cutoffTime = new Date();
+          
+          switch (timeFilter) {
+            case 'lastMinute':
+              cutoffTime.setMinutes(now.getMinutes() - 1);
+              break;
+            case 'lastDay':
+              cutoffTime.setHours(now.getHours() - 24);
+              break;
+            case 'lastWeek':
+              cutoffTime.setDate(now.getDate() - 7);
+              break;
+          }
+          
+          filteredPosts = validPosts.filter((post: Post) => {
+            const postDate = new Date(post.createdAt);
+            return postDate >= cutoffTime && postDate <= now;
+          });
+          
+          console.log('Time filter details:', {
+            timeFilter,
+            cutoffTime: cutoffTime.toISOString(),
+            currentTime: now.toISOString(),
+            postsBeforeFilter: validPosts.length,
+            postsAfterFilter: filteredPosts.length
+          });
+        }
+        
+        setPosts(filteredPosts);
       } catch (err) {
-        console.error("Failed to fetch posts:", err)
+        console.error('Error fetching posts:', err);
+        setError('Failed to fetch posts');
+      } finally {
+        setIsLoading(false);
       }
     }
 
     const fetchUsers = async () => {
       try {
-        console.log('Fetching users for query:', query)
-        const res = await fetch(`/api/User/${encodeURIComponent(query)}`)
-        console.log('Response status:', res.status)
-        if (!res.ok) {
-          throw new Error('Failed to fetch users')
+        setIsLoading(true);
+        setError(null);
+        const response = await fetch(`http://localhost:3001/api/chat/search-users?query=${encodeURIComponent(query)}`);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
-        const data = await res.json()
-        console.log("Raw API response:", data)
-        
-        // Handle both array and single user responses
-        const usersArray = Array.isArray(data.users) ? data.users : 
-                          data.users ? [data.users] : 
-                          data.id ? [data] : [];
-        
-        console.log("Processed users array:", usersArray)
-        setUsers(usersArray)
+        const data = await response.json();
+        setUsers(data.users);
       } catch (err) {
-        console.error("Failed to fetch users:", err)
-        setUsers([])
+        console.error('Error fetching users:', err);
+        setError('Failed to fetch users');
+      } finally {
+        setIsLoading(false);
       }
     }
 
     if (searchType === 'posts') {
-      fetchPosts()
+      fetchPosts();
     } else {
-      fetchUsers()
+      fetchUsers();
     }
-  }, [query, searchType]) 
+  }, [query, timeFilter, searchType]);
 
   return (
     <div style={{ 
@@ -88,8 +196,64 @@ const SearchPage = () => {
       <div style={{ width: '100%', maxWidth: '1000px', padding: '0 20px' }}>
         <h1 
           style={{ color: '#fff', fontSize: '40px', textAlign: 'center', marginTop: '6rem', marginBottom: '1rem'}}>
-          <b>Search results for "{query}"</b>
+          <b>{query ? `Search results for "${query}"` : 'All Posts'}</b>
         </h1>
+        {searchType === 'posts' && (
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginBottom: '1rem' }}>
+            <button 
+              onClick={() => handleTimeFilterChange('all')}
+              style={{ 
+                background: timeFilter === 'all' ? '#fff' : '#ccc',
+                padding: '8px 16px',
+                borderRadius: '4px',
+                border: 'none',
+                cursor: 'pointer',
+                color: timeFilter === 'all' ? '#000' : '#fff'
+              }}
+            >
+              All Time
+            </button>
+            <button 
+              onClick={() => handleTimeFilterChange('lastMinute')}
+              style={{ 
+                background: timeFilter === 'lastMinute' ? '#fff' : '#ccc',
+                padding: '8px 16px',
+                borderRadius: '4px',
+                border: 'none',
+                cursor: 'pointer',
+                color: timeFilter === 'lastMinute' ? '#000' : '#fff'
+              }}
+            >
+              Last Minute
+            </button>
+            <button 
+              onClick={() => handleTimeFilterChange('lastDay')}
+              style={{ 
+                background: timeFilter === 'lastDay' ? '#fff' : '#ccc',
+                padding: '8px 16px',
+                borderRadius: '4px',
+                border: 'none',
+                cursor: 'pointer',
+                color: timeFilter === 'lastDay' ? '#000' : '#fff'
+              }}
+            >
+              Last 24 Hours
+            </button>
+            <button 
+              onClick={() => handleTimeFilterChange('lastWeek')}
+              style={{ 
+                background: timeFilter === 'lastWeek' ? '#fff' : '#ccc',
+                padding: '8px 16px',
+                borderRadius: '4px',
+                border: 'none',
+                cursor: 'pointer',
+                color: timeFilter === 'lastWeek' ? '#000' : '#fff'
+              }}
+            >
+              Last Week
+            </button>
+          </div>
+        )}
       </div>
 
       <div style={{display: 'flex', gap: '10px', marginBottom: '1rem'}}>
@@ -109,7 +273,16 @@ const SearchPage = () => {
         </button>
       </div>
 
-      {searchType === 'posts' ? (
+      {isLoading ? (
+        <div className="text-center py-8">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      ) : error ? (
+        <div className="text-center py-8">
+          <p className="text-red-600">{error}</p>
+        </div>
+      ) : searchType === 'posts' ? (
         <div className="post-feed">
           {posts.length === 0 ? (
             <p style={{ color: '#fff', textAlign: 'center', width: '100%' }}>
