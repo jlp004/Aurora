@@ -386,6 +386,39 @@
     padding: 10px;
 }
 
+.comments-placeholder {
+    text-align: center;
+    padding: 20px;
+    color: rgba(255, 255, 255, 0.7);
+    font-style: italic;
+}
+
+.no-comments {
+    text-align: center;
+    padding: 20px;
+    color: rgba(255, 255, 255, 0.7);
+    font-style: italic;
+}
+
+.comment {
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.comment:last-child {
+    border-bottom: none;
+}
+
+.comment-username {
+    font-weight: bold;
+    margin-right: 8px;
+    color: var(--text-primary);
+}
+
+.comment-text {
+    color: var(--text-secondary);
+}
+
 .comment-form {
     margin-top: 15px;
 }

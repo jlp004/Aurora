@@ -55,6 +55,8 @@ const AccountPage = () => {
   const [newComment, setNewComment] = useState("");
   const [uploadLoading, setUploadLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [postComments, setPostComments] = useState<any[]>([]);
+  const [commentsLoaded, setCommentsLoaded] = useState(false);
 
   const predefinedTags = ["Nature", "Food", "Travel", "Fashion", "Other"];
 
@@ -300,23 +302,37 @@ const AccountPage = () => {
     setCommentTab('view');
   };
 
-  const handlePostComment = () => {
-    if (!newComment.trim()) return;
-    const updatedPosts = user.posts.map(post =>
-      post.id === selectedPost.id
-        ? {
-          ...post,
-          comments: [...(post.comments || []), { 
-            id: Date.now(), 
-            poster: currentUser?.username || user.username, 
-            text: newComment 
-          }]
-        } : post
-    );
-    setUser({ ...user, posts: updatedPosts });
-    setSelectedPost(updatedPosts.find(p => p.id === selectedPost.id));
-    setNewComment("");
-    setCommentTab('view');
+  const handlePostComment = async () => {
+    if (!newComment.trim() || !currentUser?.id || !selectedPost?.id) {
+      setError('Please enter a comment and make sure you are logged in');
+      return;
+    }
+
+    try {
+      const response = await fetch(`http://localhost:3001/api/Comment/post/${selectedPost.id}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          text: newComment.trim(),
+          posterId: currentUser.id,
+          postId: selectedPost.id,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to post comment');
+      }
+
+      // Refresh comments after posting
+      await fetchComments(selectedPost.id);
+      setNewComment("");
+      setCommentTab('view');
+    } catch (err) {
+      console.error('Error posting comment:', err);
+      setError('Failed to post comment');
+    }
   };
 
   const handleDeletePost = async (postId: number) => {
@@ -347,6 +363,36 @@ const AccountPage = () => {
         setError('Failed to delete post: ' + (err instanceof Error ? err.message : String(err)));
       }
     }
+  };
+
+  // Add function to fetch comments
+  const fetchComments = async (postId: number) => {
+    try {
+      const response = await fetch(`http://localhost:3001/api/Comment/post/${postId}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch comments');
+      }
+      const comments = await response.json();
+      setPostComments(comments);
+    } catch (err) {
+      console.error('Error fetching comments:', err);
+      setError('Failed to fetch comments');
+    }
+  };
+
+  // Modify handleViewPost to not fetch comments immediately
+  const handleViewPost = (post: any) => {
+    setSelectedPost(post);
+    setCommentsLoaded(false);
+    setPostComments([]);
+  };
+
+  // Add function to handle view comments button click
+  const handleViewComments = async () => {
+    if (!selectedPost?.id) return;
+    setCommentTab('view');
+    await fetchComments(selectedPost.id);
+    setCommentsLoaded(true);
   };
 
   return (
@@ -408,7 +454,7 @@ const AccountPage = () => {
             <div className="post-hover-overlay">
               <div className="post-actions">
                 <button 
-                  onClick={() => setSelectedPost(post)}
+                  onClick={() => handleViewPost(post)}
                   className="post-action-btn view-btn"
                   aria-label="View post"
                 >
@@ -500,7 +546,7 @@ const AccountPage = () => {
             <div className="comments-section">
               <div className="comment-tabs">
                 <button 
-                  onClick={() => setCommentTab('view')}
+                  onClick={handleViewComments}
                   className={`tab-btn ${commentTab === 'view' ? 'active' : ''}`}
                 >
                   View Comments
@@ -514,9 +560,19 @@ const AccountPage = () => {
               </div>
               {commentTab === 'view' ? (
                 <div className="comments-list">
-                  {selectedPost.comments?.map(comment => (
-                    <Comment key={comment.id} poster={comment.poster} text={comment.text} />
-                  ))}
+                  {!commentsLoaded ? (
+                    <div className="comments-placeholder">Click "View Comments" to see comments</div>
+                  ) : postComments.length > 0 ? (
+                    postComments.map(comment => (
+                      <Comment 
+                        key={comment.id} 
+                        poster={comment.poster?.username || 'Unknown'} 
+                        text={comment.text} 
+                      />
+                    ))
+                  ) : (
+                    <div className="no-comments">No comments yet</div>
+                  )}
                 </div>
               ) : (
                 <div className="comment-form">
