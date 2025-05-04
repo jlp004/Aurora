@@ -23,6 +23,7 @@ interface SearchSuggestion {
     type: 'user' | 'post';
     text: string;
     timestamp: Date;
+    pictureURL?: string;
 }
 
 interface HeaderProps {
@@ -97,58 +98,28 @@ const SearchBar: React.FC<HeaderProps> = ({ onThemeToggle }) => {
 
     const fetchSuggestions = async (query: string) => {
         try {
-            await new Promise(resolve => setTimeout(resolve, 500))
-            const now = new Date();
+            setIsLoading(true);
+            const response = await fetch(`http://localhost:3001/api/chat/search-users?query=${encodeURIComponent(query)}`);
+            if (!response.ok) {
+                throw new Error('Failed to fetch users');
+            }
+            const data = await response.json();
             
-            // Create mock suggestions with dynamic timestamps
-            const mockSuggestions: SearchSuggestion[] = [
-                { 
-                    id: '1', 
-                    type: 'user' as const, 
-                    text: 'user123', 
-                    timestamp: now 
-                },
-                { 
-                    id: '2', 
-                    type: 'post' as const, 
-                    text: 'Recent post about...', 
-                    timestamp: new Date(now.getTime() - 2 * 60 * 1000) // 2 minutes ago
-                },
-                { 
-                    id: '3', 
-                    type: 'post' as const, 
-                    text: 'Older post about...', 
-                    timestamp: new Date(now.getTime() - 10 * 60 * 1000) // 10 minutes ago
-                },
-                {
-                    id: '4',
-                    type: 'post' as const,
-                    text: 'Post from last week...',
-                    timestamp: new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000) // 5 days ago
-                }
-            ].filter(suggestion => 
-                suggestion.text.toLowerCase().includes(query.toLowerCase())
-            );
+            // Transform user data into SearchSuggestion format
+            const userSuggestions: SearchSuggestion[] = data.users.map((user: any) => ({
+                id: user.id,
+                type: 'user',
+                text: user.username,
+                timestamp: new Date(),
+                pictureURL: user.pictureURL
+            }));
 
-            // Filter suggestions based on time
-            const filteredSuggestions = mockSuggestions.filter(suggestion => {
-                const timeDiff = currentTime.getTime() - suggestion.timestamp.getTime();
-                
-                switch (selectedDateFilter) {
-                    case 'last5min':
-                        return timeDiff <= 5 * 60 * 1000; // 5 minutes in milliseconds
-                    case 'recent':
-                        return timeDiff <= 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
-                    default:
-                        return true;
-                }
-            });
-
-            setSuggestions(filteredSuggestions)
+            setSuggestions(userSuggestions);
         } catch (error) {
-            console.error('Error fetching suggestions:', error)
+            console.error('Error fetching suggestions:', error);
+            setSuggestions([]);
         } finally {
-            setIsLoading(false)
+            setIsLoading(false);
         }
     }
 
@@ -233,7 +204,7 @@ const SearchBar: React.FC<HeaderProps> = ({ onThemeToggle }) => {
                 </div>
 
                 {/* Suggestions dropdown */}
-                {(isLoading || suggestions.length > 0) && isFocused && (
+                {isFocused && inputValue && (
                     <div className="suggestions-dropdown">
                         {isLoading ? (
                             <div className="suggestion-loading">
@@ -247,15 +218,22 @@ const SearchBar: React.FC<HeaderProps> = ({ onThemeToggle }) => {
                                     key={suggestion.id} 
                                     className="suggestion-item"
                                     onClick={() => {
-                                        setInputValue(suggestion.text)
-                                        setSuggestions([])
+                                        setInputValue(suggestion.text);
+                                        setSuggestions([]);
+                                        navigate(`/search?query=${suggestion.text}`);
                                     }}
                                 >
-                                    {suggestion.type === 'user' ? '👤 ' : '📝 '}
+                                    <img 
+                                        src={suggestion.pictureURL || '/images/default-avatar.png'} 
+                                        alt={suggestion.text}
+                                        style={{
+                                            width: '30px',
+                                            height: '30px',
+                                            borderRadius: '50%',
+                                            marginRight: '10px'
+                                        }}
+                                    />
                                     <span>{suggestion.text}</span>
-                                    <span style={{ marginLeft: 'auto', fontSize: '0.8em', color: '#666' }}>
-                                        {formatTimestamp(suggestion.timestamp)}
-                                    </span>
                                 </div>
                             ))
                         )}

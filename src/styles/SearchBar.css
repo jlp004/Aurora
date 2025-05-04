@@ -47,17 +47,31 @@ input[type="text"] {
     font-size: 1rem;           
     border: 2px solid var(--input-border);    
     border-radius: 1.5rem;       
-    background-color: white;   
+    background-color: var(--bg-secondary);
     color: var(--text-primary);
     outline: none;             
     transition: all 0.3s ease; 
     box-shadow: 0 0 5px var(--dropdown-shadow);
 }
 
+[data-theme='dark'] input[type="text"] {
+    background-color: var(--bg-secondary);
+    color: #fff;
+    border-color: var(--border-color);
+}
+
+[data-theme='dark'] input[type="text"]::placeholder {
+    color: #ccc;
+}
+
+input[type="text"]::placeholder {
+    color: var(--text-secondary);
+}
+
 /* Dark mode specific styles */
 [data-theme='dark'] input[type="text"] {
-    background-color: #1a1a1a;
-    color: white;
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
 }
 
 input[type="text"]:focus {
@@ -66,12 +80,14 @@ input[type="text"]:focus {
 }
 
 [data-theme='dark'] input[type="text"]:focus {
-    background-color: #1a1a1a;
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
 }
 
 /* Override for dark theme */
 :root[data-theme='dark'] .search-wrapper input[type="text"] {
-    background-color: #1a1a1a !important;
+    background-color: var(--bg-secondary) !important;
+    color: #fff !important;
 }
 
 /* Buttons */
@@ -105,49 +121,58 @@ input[type="text"]:focus {
 /* Suggestions Dropdown */
 .suggestions-dropdown {
     position: absolute;
-    top: calc(100% + 0.5rem);
+    top: 100%;
     left: 0;
     right: 0;
-    background: var(--dropdown-bg);
-    border-radius: 1rem;
-    box-shadow: 0 4px 12px var(--dropdown-shadow);
-    overflow: hidden;
-    z-index: 100;
+    background: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    margin-top: 8px;
+    max-height: 300px;
+    overflow-y: auto;
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .suggestion-item {
-    padding: 0.8rem 1rem;
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
     cursor: pointer;
     transition: background-color 0.2s ease;
     color: var(--text-primary);
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
 }
 
 .suggestion-item:hover {
     background-color: var(--dropdown-hover);
 }
 
-/* Loading Animation */
 .suggestion-loading {
-    padding: 1rem;
+    padding: 16px;
 }
 
 .loading-line {
-    height: 0.8rem;
-    background: var(--bg-tertiary);
-    border-radius: 0.4rem;
-    margin: 0.5rem 0;
+    height: 12px;
+    background: var(--bg-secondary);
+    border-radius: 4px;
+    margin-bottom: 8px;
     animation: pulse 1.5s infinite;
 }
 
-.loading-line:nth-child(2) {
-    width: 85%;
+.loading-line:last-child {
+    margin-bottom: 0;
 }
 
-.loading-line:nth-child(3) {
-    width: 65%;
+@keyframes pulse {
+    0% {
+        opacity: 0.6;
+    }
+    50% {
+        opacity: 0.3;
+    }
+    100% {
+        opacity: 0.6;
+    }
 }
 
 /* Advanced Filters Panel */
@@ -334,4 +359,59 @@ input[type="text"]:focus {
     input[type="text"] {
         width: 14rem;
     }
+}
+
+/* User results styling */
+.user-results {
+    background: none;
+    color: var(--text-primary);
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    margin-top: 16px;
+}
+
+.user-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border-color);
+    background: none;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.user-item:last-child {
+    border-bottom: none;
+}
+
+.user-info h3 {
+    color: var(--text-primary);
+    margin: 0;
+}
+
+.user-info p {
+    color: var(--text-secondary);
+    margin: 4px 0 0;
+    font-size: 14px;
+}
+
+/* Filter buttons */
+.filter-btn, .search-by-button {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+}
+[data-theme='dark'] .filter-btn, [data-theme='dark'] .search-by-button {
+    background: #222;
+    color: #fff;
+    border: 1px solid var(--border-color);
+}
+.filter-btn.selected, .search-by-button.selected {
+    background: var(--accent-primary);
+    color: #fff;
 }
