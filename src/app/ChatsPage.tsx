@@ -89,74 +89,36 @@ const ChatsPage: React.FC = () => {
           />
         </div>
 
-        {/* ── Recent Chats ──────────────────────────── */}
-        {(!searchTerm && recentChats.length > 0) && (
-          <>
-            <div style={{ color: 'white', fontWeight: 600, margin: '10px 0 5px 0', fontSize: '1rem' }}>Recent</div>
-            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-              {recentChats.map(user => (
-                <li
-                  key={user.id}
-                  onClick={() => setSelectedUserId(user.id)}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '10px',
-                    padding: '10px',
-                    cursor: 'pointer',
-                    borderBottom: isDarkMode ? '1px solid rgba(0, 0, 0, 0.3)' : '1px solid #eee',
-                    color: 'white',
-                  }}
-                >
-                  <img
-                    src={user.pictureURL || '/images/default-avatar.png'}
-                    alt={user.username}
-                    style={{
-                      width: '40px',
-                      height: '40px',
-                      borderRadius: '50%',
-                      marginRight: '10px',
-                    }}
-                  />
-                  <span>{user.username}</span>
-                </li>
-              ))}
-            </ul>
-          </>
-        )}
-
-        {/* ── Inline Filtered User List ─────────────── */}
-        {searchTerm && (
-          <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-            {users.map(user => (
-              <li
-                key={user.id}
-                onClick={() => setSelectedUserId(user.id)}
+        {/* Show recent chats if searchTerm is empty, otherwise show search results */}
+        <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+          {(searchTerm ? users : recentChats).map(user => (
+            <li
+              key={user.id}
+              onClick={() => setSelectedUserId(user.id)}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                padding: '10px',
+                cursor: 'pointer',
+                borderBottom: isDarkMode ? '1px solid rgba(0, 0, 0, 0.3)' : '1px solid #eee',
+                color: 'white',
+              }}
+            >
+              <img
+                src={user.pictureURL || '/images/default-avatar.png'}
+                alt={user.username}
                 style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '10px',
-                  padding: '10px',
-                  cursor: 'pointer',
-                  borderBottom: isDarkMode ? '1px solid rgba(0, 0, 0, 0.3)' : '1px solid #eee',
-                  color: 'white',
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '50%',
+                  marginRight: '10px',
                 }}
-              >
-                <img
-                  src={user.pictureURL || '/images/default-avatar.png'}
-                  alt={user.username}
-                  style={{
-                    width: '40px',
-                    height: '40px',
-                    borderRadius: '50%',
-                    marginRight: '10px',
-                  }}
-                />
-                <span>{user.username}</span>
-              </li>
-            ))}
-          </ul>
-        )}
+              />
+              <span>{user.username}</span>
+            </li>
+          ))}
+        </ul>
       </div>
 
       {/** Right panel: Chat room or placeholder */}
