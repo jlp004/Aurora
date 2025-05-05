@@ -192,12 +192,14 @@ const SearchPage = () => {
             posts.map((post: any) => (
               <Post
                 key={post.id}
+                id={post.id}
                 username={post.user?.username || "Unknown"} 
                 imageUrl={post.pictureURL || "../../images/img4.png"} 
                 caption={post.title}
                 likes={post.likes || 0}
                 comments={post.Comment?.length || 0}
                 timePosted={post.createdAt}
+                profilePictureUrl={post.user?.pictureURL}
               />
             ))
           )}

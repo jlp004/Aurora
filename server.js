@@ -913,7 +913,38 @@ app.post('/api/chat/send', async (req, res) => {
 
 // Search users for chat
 app.get('/api/chat/search-users', async (req, res) => {
-  // ... existing search users handler code ...
+  try {
+    const { query } = req.query;
+    console.log('Searching users with query:', query);
+
+    const users = await prisma.user.findMany({
+      where: query ? {
+        username: {
+          contains: query.toLowerCase()
+        }
+      } : {},
+      select: {
+        id: true,
+        username: true,
+        pictureURL: true
+      }
+    });
+
+    // Filter results case-insensitively
+    const filteredUsers = query 
+      ? users.filter(user => 
+          user.username.toLowerCase().includes(query.toLowerCase())
+        )
+      : users;
+
+    res.json({ users: filteredUsers });
+  } catch (error) {
+    console.error('Error searching users:', error);
+    res.status(500).json({ 
+      message: 'Failed to search users',
+      error: error.message 
+    });
+  }
 });
 
 // Get recent chat users for a user
