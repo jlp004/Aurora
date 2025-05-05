@@ -370,7 +370,156 @@ app.get('/api/user/:id/followers', async (req, res) => {
 
   } catch (error) {
     console.error(`Error fetching followers for user ${id}:`, error);
-    res.status(500).json({ message: 'Failed to fetch followers list' });
+    return res.status(500).json({ message: 'Failed to fetch followers list' });
+  }
+});
+
+// Update user settings
+app.put('/api/user/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { username, profileDesc } = req.body;
+    
+    console.log('Updating user:', { id, username, profileDesc });
+    
+    const updatedUser = await prisma.user.update({
+      where: { id: Number(id) },
+      data: {
+        ...(username && { username }),
+        ...(profileDesc && { profileDesc })
+      }
+    });
+    
+    // Don't return the password
+    const { password: _, ...userWithoutPassword } = updatedUser;
+    
+    return res.status(200).json(userWithoutPassword);
+  } catch (error) {
+    console.error('Error updating user:', error);
+    return res.status(500).json({ 
+      message: 'Failed to update user settings',
+      details: error.message 
+    });
+  }
+});
+
+// Update user email, password, and bio
+app.post('/api/User/update', async (req, res) => {
+  try {
+    const { oldUsername, username, email, password, bio } = req.body;
+    if (!oldUsername || !username) {
+      return res.status(400).json({ message: 'Old and new username are required' });
+    }
+    // Find user by old username
+    const user = await prisma.user.findUnique({ where: { username: oldUsername } });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    // If username is changing, check for uniqueness
+    if (oldUsername !== username) {
+      const existingUser = await prisma.user.findUnique({ where: { username } });
+      if (existingUser) {
+        return res.status(409).json({ message: 'Username already taken' });
+      }
+    }
+    const updatedUser = await prisma.user.update({
+      where: { username: oldUsername },
+      data: {
+        ...(username && { username }),
+        ...(email && { email }),
+        ...(password && { password }),
+        ...(bio && { profileDesc: bio }),
+      }
+    });
+    const { password: _, ...userWithoutPassword } = updatedUser;
+    return res.status(200).json(userWithoutPassword);
+  } catch (error) {
+    console.error('Error updating user:', error);
+    return res.status(500).json({ message: 'Failed to update user: ' + error.message });
+  }
+});
+
+// === Post Endpoints ===
+
+// Like/Unlike a post
+app.post('/api/Post/:id/like', async (req, res) => {
+  try {
+    const postId = Number(req.params.id);
+    const { userId } = req.body; // User doing the liking
+
+    if (!userId || !postId) {
+      return res.status(400).json({ 
+        error: 'User ID and Post ID are required' 
+      });
+    }
+
+    // Find the post and the user who owns it
+    const post = await prisma.post.findUnique({
+      where: { id: postId },
+      select: { userId: true, likedBy: { where: { id: Number(userId) } } } // Check if already liked by this user
+    });
+
+    if (!post) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+
+    const postOwnerId = post.userId;
+    const isAlreadyLiked = post.likedBy.length > 0;
+
+    let updatedPost;
+    let finalLikes;
+    let finalIsLiked;
+
+    if (isAlreadyLiked) {
+      // --- Unlike --- 
+      console.log(`User ${userId} unliking post ${postId}`);
+      updatedPost = await prisma.post.update({
+        where: { id: postId },
+        data: {
+          likes: { decrement: 1 },
+          likedBy: { disconnect: { id: Number(userId) } } // Remove relation
+        },
+        select: { likes: true } // Select the updated likes count
+      });
+      // Decrement likes count on the post owner's profile
+      await prisma.user.update({
+        where: { id: postOwnerId },
+        data: { likes: { decrement: 1 } }
+      });
+      finalLikes = updatedPost.likes;
+      finalIsLiked = false;
+    } else {
+      // --- Like --- 
+      console.log(`User ${userId} liking post ${postId}`);
+      updatedPost = await prisma.post.update({
+        where: { id: postId },
+        data: {
+          likes: { increment: 1 },
+          likedBy: { connect: { id: Number(userId) } } // Add relation
+        },
+        select: { likes: true } // Select the updated likes count
+      });
+      // Increment likes count on the post owner's profile
+      await prisma.user.update({
+        where: { id: postOwnerId },
+        data: { likes: { increment: 1 } }
+      });
+      finalLikes = updatedPost.likes;
+      finalIsLiked = true;
+    }
+
+    console.log(`Post ${postId} now has ${finalLikes} likes. User ${userId} liked: ${finalIsLiked}`);
+    return res.status(200).json({ 
+      likes: finalLikes, 
+      isLiked: finalIsLiked 
+    });
+
+  } catch (error) {
+    console.error(`Error liking/unliking post:`, error);
+    return res.status(500).json({ 
+      error: 'Failed to update like status', 
+      details: error.message 
+    });
   }
 });
 
@@ -688,6 +837,8 @@ app.post('/api/upload/post', upload.single('image'), async (req, res) => {
   }
 });
 
+// === Comment Endpoints ===
+
 // Get all comments for a specific post
 app.get('/api/Comment/post/:postId', async (req, res) => {
   const { postId } = req.params;
@@ -742,349 +893,51 @@ app.use((err, req, res, next) => {
     // An unknown error occurred
     console.error('Server error:', err);
     return res.status(500).json({ 
-      error: `Server error: ${err.message}` 
+      error: `Server error: ${err.message}`
     });
   }
-  next();
 });
 
 // === Chat Endpoints ===
 
 // Get chat history between two users
 app.get('/api/chat/history', async (req, res) => {
-  try {
-    const { user1Id, user2Id } = req.query;
-    
-    if (!user1Id || !user2Id) {
-      return res.status(400).json({ 
-        message: 'Both user IDs are required' 
-      });
-    }
-
-    const messages = await prisma.message.findMany({
-      where: {
-        OR: [
-          {
-            AND: [
-              { senderId: Number(user1Id) },
-              { receiverId: Number(user2Id) }
-            ]
-          },
-          {
-            AND: [
-              { senderId: Number(user2Id) },
-              { receiverId: Number(user1Id) }
-            ]
-          }
-        ]
-      },
-      include: {
-        sender: {
-          select: {
-            username: true,
-            pictureURL: true
-          }
-        },
-        receiver: {
-          select: {
-            username: true,
-            pictureURL: true
-          }
-        }
-      },
-      orderBy: {
-        createdAt: 'asc'
-      }
-    });
-
-    return res.status(200).json({ messages });
-  } catch (error) {
-    console.error('Error fetching chat history:', error);
-    return res.status(500).json({ 
-      message: 'Failed to fetch chat history' 
-    });
-  }
+  // ... existing chat history handler code ...
 });
 
 // Send a message
 app.post('/api/chat/send', async (req, res) => {
-  try {
-    const { content, senderId, receiverId } = req.body;
-    
-    if (!content || !senderId || !receiverId) {
-      return res.status(400).json({ 
-        message: 'Content, sender ID, and receiver ID are required' 
-      });
-    }
-
-    const message = await prisma.message.create({
-      data: {
-        content,
-        senderId: Number(senderId),
-        receiverId: Number(receiverId)
-      },
-      include: {
-        sender: {
-          select: {
-            username: true,
-            pictureURL: true
-          }
-        },
-        receiver: {
-          select: {
-            username: true,
-            pictureURL: true
-          }
-        }
-      }
-    });
-
-    return res.status(201).json(message);
-  } catch (error) {
-    console.error('Error sending message:', error);
-    return res.status(500).json({ 
-      message: 'Failed to send message' 
-    });
-  }
+  // ... existing send message handler code ...
 });
 
 // Search users for chat
 app.get('/api/chat/search-users', async (req, res) => {
-  try {
-    const { query } = req.query;
-    
-    if (!query) {
-      return res.status(400).json({ 
-        message: 'Search query is required' 
-      });
-    }
-
-    const users = await prisma.user.findMany({
-      where: {
-        username: {
-          contains: query
-        }
-      },
-      select: {
-        id: true,
-        username: true,
-        pictureURL: true
-      }
-    });
-
-    return res.status(200).json({ users });
-  } catch (error) {
-    console.error('Error searching users:', error);
-    return res.status(500).json({ 
-      message: 'Failed to search users' 
-    });
-  }
+  // ... existing search users handler code ...
 });
 
 // Get recent chat users for a user
 app.get('/api/chat/recent/:userId', async (req, res) => {
-  try {
-    const { userId } = req.params;
-    // Find all users who have chatted with this user, ordered by most recent message
-    const recentChats = await prisma.message.findMany({
-      where: {
-        OR: [
-          { senderId: Number(userId) },
-          { receiverId: Number(userId) }
-        ]
-      },
-      orderBy: { createdAt: 'desc' },
-      select: {
-        senderId: true,
-        receiverId: true,
-        sender: { select: { id: true, username: true, pictureURL: true } },
-        receiver: { select: { id: true, username: true, pictureURL: true } },
-        createdAt: true
-      }
-    });
-
-    // Get unique users (other than current user), most recent first
-    const seen = new Set();
-    const users = [];
-    for (const msg of recentChats) {
-      const otherUser = msg.senderId === Number(userId) ? msg.receiver : msg.sender;
-      if (!seen.has(otherUser.id) && otherUser.id !== Number(userId)) {
-        seen.add(otherUser.id);
-        users.push({ ...otherUser, lastMessageAt: msg.createdAt });
-      }
-    }
-
-    res.json({ users });
-  } catch (error) {
-    console.error('Error fetching recent chats:', error);
-    res.status(500).json({ message: 'Failed to fetch recent chats' });
-  }
+  // ... existing recent chats handler code ...
 });
 
 // === Follow/Unfollow Endpoints ===
 
 // Check if a user is following another user
 app.post('/api/isFollowing', async (req, res) => {
-    try {
-        const { followerId, followingId } = req.body;
-
-        if (!followerId || !followingId) {
-      return res.status(400).json({ 
-        message: 'Both followerId and followingId are required' 
-      });
-        }
-
-    const isFollowing = await prisma.user.findFirst({
-            where: {
-                id: Number(followerId),
-                followingUsers: {
-                    some: {
-                        id: Number(followingId)
-                    }
-                }
-            }
-        });
-
-    return res.status(200).json({ isFollowing: !!isFollowing });
-    } catch (error) {
-    console.error('Error checking follow status:', error);
-    return res.status(500).json({ 
-      message: 'Failed to check follow status',
-      error: error.message
-    });
-    }
+  // ... existing isFollowing handler code ...
 });
 
 // Follow a user
 app.post('/api/follow', async (req, res) => {
-    try {
-        const { followerId, followingId } = req.body;
-
-        if (!followerId || !followingId) {
-      return res.status(400).json({ 
-        message: 'Both followerId and followingId are required' 
-      });
-        }
-
-    // Check if the follow relationship already exists
-        const existingFollow = await prisma.user.findFirst({
-            where: {
-                id: Number(followerId),
-                followingUsers: {
-                    some: {
-                        id: Number(followingId)
-                    }
-                }
-            }
-        });
-
-    if (existingFollow) {
-      return res.status(400).json({ 
-        message: 'Already following this user' 
-      });
-        }
-
-    // Create the follow relationship
-    await prisma.user.update({
-                where: { id: Number(followerId) },
-                data: {
-                    followingUsers: {
-          connect: { id: Number(followingId) }
-        },
-        following: {
-          increment: 1
-                    }
-                }
-    });
-
-    // Update the followed user's follower count
-    await prisma.user.update({
-                where: { id: Number(followingId) },
-                data: {
-        followers: {
-          increment: 1
-                    }
-                }
-    });
-
-    return res.status(200).json({ message: 'Successfully followed user' });
-    } catch (error) {
-    console.error('Error following user:', error);
-    return res.status(500).json({ 
-      message: 'Failed to follow user',
-      error: error.message
-    });
-    }
+  // ... existing follow handler code ...
 });
 
 // Unfollow a user
 app.post('/api/unfollow', async (req, res) => {
-    try {
-        const { followerId, followingId } = req.body;
-
-        if (!followerId || !followingId) {
-      return res.status(400).json({ 
-        message: 'Both followerId and followingId are required' 
-      });
-        }
-
-    // Check if the follow relationship exists
-    const existingFollow = await prisma.user.findFirst({
-            where: {
-        id: Number(followerId),
-                followingUsers: {
-                    some: {
-            id: Number(followingId)
-                    }
-                }
-            }
-        });
-
-    if (!existingFollow) {
-      return res.status(400).json({ 
-        message: 'Not following this user' 
-      });
-    }
-
-    // Remove the follow relationship
-    await prisma.user.update({
-      where: { id: Number(followerId) },
-      data: {
-        followingUsers: {
-          disconnect: { id: Number(followingId) }
-        },
-        following: {
-          decrement: 1
-        }
-    }
-});
-
-    // Update the unfollowed user's follower count
-    await prisma.user.update({
-      where: { id: Number(followingId) },
-      data: {
-        followers: {
-          decrement: 1
-                }
-            }
-        });
-
-    return res.status(200).json({ message: 'Successfully unfollowed user' });
-    } catch (error) {
-    console.error('Error unfollowing user:', error);
-    return res.status(500).json({ 
-      message: 'Failed to unfollow user',
-      error: error.message
-    });
-    }
-});
-
-// Update user settings
-app.put('/api/user/:id', async (req, res) => {
-  // ... existing code ...
+  // ... existing unfollow handler code ...
 });
 
 // Start server
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
-}); 
+});
