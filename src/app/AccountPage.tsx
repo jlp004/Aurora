@@ -18,6 +18,23 @@ interface UserType {
   following?: number;
 }
 
+interface PostData {
+  id: number;
+  pictureURL: string;
+  title: string;
+  tag?: string;
+  createdAt: string;
+}
+
+interface User {
+  id: number;
+  username: string;
+  profileDesc?: string;
+  pictureURL?: string;
+  followers?: number;
+  following?: number;
+}
+
 const AccountPage = () => {
   const { currentUser, setCurrentUser } = useUser();
 
@@ -120,7 +137,7 @@ const AccountPage = () => {
   useEffect(() => {
     const fetchUserPosts = async () => {
       if (!currentUser) return;
-
+      
       try {
         console.log('Fetching posts for user ID:', currentUser.id);
         const response = await fetch(`http://localhost:3001/api/posts/${currentUser.id}`);
@@ -144,7 +161,7 @@ const AccountPage = () => {
         console.error('Error fetching posts:', err);
       }
     };
-
+    
     fetchUserPosts();
   }, [currentUser]);
 
@@ -551,7 +568,7 @@ const AccountPage = () => {
 
       <div className="profile-header">
         <div className="profile-pic-container" onClick={handleRemoveProfilePic}>
-          {user.profilePic ? (
+          {user?.profilePic ? (
             <img src={user.profilePic} alt="" className="profile-pic" />
           ) : (
             <div className="profile-pic" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#fff', borderRadius: '50%', width: 120, height: 120 }}>
@@ -567,16 +584,16 @@ const AccountPage = () => {
         </div>
 
         <div className="user-info">
-          <h2>{user.username}</h2>
-          <p>{user.bio}</p>
+          <h2>{user?.username}</h2>
+          <p>{user?.bio}</p>
 
           <div className="stats">
-            <span><strong>{user.posts.length}</strong> Posts</span>
+            <span><strong>{user?.posts.length}</strong> Posts</span>
             <span className="stat-link" onClick={() => handleOpenModal('followers')}>
-              <strong>{user.followers ?? 0}</strong> Followers
+              <strong>{user?.followers ?? 0}</strong> Followers
             </span>
             <span className="stat-link" onClick={() => handleOpenModal('following')}>
-              <strong>{user.following ?? 0}</strong> Following
+              <strong>{user?.following ?? 0}</strong> Following
             </span>
           </div>
 
@@ -611,7 +628,7 @@ const AccountPage = () => {
       <div className="profile-divider"></div>
 
       <div className="image-grid">
-        {user.posts.map((post) => (
+        {user?.posts.map((post) => (
           <div key={post.id} className="post-container">
             <img src={post.image} alt={post.caption} className="post-img" />
             <div className="post-hover-overlay">

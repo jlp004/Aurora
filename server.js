@@ -772,18 +772,24 @@ app.post('/api/posts', async (req, res) => {
     }
     
     // Create post with current timestamp
+    const now = new Date();
+    console.log('Creating post with timestamp:', now.toISOString());
+    
     const post = await prisma.post.create({
       data: {
         title,
         pictureURL: pictureURL || '',
         userId: Number(userId),
         tag: tag || '',
-        createdAt: new Date() // Store as Date object, Prisma will handle the conversion
+        createdAt: now // Store as Date object, Prisma will handle the conversion
       }
     });
     
     console.log('Post created successfully:', post);
-    return res.status(201).json(post);
+    return res.status(201).json({
+      ...post,
+      createdAt: now.toISOString() // Ensure we send back the exact timestamp we used
+    });
   } catch (error) {
     console.error('Detailed error creating post:', error);
     return res.status(500).json({ 

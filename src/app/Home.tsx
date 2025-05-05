@@ -44,7 +44,7 @@ const Home = () => {
       }
       const data = await response.json();
       
-      // Ensure each post has a valid timestamp
+      // Ensure each post has a valid timestamp and sort by createdAt
       const postsWithValidDates = data.data?.map((post: PostData) => {
         // If no createdAt, use current time as fallback
         if (!post.createdAt) {
@@ -71,7 +71,12 @@ const Home = () => {
         }
       }) || [];
 
-      setPosts(postsWithValidDates);
+      // Sort posts by createdAt in descending order (most recent first)
+      const sortedPosts = postsWithValidDates.sort((a: PostData, b: PostData) => {
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      });
+
+      setPosts(sortedPosts);
     } catch (err) {
       console.error('Error fetching posts:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch posts');

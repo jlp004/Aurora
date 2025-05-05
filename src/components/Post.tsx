@@ -35,23 +35,32 @@ const storeTimestamp = (postId: number, timestamp: string) => {
 };
 
 const ensureDate = (timestamp: string | Date): Date => {
-  return timestamp instanceof Date ? timestamp : new Date(timestamp);
+  if (timestamp instanceof Date) return timestamp;
+  // If it's a string, try to parse it as ISO string
+  const date = new Date(timestamp);
+  if (isNaN(date.getTime())) {
+    console.error('Invalid date string:', timestamp);
+    return new Date(); // Return current time as fallback
+  }
+  return date;
 };
 
 const calculateTimeDiff = (timestamp: string | Date): number => {
   const postDate = ensureDate(timestamp);
-  return Math.floor((new Date().getTime() - postDate.getTime()) / 1000);
+  const now = new Date();
+  return Math.floor((now.getTime() - postDate.getTime()) / 1000);
 };
 
 const formatTimeAgo = (seconds: number): string => {
   if (seconds < 0) return 'just now';
+  if (seconds < 60) return 'just now';
   
   const minutes = Math.floor(seconds / 60);
   const hours = Math.floor(minutes / 60);
   const days = Math.floor(hours / 24);
   
   if (minutes < 1) {
-    return `${seconds} ${seconds === 1 ? 'second' : 'seconds'} ago`;
+    return 'just now';
   }
   if (hours < 1) {
     return `${minutes} ${minutes === 1 ? 'minute' : 'minutes'} ago`;
@@ -88,20 +97,19 @@ export default function Post({
   const [postComments, setPostComments] = useState<Comment[]>([]);
   const [commentCount, setCommentCount] = useState(comments);
   
-  // Initialize timestamp from localStorage or prop
+  // Initialize timestamp directly from the prop
   const [timestamp, setTimestamp] = useState(() => {
-    if (!id) return ensureDate(timePosted);
-    const storedTime = getStoredTimestamp(id);
-    if (storedTime) return new Date(storedTime);
-    
-    const initialTime = ensureDate(timePosted);
-    storeTimestamp(id, initialTime.toISOString());
-    return initialTime;
+    const date = ensureDate(timePosted);
+    console.log('Initializing timestamp:', date.toISOString());
+    return date;
   });
 
-  const [displayTime, setDisplayTime] = useState(() => 
-    formatTimeAgo(calculateTimeDiff(timestamp))
-  );
+  const [displayTime, setDisplayTime] = useState(() => {
+    const diff = calculateTimeDiff(timestamp);
+    const formatted = formatTimeAgo(diff);
+    console.log('Initial display time:', formatted);
+    return formatted;
+  });
 
   // Fetch comments when showComments is true
   useEffect(() => {
