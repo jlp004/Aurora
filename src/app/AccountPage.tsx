@@ -5,6 +5,7 @@ import Header from "../components/Header";
 import "../styles/HamburgerMenu.css";
 import Comment from "../components/Comment";
 import { useUser } from './userData';
+import { FaUser } from 'react-icons/fa';
 
 const AccountPage = () => {
   const { currentUser, setCurrentUser } = useUser();
@@ -13,8 +14,8 @@ const AccountPage = () => {
     id: currentUser?.id || 1,
     username: currentUser?.username || "user123",
     bio: currentUser?.profileDesc || "Lover of code and coffee ☕",
-    followers: 5,
-    following: 2,
+    followers: 0,
+    following: 0,
     profilePic: currentUser?.pictureURL || "/images/default_avatar.png",
     posts: [
       {
@@ -76,18 +77,43 @@ const AccountPage = () => {
     const fetchUserData = async () => {
       if (currentUser?.id) {
         try {
+          console.log('Fetching user data for ID:', currentUser.id);
           const response = await fetch(`http://localhost:3001/api/user/${currentUser.id}`);
           if (response.ok) {
-            const userData = await response.json();
-            setUser(prev => ({
-              ...prev,
-              id: userData.id,
-              username: userData.username || prev.username,
-              profilePic: userData.pictureURL || prev.profilePic,
-              bio: userData.profileDesc || prev.bio,
-              followers: userData.followers || prev.followers,
-              following: userData.following || prev.following
-            }));
+            const responseData = await response.json();
+            console.log('Full API response:', responseData);
+            
+            // Check if data is nested under a 'users' array or another property
+            let userData;
+            if (responseData.users && responseData.users.length > 0) {
+              userData = responseData.users[0]; // Get first user from users array
+              console.log('Found user in responseData.users[0]:', userData);
+            } else if (responseData.user) {
+              userData = responseData.user; // Get user from user property
+              console.log('Found user in responseData.user:', userData);
+            } else {
+              userData = responseData; // Direct response is the user data
+              console.log('Assuming responseData is the user:', userData);
+            }
+            
+            console.log('Followers from userData:', userData.followers);
+            console.log('Following from userData:', userData.following);
+            
+            setUser(prev => {
+              const newState = {
+                ...prev,
+                id: userData.id,
+                username: userData.username || prev.username,
+                profilePic: userData.pictureURL || prev.profilePic,
+                bio: userData.profileDesc || prev.bio,
+                followers: userData.followers ?? 0,
+                following: userData.following ?? 0
+              };
+              console.log('Updated user state:', newState);
+              return newState;
+            });
+          } else {
+            console.error('Failed to fetch user data:', response.status);
           }
         } catch (err) {
           console.error('Error fetching user data:', err);
@@ -204,7 +230,10 @@ const AccountPage = () => {
   };
 
   const handleRemoveProfilePic = () => {
-    setUser({ ...user, profilePic: "/images/default-profile.jpg" });
+    setUser({ ...user, profilePic: "" });
+    if (currentUser) {
+      setCurrentUser({ ...currentUser, pictureURL: "" });
+    }
   };
 
   const handleCreatePost = async (event) => {
@@ -395,6 +424,9 @@ const AccountPage = () => {
     setCommentsLoaded(true);
   };
 
+  // At the start of the component
+  console.log('AccountPage rendered with user state:', user);
+
   return (
     <div className="account-container">
       <Header />
@@ -404,7 +436,9 @@ const AccountPage = () => {
           {user.profilePic ? (
             <img src={user.profilePic} alt="" className="profile-pic" />
           ) : (
-            <div className="profile-pic">Profile</div>
+            <div className="profile-pic" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#fff', borderRadius: '50%', width: 120, height: 120 }}>
+              <FaUser style={{ fontSize: 64, color: '#a0a0a0' }} />
+            </div>
           )}
           <div className="profile-pic-overlay">Click to remove</div>
         </div>
@@ -445,7 +479,9 @@ const AccountPage = () => {
         </div>
       </div>
 
-      <div className="profile-divider" />
+      
+
+      <div className="profile-divider"></div>
 
       <div className="image-grid">
         {user.posts.map((post) => (
@@ -555,89 +591,33 @@ const AccountPage = () => {
                   onClick={() => setCommentTab('post')}
                   className={`tab-btn ${commentTab === 'post' ? 'active' : ''}`}
                 >
-                  Add Comment
+                  Post Comment
                 </button>
               </div>
-              {commentTab === 'view' ? (
-                <div className="comments-list">
-                  {!commentsLoaded ? (
-                    <div className="comments-placeholder">Click "View Comments" to see comments</div>
-                  ) : postComments.length > 0 ? (
-                    postComments.map(comment => (
-                      <Comment 
-                        key={comment.id} 
-                        poster={comment.poster?.username || 'Unknown'} 
-                        text={comment.text} 
-                      />
-                    ))
+              {commentTab === 'view' && (
+                <>
+                  {commentsLoaded ? (
+                    <div className="comments-list">
+                      {postComments.map((comment) => (
+                        <Comment key={comment.id} comment={comment} />
+                      ))}
+                    </div>
                   ) : (
-                    <div className="no-comments">No comments yet</div>
+                    <p>Loading comments...</p>
                   )}
-                </div>
-              ) : (
-                <div className="comment-form">
-                  <textarea
-                    placeholder="Write a comment..."
-                    value={newComment}
-                    onChange={e => setNewComment(e.target.value)}
-                  />
-                  <button onClick={handlePostComment}>Post Comment</button>
-                </div>
+                </>
               )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Edit Post Modal */}
-      {isEditModalOpen && editingPost && (
-        <div className="modal-overlay" onClick={closeModal}>
-          <div className="modal-content" onClick={e => e.stopPropagation()}>
-            <button className="modal-close" onClick={closeModal}>×</button>
-            <h2>Edit Post</h2>
-            <img src={editingPost.image} alt="Preview" className="modal-preview-img" />
-            <textarea
-              placeholder="Edit caption..."
-              value={newPostComment}
-              onChange={e => setNewPostComment(e.target.value)}
-              className="modal-caption"
-            />
-            <div className="modal-tags">
-              <h3>Edit Tags</h3>
-              <div className="tag-buttons">
-                {predefinedTags.map(tag => (
-                  <button
-                    key={tag}
-                    onClick={() => {
-                      if (selectedTags.includes(tag)) {
-                        setSelectedTags(selectedTags.filter(t => t !== tag));
-                      } else {
-                        setSelectedTags([...selectedTags, tag]);
-                      }
-                    }}
-                    className={`tag-btn ${selectedTags.includes(tag) ? 'active' : ''}`}
-                  >
-                    {tag}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="modal-actions">
-              <button onClick={closeModal} className="modal-btn cancel">Cancel</button>
-              <button 
-                onClick={() => {
-                  const updatedPosts = user.posts.map(p => 
-                    p.id === editingPost.id 
-                      ? { ...p, caption: newPostComment, tags: selectedTags }
-                      : p
-                  );
-                  setUser({ ...user, posts: updatedPosts });
-                  closeModal();
-                }} 
-                className="modal-btn confirm"
-              >
-                Save Changes
-              </button>
+              {commentTab === 'post' && (
+                <>
+                  <textarea
+                    placeholder="Write your comment..."
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                    className="comment-textarea"
+                  />
+                  <button onClick={handlePostComment} className="post-comment-btn">Post Comment</button>
+                </>
+              )}
             </div>
           </div>
         </div>

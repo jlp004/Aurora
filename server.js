@@ -56,7 +56,7 @@ app.use('/images', express.static(path.join(process.cwd(), 'public', 'images')))
 app.use((req, res, next) => {
   console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
   console.log('Request body:', req.body);
-  next();
+    next();
 });
 
 // === User Endpoints ===
@@ -162,7 +162,11 @@ app.post('/api/login', async (req, res) => {
         id: true,
         username: true,
         email: true,
-        password: true  // Only select password, not passwordHash
+        password: true,  // Only select password, not passwordHash
+        pictureURL: true,
+        profileDesc: true,
+        followers: true,
+        following: true
       }
     });
     
@@ -205,13 +209,15 @@ app.get('/api/User/:id', async (req, res) => {
       where: {
         id: Number(id)
       },
-      select: {
+          select: {
         id: true,
         username: true,
         email: true,
         pictureURL: true,
-        profileDesc: true
-      }
+        profileDesc: true,
+        followers: true,
+        following: true
+          }
     });
     
     console.log('Found user:', user);
@@ -246,7 +252,9 @@ app.get('/api/User/username/:username', async (req, res) => {
         username: true,
         email: true,
         pictureURL: true,
-        profileDesc: true
+        profileDesc: true,
+        followers: true,
+        following: true
       }
     });
     if (!user) {
@@ -367,7 +375,7 @@ app.get('/api/posts/search', async (req, res) => {
   try {
     const { q: query, timeFilter } = req.query;
     console.log('Search request:', { query, timeFilter });
-
+    
     // First get all posts that match the query
     const posts = await prisma.post.findMany({
       where: query ? { title: { contains: query } } : {},
@@ -386,7 +394,7 @@ app.get('/api/posts/search', async (req, res) => {
         createdAt: 'desc'
       }
     });
-
+    
     // Then filter by time if needed
     let filteredPosts = posts;
     if (timeFilter && timeFilter !== 'all') {
@@ -850,6 +858,162 @@ app.get('/api/chat/recent/:userId', async (req, res) => {
     console.error('Error fetching recent chats:', error);
     res.status(500).json({ message: 'Failed to fetch recent chats' });
   }
+});
+
+// Check if a user is following another user
+app.post('/api/isFollowing', async (req, res) => {
+    try {
+        const { followerId, followingId } = req.body;
+
+        if (!followerId || !followingId) {
+      return res.status(400).json({ 
+        message: 'Both followerId and followingId are required' 
+      });
+        }
+
+    const isFollowing = await prisma.user.findFirst({
+            where: {
+                id: Number(followerId),
+                followingUsers: {
+                    some: {
+                        id: Number(followingId)
+                    }
+                }
+            }
+        });
+
+    return res.status(200).json({ isFollowing: !!isFollowing });
+    } catch (error) {
+    console.error('Error checking follow status:', error);
+    return res.status(500).json({ 
+      message: 'Failed to check follow status',
+      error: error.message
+    });
+    }
+});
+
+// Follow a user
+app.post('/api/follow', async (req, res) => {
+    try {
+        const { followerId, followingId } = req.body;
+
+        if (!followerId || !followingId) {
+      return res.status(400).json({ 
+        message: 'Both followerId and followingId are required' 
+      });
+        }
+
+    // Check if the follow relationship already exists
+        const existingFollow = await prisma.user.findFirst({
+            where: {
+                id: Number(followerId),
+                followingUsers: {
+                    some: {
+                        id: Number(followingId)
+                    }
+                }
+            }
+        });
+
+    if (existingFollow) {
+      return res.status(400).json({ 
+        message: 'Already following this user' 
+      });
+        }
+
+    // Create the follow relationship
+    await prisma.user.update({
+                where: { id: Number(followerId) },
+                data: {
+                    followingUsers: {
+          connect: { id: Number(followingId) }
+        },
+        following: {
+          increment: 1
+                    }
+                }
+    });
+
+    // Update the followed user's follower count
+    await prisma.user.update({
+                where: { id: Number(followingId) },
+                data: {
+        followers: {
+          increment: 1
+                    }
+                }
+    });
+
+    return res.status(200).json({ message: 'Successfully followed user' });
+    } catch (error) {
+    console.error('Error following user:', error);
+    return res.status(500).json({ 
+      message: 'Failed to follow user',
+      error: error.message
+    });
+    }
+});
+
+// Unfollow a user
+app.post('/api/unfollow', async (req, res) => {
+    try {
+        const { followerId, followingId } = req.body;
+
+        if (!followerId || !followingId) {
+      return res.status(400).json({ 
+        message: 'Both followerId and followingId are required' 
+      });
+        }
+
+    // Check if the follow relationship exists
+    const existingFollow = await prisma.user.findFirst({
+            where: {
+        id: Number(followerId),
+                followingUsers: {
+                    some: {
+            id: Number(followingId)
+                    }
+                }
+            }
+        });
+
+    if (!existingFollow) {
+      return res.status(400).json({ 
+        message: 'Not following this user' 
+      });
+    }
+
+    // Remove the follow relationship
+    await prisma.user.update({
+      where: { id: Number(followerId) },
+      data: {
+        followingUsers: {
+          disconnect: { id: Number(followingId) }
+        },
+        following: {
+          decrement: 1
+        }
+    }
+});
+
+    // Update the unfollowed user's follower count
+    await prisma.user.update({
+      where: { id: Number(followingId) },
+      data: {
+        followers: {
+          decrement: 1
+                }
+            }
+        });
+
+    return res.status(200).json({ message: 'Successfully unfollowed user' });
+    } catch (error) {
+    console.error('Error unfollowing user:', error);
+    return res.status(500).json({ 
+      message: 'Failed to unfollow user',
+      error: error.message
+    });
+    }
 });
 
 // Start server

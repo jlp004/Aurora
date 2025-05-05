@@ -23,6 +23,8 @@ interface UserType {
     email: string;
     pictureURL?: string;
     profileDesc?: string;
+    followers?: number;
+    following?: number;
 }
 
 interface PostWithUser {
@@ -44,12 +46,97 @@ export default function UserProfile() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [user, setUser] = useState<UserType | null>(null);
+    const [isFollowing, setIsFollowing] = useState(false);
+    const [followerCount, setFollowerCount] = useState(0);
+    const [followLoading, setFollowLoading] = useState(false);
 
     // Get the actual logged-in user from localStorage
     const currentUser = (() => {
         const stored = localStorage.getItem('currentUser');
         return stored ? JSON.parse(stored) : null;
     })();
+
+    // Function to check if current user is following the profile user
+    const checkFollowStatus = async (profileUserId: number) => {
+        if (!currentUser || currentUser.id === profileUserId) {
+            return; // Can't follow yourself
+        }
+
+        try {
+            console.log('Checking follow status:', { followerId: currentUser.id, followingId: profileUserId });
+            const response = await fetch('/api/isFollowing', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    followerId: currentUser.id,
+                    followingId: profileUserId,
+                }),
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                console.log('Follow status check result:', data);
+                setIsFollowing(data.isFollowing);
+            } else {
+                console.error('Failed to check follow status:', await response.text());
+            }
+        } catch (err) {
+            console.error('Failed to check follow status:', err);
+        }
+    };
+
+    // Function to handle follow/unfollow
+    const handleFollowToggle = async () => {
+        if (!currentUser || !user || currentUser.id === user.id) {
+            return; // Can't follow yourself
+        }
+
+        setFollowLoading(true);
+        
+        try {
+            const endpoint = isFollowing ? '/api/unfollow' : '/api/follow';
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    followerId: currentUser.id,
+                    followingId: user.id,
+                }),
+            });
+
+            if (response.ok) {
+                // Update local state for optimistic UI
+                setIsFollowing(!isFollowing);
+                
+                // Update follower count
+                if (isFollowing) {
+                    setFollowerCount(prev => Math.max(0, prev - 1));
+                } else {
+                    setFollowerCount(prev => prev + 1);
+                }
+                
+                // Update current user in localStorage - this keeps the following count in sync
+                const updatedCurrentUser = { 
+                    ...currentUser,
+                    following: isFollowing 
+                        ? Math.max(0, currentUser.following - 1) 
+                        : (currentUser.following || 0) + 1
+                };
+                localStorage.setItem('currentUser', JSON.stringify(updatedCurrentUser));
+            } else {
+                const errorData = await response.json();
+                console.error('Follow/unfollow error:', errorData);
+            }
+        } catch (err) {
+            console.error('Failed to follow/unfollow:', err);
+        } finally {
+            setFollowLoading(false);
+        }
+    };
 
     useEffect(() => {
         if (!userID) {
@@ -84,6 +171,12 @@ export default function UserProfile() {
 
                 const user = userData.users[0];
                 setUser(user);
+                setFollowerCount(user.followers || 0);
+                
+                // Check if current user is following this user - only once when profile loads
+                if (currentUser && currentUser.id !== user.id) {
+                    checkFollowStatus(user.id);
+                }
 
                 // fetch posts from this user
                 const postsUrl = `/api/posts/${user.id}`;
@@ -156,6 +249,9 @@ export default function UserProfile() {
         );
     }
 
+    // Determine if follow button should be shown
+    const showFollowButton = currentUser && currentUser.id !== user.id;
+
     return (
         <div className="user-profile">
             <Header />
@@ -175,9 +271,22 @@ export default function UserProfile() {
                     
                     <div className="stats">
                         <span><strong>{posts.length}</strong> Posts</span>
-                        <span><strong>0</strong> Followers</span>
-                        <span><strong>0</strong> Following</span>
+                        <span><strong>{followerCount}</strong> Followers</span>
+                        <span><strong>{user.following || 0}</strong> Following</span>
                     </div>
+                    
+                    {showFollowButton && (
+                        <button 
+                            className={`follow-button ${isFollowing ? 'following' : ''}`}
+                            onClick={handleFollowToggle}
+                            disabled={followLoading}
+                        >
+                            {followLoading 
+                                ? 'Loading...' 
+                                : (isFollowing ? 'Unfollow' : 'Follow')
+                            }
+                        </button>
+                    )}
                 </div>
             </div>
 
