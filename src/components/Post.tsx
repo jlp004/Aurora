@@ -24,6 +24,7 @@ interface PostProps {
   currentUserId?: string | number;
   isLikedByCurrentUser?: boolean;
   profilePictureUrl?: string;
+  tag?: string;
 }
 
 const getStoredTimestamp = (postId: number): string | null => {
@@ -85,7 +86,8 @@ export default function Post({
   id = 0,
   currentUserId = '',
   isLikedByCurrentUser = false,
-  profilePictureUrl = ''
+  profilePictureUrl = '',
+  tag = ''
 }: PostProps) {
   const [currentLikes, setCurrentLikes] = useState(likes);
   const [isLiked, setIsLiked] = useState(isLikedByCurrentUser ?? false);
@@ -286,6 +288,11 @@ export default function Post({
             <span className="username">{username}</span>
           </Link>
         </div>
+        {tag && (
+          <div className="post-tag">
+            #{tag}
+          </div>
+        )}
       </div>
       
       <div className="post-image">

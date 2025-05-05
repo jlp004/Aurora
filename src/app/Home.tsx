@@ -17,6 +17,7 @@ interface PostData {
   comments: number;
   likes: number;
   isLikedByCurrentUser: boolean;
+  tag: string;
 }
 
 const Home = () => {
@@ -182,6 +183,7 @@ const Home = () => {
             likes={post.likes}
             isLikedByCurrentUser={post.isLikedByCurrentUser}
             profilePictureUrl={post.user.pictureURL}
+            tag={post.tag}
           />
         ))}
       </div>
