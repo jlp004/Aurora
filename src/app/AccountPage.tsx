@@ -7,6 +7,17 @@ import Comment from "../components/Comment";
 import { useUser } from './userData';
 import { FaUser } from 'react-icons/fa';
 
+// Add UserType interface if not already present or import it
+interface UserType {
+    id: number;
+    username: string;
+    email?: string; // Make optional if not always needed
+    pictureURL?: string;
+    profileDesc?: string;
+    followers?: number;
+    following?: number;
+}
+
 const AccountPage = () => {
   const { currentUser, setCurrentUser } = useUser();
   
@@ -58,6 +69,13 @@ const AccountPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [postComments, setPostComments] = useState<any[]>([]);
   const [commentsLoaded, setCommentsLoaded] = useState(false);
+
+  // --- Modal State (Copied from UserProfile) ---
+  const [modalType, setModalType] = useState<'followers' | 'following' | null>(null);
+  const [modalUsers, setModalUsers] = useState<UserType[]>([]);
+  const [modalLoading, setModalLoading] = useState(false);
+  const [modalError, setModalError] = useState<string | null>(null);
+  // --- End Modal State ---
 
   const predefinedTags = ["Nature", "Food", "Travel", "Fashion", "Sports"];
 
@@ -424,6 +442,59 @@ const AccountPage = () => {
     setCommentsLoaded(true);
   };
 
+  // --- Modal Functions (Copied from UserProfile) ---
+  const fetchModalData = async (type: 'followers' | 'following', profileUserId: number) => {
+      setModalLoading(true);
+      setModalError(null);
+      setModalUsers([]); // Clear previous users
+
+      try {
+          // Use the correct base URL for API calls
+          const baseUrl = 'http://localhost:3001'; 
+          const endpoint = type === 'followers'
+              ? `${baseUrl}/api/user/${profileUserId}/followers`
+              : `${baseUrl}/api/user/${profileUserId}/following`;
+
+          console.log(`Fetching modal data from: ${endpoint}`);
+          const response = await fetch(endpoint);
+
+          if (!response.ok) {
+              throw new Error(`Failed to fetch ${type}`);
+          }
+
+          const data = await response.json();
+          console.log(`Received modal data for ${type}:`, data);
+          // Ensure data structure is handled correctly (assuming { users: [...] })
+          const usersData = data.users || (Array.isArray(data) ? data : []);
+          setModalUsers(usersData);
+
+      } catch (err: any) {
+          console.error(`Error fetching modal data for ${type}:`, err);
+          setModalError(err.message || `Failed to load ${type}`);
+      } finally {
+          setModalLoading(false);
+      }
+  };
+
+  const handleOpenModal = (type: 'followers' | 'following') => {
+      // Use currentUser.id for the AccountPage
+      if (!currentUser?.id) return;
+      const profileUserId = typeof currentUser.id === 'string' ? parseInt(currentUser.id, 10) : currentUser.id;
+      if (isNaN(profileUserId)) return; // Ensure parsing didn't fail
+      setModalType(type);
+      setIsModalOpen(true);
+      fetchModalData(type, profileUserId);
+  };
+
+  const handleCloseModal = () => {
+      setIsModalOpen(false);
+      setModalType(null);
+      setModalUsers([]);
+      setModalLoading(false);
+      setModalError(null);
+  };
+  // --- End Modal Functions ---
+
   // At the start of the component
   console.log('AccountPage rendered with user state:', user);
 
@@ -449,8 +520,12 @@ const AccountPage = () => {
           
           <div className="stats">
             <span><strong>{user.posts.length}</strong> Posts</span>
-            <span><strong>{user.followers}</strong> Followers</span>
-            <span><strong>{user.following}</strong> Following</span>
+            <span className="stat-link" onClick={() => handleOpenModal('followers')}>
+                <strong>{user.followers ?? 0}</strong> Followers
+            </span>
+            <span className="stat-link" onClick={() => handleOpenModal('following')}>
+                <strong>{user.following ?? 0}</strong> Following
+            </span>
           </div>
 
           <div className="action-buttons">
@@ -621,6 +696,35 @@ const AccountPage = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* --- Modal JSX (Copied from UserProfile) --- */}
+      {isModalOpen && (
+          <div className="modal-overlay" onClick={handleCloseModal}>
+              <div className="modal-content follow-modal-content" onClick={e => e.stopPropagation()}>
+                  <button className="modal-close" onClick={handleCloseModal}>×</button>
+                  <h2>{modalType === 'followers' ? 'Followers' : 'Following'}</h2>
+                  <div className="follow-list">
+                      {modalLoading && <p>Loading...</p>}
+                      {modalError && <p className="error-message">{modalError}</p>}
+                      {!modalLoading && !modalError && modalUsers.length === 0 && (
+                          <p>No users found.</p>
+                      )}
+                      {!modalLoading && !modalError && modalUsers.map((modalUser) => (
+                          <div key={modalUser.id} className="follow-list-item">
+                              <img
+                                  src={modalUser.pictureURL?.replace('/public', '') || '/images/default_avatar.png'}
+                                  alt={modalUser.username}
+                                  className="follow-list-pfp"
+                              />
+                              {/* TODO: Make username a link later */}
+                              <span className="follow-list-username">{modalUser.username}</span>
+                              {/* Optional: Add follow/unfollow button here later */}
+                          </div>
+                      ))}
+                  </div>
+              </div>
+          </div>
       )}
     </div>
   );

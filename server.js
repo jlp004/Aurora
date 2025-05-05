@@ -217,11 +217,11 @@ app.get('/api/User/:id', async (req, res) => {
         profileDesc: true,
         followers: true,
         following: true
-          }
+      }
     });
-    
+
     console.log('Found user:', user);
-    
+
     if (!user) {
       return res.status(404).json({ 
         message: 'User not found',
@@ -264,6 +264,81 @@ app.get('/api/User/username/:username', async (req, res) => {
   } catch (error) {
     console.error('Error fetching user by username:', error);
     return res.status(500).json({ message: 'Failed to fetch user', users: [] });
+  }
+});
+
+// Get all users (for leaderboard)
+app.get('/api/users', async (req, res) => {
+  try {
+    const users = await prisma.user.findMany({
+      select: {
+        id: true,
+        username: true,
+        pictureURL: true
+      }
+    });
+    return res.status(200).json({ users });
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    return res.status(500).json({ message: 'Failed to fetch users' });
+  }
+});
+
+// Endpoint to get users followed by a specific user
+app.get('/api/user/:id/following', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: Number(id) },
+          select: {
+        followingUsers: { // Select the users this user is following
+          select: {
+            id: true,
+            username: true,
+            pictureURL: true
+            // Add other fields if needed in the modal list
+          }
+        }
+      }
+    });
+    
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json({ users: user.followingUsers });
+  } catch (error) {
+    console.error(`Error fetching following for user ${id}:`, error);
+    res.status(500).json({ message: 'Failed to fetch following list' });
+  }
+});
+
+// Endpoint to get followers of a specific user
+app.get('/api/user/:id/followers', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: Number(id) },
+      select: {
+        followedByUsers: { // Select the users following this user
+          select: {
+            id: true,
+            username: true,
+            pictureURL: true
+            // Add other fields if needed in the modal list
+          }
+        }
+      }
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json({ users: user.followedByUsers });
+  } catch (error) {
+    console.error(`Error fetching followers for user ${id}:`, error);
+    res.status(500).json({ message: 'Failed to fetch followers list' });
   }
 });
 
@@ -864,6 +939,8 @@ app.get('/api/chat/recent/:userId', async (req, res) => {
     res.status(500).json({ message: 'Failed to fetch recent chats' });
   }
 });
+
+// === Follow/Unfollow Endpoints ===
 
 // Check if a user is following another user
 app.post('/api/isFollowing', async (req, res) => {
