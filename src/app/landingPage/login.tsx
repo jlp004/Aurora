@@ -1,7 +1,7 @@
 import './landingStyles.css'
-import {useNavigate} from 'react-router-dom'
-import {ReactNode, useState} from 'react'
-import {auth, provider, signInWithPopup} from '../../services/firebase'
+import { useNavigate } from 'react-router-dom'
+import { ReactNode, useState } from 'react'
+import { auth, provider, signInWithPopup } from '../../services/firebase'
 import { loginUser } from '../../lib/api'
 import { useUser } from '../userData'
 
@@ -14,7 +14,7 @@ const Login = () => {
     const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
     const { setCurrentUser } = useUser();
-    
+
     const handleLogin = async (event: React.FormEvent) => {
         event.preventDefault();
         setIsLoading(true);
@@ -22,18 +22,18 @@ const Login = () => {
         try {
             // Use the API utility to log in
             const response = await loginUser(username, password);
-            
+
             console.log('Login successful:', response);
-            
+
             // Fetch the complete user data from the database
             const userResponse = await fetch(`/api/User/username/${username}`);
             if (!userResponse.ok) {
                 throw new Error('Failed to fetch user data');
             }
-            
+
             const userData = await userResponse.json();
             const user = userData.users[0];
-            
+
             // Save the complete user data including ID to context
             setCurrentUser({
                 id: user?.id || 'user_' + Date.now(),
@@ -42,9 +42,9 @@ const Login = () => {
                 pictureURL: user?.pictureURL || '',
                 profileDesc: user?.profileDesc // Don't use default bio here
             });
-            
+
             // Store to localStorage happens in the UserProvider
-            
+
             alert('Logged in successfully!');
             navigate('/home');
         } catch (err) {
@@ -58,7 +58,7 @@ const Login = () => {
             setIsLoading(false);
         }
     };
-    
+
     const handleQuickLogin = () => {
         // Set a mock user with unique ID
         setCurrentUser({
@@ -68,10 +68,10 @@ const Login = () => {
             pictureURL: '',
             profileDesc: 'No bio yet' // Default bio
         });
-        
+
         navigate('/home');
     };
-    
+
     return (
         <div className="background">
             <header>
@@ -81,9 +81,9 @@ const Login = () => {
                     alignItems: "center",
                     width: "100%"
                 }}>
-                    <img 
-                        src="/images/logo.png" 
-                        alt="Aurora Logo" 
+                    <img
+                        src="/images/logo.png"
+                        alt="Aurora Logo"
                         style={{
                             width: '150px',
                             height: 'auto',
@@ -108,7 +108,7 @@ const Login = () => {
                 alignItems: "center",
             }}>
                 <h1 className={"header"}>
-                     Login to account
+                    Login to account
                 </h1>
                 {/* Signup form - username, email, password */}
                 <form
@@ -170,8 +170,8 @@ const Login = () => {
                             style={{ color: 'rgb(122, 50, 124)', cursor: 'pointer', textDecoration: 'underline' }}
                             onClick={() => navigate('/signup')}
                         >
-                        Sign up
-                    </span>
+                            Sign up
+                        </span>
                     </p>
                 </form>
             </main>
@@ -197,7 +197,7 @@ const Login = () => {
                 Go to Home
             </button>
 
-            
+
         </div>
     );
 }

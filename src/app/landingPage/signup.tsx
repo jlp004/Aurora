@@ -24,7 +24,7 @@ const Signup = () => {
         try {
             // Use the API utility to create a user
             const user = await createUser(username, email, password);
-            
+
             // Save the new user to context
             setCurrentUser({
                 id: user?.id || 'user_' + Date.now(), // Use the user ID from API or generate one
@@ -33,7 +33,7 @@ const Signup = () => {
                 pictureURL: user?.pictureURL || '', // Remove hardcoded profile pic
                 profileDesc: user?.profileDesc || 'No bio yet' // Default bio
             });
-            
+
             // the account was created successfully
             alert('Account Created');
             navigate('/home');
@@ -50,7 +50,7 @@ const Signup = () => {
         }
     };
 
-    return ( 
+    return (
         <div className="background">
             <header>
                 <div style={{
@@ -59,9 +59,9 @@ const Signup = () => {
                     alignItems: "center",
                     width: "100%"
                 }}>
-                    <img 
-                        src="/images/logo.png" 
-                        alt="Aurora Logo" 
+                    <img
+                        src="/images/logo.png"
+                        alt="Aurora Logo"
                         style={{
                             width: '150px',
                             height: 'auto',
@@ -144,14 +144,14 @@ const Signup = () => {
                         Create Account
                     </button>
                     {/* Go back to Login page */}
-                    <p style={{ marginTop: '10px', fontSize: '0.9rem', textAlign: "center", color: 'var(--text-primary)'}}>
+                    <p style={{ marginTop: '10px', fontSize: '0.9rem', textAlign: "center", color: 'var(--text-primary)' }}>
                         Already have an account? {''}
                         <span
                             style={{ color: 'rgb(122, 50, 124)', cursor: 'pointer', textDecoration: 'underline' }}
                             onClick={() => navigate('/')}
                         >
-                        Log in
-                    </span>
+                            Log in
+                        </span>
                     </p>
                 </form>
             </main>

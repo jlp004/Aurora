@@ -9,18 +9,18 @@ import { FaUser } from 'react-icons/fa';
 
 // Add UserType interface if not already present or import it
 interface UserType {
-    id: number;
-    username: string;
-    email?: string; // Make optional if not always needed
-    pictureURL?: string;
-    profileDesc?: string;
-    followers?: number;
-    following?: number;
+  id: number;
+  username: string;
+  email?: string; // Make optional if not always needed
+  pictureURL?: string;
+  profileDesc?: string;
+  followers?: number;
+  following?: number;
 }
 
 const AccountPage = () => {
   const { currentUser, setCurrentUser } = useUser();
-  
+
   const [user, setUser] = useState({
     id: currentUser?.id || 1,
     username: currentUser?.username || "user123",
@@ -77,11 +77,11 @@ const AccountPage = () => {
           if (response.ok) {
             const responseData = await response.json();
             console.log('User data response:', responseData);
-            
+
             if (responseData.users && responseData.users.length > 0) {
               const userData = responseData.users[0];
               console.log('Extracted userData:', userData);
-              
+
               setUser(prev => ({
                 ...prev,
                 id: userData.id,
@@ -120,7 +120,7 @@ const AccountPage = () => {
   useEffect(() => {
     const fetchUserPosts = async () => {
       if (!currentUser) return;
-      
+
       try {
         console.log('Fetching posts for user ID:', currentUser.id);
         const response = await fetch(`http://localhost:3001/api/posts/${currentUser.id}`);
@@ -154,15 +154,15 @@ const AccountPage = () => {
     setTimeout(() => {
       // 2. Find all profile pictures in the document
       const allProfilePics = document.querySelectorAll('img[src*="profile-pic"], img[src*="pictureURL"], img.profile-pic, .profile-pic > img');
-      
+
       console.log('Found profile pictures to update:', allProfilePics.length);
-      
+
       // 3. Update each image source to the new URL
       allProfilePics.forEach(img => {
         const imgElement = img as HTMLImageElement;
         // Skip non-matching urls (other users' pictures)
-        if (imgElement.src.includes('default_avatar') || 
-            (currentUser?.pictureURL && imgElement.src.includes(currentUser.pictureURL.split('?')[0]))) {
+        if (imgElement.src.includes('default_avatar') ||
+          (currentUser?.pictureURL && imgElement.src.includes(currentUser.pictureURL.split('?')[0]))) {
           console.log('Updating img src from', imgElement.src, 'to', newImageUrl);
           // Force browser to reload the image
           imgElement.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'; // 1x1 transparent gif
@@ -172,14 +172,14 @@ const AccountPage = () => {
           imgElement.src = newImageUrl;
         }
       });
-      
+
       // 4. Update background images (in case profile pic is used as background)
       const elementsWithBgImage = document.querySelectorAll('[style*="background"]');
       elementsWithBgImage.forEach(el => {
         const element = el as HTMLElement;
         const style = window.getComputedStyle(element);
         const bgImage = style.backgroundImage;
-        
+
         if (currentUser?.pictureURL && bgImage.includes(currentUser.pictureURL.split('?')[0])) {
           console.log('Updating background image from', bgImage, 'to', newImageUrl);
           element.style.backgroundImage = `url("${newImageUrl}")`;
@@ -191,30 +191,30 @@ const AccountPage = () => {
   const handleProfilePicChange = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
-    
+
     try {
       setUploadLoading(true);
       setProfileUploadStatus('Uploading...');
       setError(null);
-      
+
       // Create the form data with the image and user ID
       const formData = new FormData();
       formData.append('image', file);
       formData.append('userId', currentUser?.id.toString() || '0');
-      
+
       // Upload to server
-      const response = await fetch('http://localhost:3001/api/upload/profile', { 
-        method: 'POST', 
-        body: formData 
+      const response = await fetch('http://localhost:3001/api/upload/profile', {
+        method: 'POST',
+        body: formData
       });
-      
+
       if (response.ok) {
         const data = await response.json();
         console.log('Server response:', data);
-        
+
         // Success! Show message and reload the page after a brief delay
         setProfileUploadStatus('Profile updated! Refreshing...');
-        
+
         // Update local state for immediate feedback
         if (data.imageUrl) {
           const localUrl = URL.createObjectURL(file);
@@ -223,7 +223,7 @@ const AccountPage = () => {
             profilePic: localUrl
           }));
         }
-        
+
         // Force page reload after a slight delay
         setTimeout(() => {
           window.location.reload();
@@ -282,7 +282,7 @@ const AccountPage = () => {
 
   const confirmPost = async () => {
     if (!selectedImage) return;
-    
+
     try {
       console.log('Creating post with data:', {
         userId: currentUser?.id || user.id,
@@ -297,27 +297,27 @@ const AccountPage = () => {
         pictureURL: selectedImage,
         tag: selectedTags[0] || ''
       };
-      
+
       const response = await fetch('http://localhost:3001/api/posts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(postData)
       });
-      
+
       console.log('Create post response:', response);
-      
+
       if (response.ok) {
         const newPost = await response.json();
         console.log('Created post:', newPost);
-        setUser(prev => ({ 
-          ...prev, 
+        setUser(prev => ({
+          ...prev,
           posts: [{
             id: newPost.id,
             image: newPost.pictureURL,
             caption: newPost.title,
             tags: [newPost.tag].filter(Boolean),
             comments: []
-          }, ...prev.posts] 
+          }, ...prev.posts]
         }));
         closeModal();
       } else {
@@ -383,11 +383,11 @@ const AccountPage = () => {
         const response = await fetch(`http://localhost:3001/api/posts/${postId}`, {
           method: 'DELETE',
         });
-        
+
         console.log('Delete response:', response);
         const responseData = await response.json();
         console.log('Delete response data:', responseData);
-        
+
         if (response.ok) {
           console.log('Post deleted successfully, updating UI');
           // Only update the UI if the server deletion was successful
@@ -438,52 +438,52 @@ const AccountPage = () => {
 
   // --- Modal Functions (Copied from UserProfile) ---
   const fetchModalData = async (type: 'followers' | 'following', profileUserId: number) => {
-      setModalLoading(true);
-      setModalError(null);
-      setModalUsers([]); // Clear previous users
+    setModalLoading(true);
+    setModalError(null);
+    setModalUsers([]); // Clear previous users
 
-      try {
-          const baseUrl = 'http://localhost:3001'; 
-          const endpoint = type === 'followers'
-              ? `${baseUrl}/api/user/${profileUserId}/followers`
-              : `${baseUrl}/api/user/${profileUserId}/following`;
+    try {
+      const baseUrl = 'http://localhost:3001';
+      const endpoint = type === 'followers'
+        ? `${baseUrl}/api/user/${profileUserId}/followers`
+        : `${baseUrl}/api/user/${profileUserId}/following`;
 
-          console.log(`Fetching modal data from: ${endpoint}`);
-          const response = await fetch(endpoint);
+      console.log(`Fetching modal data from: ${endpoint}`);
+      const response = await fetch(endpoint);
 
-          if (!response.ok) {
-              throw new Error(`Failed to fetch ${type}`);
-          }
-
-          const data = await response.json();
-          console.log(`Received modal data for ${type}:`, data);
-          // Ensure data structure is handled correctly (assuming { users: [...] })
-          const usersData = data.users || (Array.isArray(data) ? data : []);
-          setModalUsers(usersData);
-
-      } catch (err: any) {
-          console.error(`Error fetching modal data for ${type}:`, err);
-          setModalError(err.message || `Failed to load ${type}`);
-      } finally {
-          setModalLoading(false);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch ${type}`);
       }
+
+      const data = await response.json();
+      console.log(`Received modal data for ${type}:`, data);
+      // Ensure data structure is handled correctly (assuming { users: [...] })
+      const usersData = data.users || (Array.isArray(data) ? data : []);
+      setModalUsers(usersData);
+
+    } catch (err: any) {
+      console.error(`Error fetching modal data for ${type}:`, err);
+      setModalError(err.message || `Failed to load ${type}`);
+    } finally {
+      setModalLoading(false);
+    }
   };
 
   const handleOpenModal = (type: 'followers' | 'following') => {
-      if (!currentUser?.id) return;
-      const profileUserId = typeof currentUser.id === 'string' ? parseInt(currentUser.id, 10) : currentUser.id;
-      if (isNaN(profileUserId)) return;
-      setModalType(type);
-      setIsFollowModalOpen(true);
-      fetchModalData(type, profileUserId);
+    if (!currentUser?.id) return;
+    const profileUserId = typeof currentUser.id === 'string' ? parseInt(currentUser.id, 10) : currentUser.id;
+    if (isNaN(profileUserId)) return;
+    setModalType(type);
+    setIsFollowModalOpen(true);
+    fetchModalData(type, profileUserId);
   };
 
   const handleCloseModal = () => {
-      setIsFollowModalOpen(false);
-      setModalType(null);
-      setModalUsers([]);
-      setModalLoading(false);
-      setModalError(null);
+    setIsFollowModalOpen(false);
+    setModalType(null);
+    setModalUsers([]);
+    setModalLoading(false);
+    setModalError(null);
   };
   // --- End Modal Functions ---
 
@@ -548,7 +548,7 @@ const AccountPage = () => {
   return (
     <div className="account-container">
       <Header />
-      
+
       <div className="profile-header">
         <div className="profile-pic-container" onClick={handleRemoveProfilePic}>
           {user.profilePic ? (
@@ -569,14 +569,14 @@ const AccountPage = () => {
         <div className="user-info">
           <h2>{user.username}</h2>
           <p>{user.bio}</p>
-          
+
           <div className="stats">
             <span><strong>{user.posts.length}</strong> Posts</span>
             <span className="stat-link" onClick={() => handleOpenModal('followers')}>
-                <strong>{user.followers ?? 0}</strong> Followers
+              <strong>{user.followers ?? 0}</strong> Followers
             </span>
             <span className="stat-link" onClick={() => handleOpenModal('following')}>
-                <strong>{user.following ?? 0}</strong> Following
+              <strong>{user.following ?? 0}</strong> Following
             </span>
           </div>
 
@@ -591,7 +591,7 @@ const AccountPage = () => {
               onChange={handleProfilePicChange}
               style={{ display: 'none' }}
             />
-            
+
             <label className="upload-btn" htmlFor="post-upload">
               Create New Post
             </label>
@@ -606,7 +606,7 @@ const AccountPage = () => {
         </div>
       </div>
 
-      
+
 
       <div className="profile-divider"></div>
 
@@ -616,14 +616,14 @@ const AccountPage = () => {
             <img src={post.image} alt={post.caption} className="post-img" />
             <div className="post-hover-overlay">
               <div className="post-actions">
-                <button 
+                <button
                   onClick={() => handleViewPost(post)}
                   className="post-action-btn view-btn"
                   aria-label="View post"
                 >
                   View
                 </button>
-                <button 
+                <button
                   onClick={(e) => {
                     e.stopPropagation(); // Prevent triggering handleViewPost if elements overlap
                     handleEditPost(post); // Call the new edit handler
@@ -633,7 +633,7 @@ const AccountPage = () => {
                 >
                   Edit
                 </button>
-                <button 
+                <button
                   onClick={(e) => {
                     e.stopPropagation();
                     handleDeletePost(post.id);
@@ -704,13 +704,13 @@ const AccountPage = () => {
             </div>
             <div className="comments-section">
               <div className="comment-tabs">
-                <button 
+                <button
                   onClick={handleViewComments}
                   className={`tab-btn ${commentTab === 'view' ? 'active' : ''}`}
                 >
                   View Comments
                 </button>
-                <button 
+                <button
                   onClick={() => setCommentTab('post')}
                   className={`tab-btn ${commentTab === 'post' ? 'active' : ''}`}
                 >
@@ -722,10 +722,10 @@ const AccountPage = () => {
                   {commentsLoaded ? (
                     <div className="comments-list">
                       {postComments.map((comment) => (
-                        <Comment 
-                          key={comment.id} 
-                          text={comment.text} 
-                          poster={comment.poster?.username || 'Unknown'} 
+                        <Comment
+                          key={comment.id}
+                          text={comment.text}
+                          poster={comment.poster?.username || 'Unknown'}
                         />
                       ))}
                     </div>
@@ -752,77 +752,77 @@ const AccountPage = () => {
 
       {/* --- Modal JSX (Copied from UserProfile) --- */}
       {isFollowModalOpen && (
-          <div className="modal-overlay" onClick={handleCloseModal}>
-              <div className="modal-content follow-modal-content" onClick={e => e.stopPropagation()}>
-                  <button className="modal-close" onClick={handleCloseModal}>×</button>
-                  <h2>{modalType === 'followers' ? 'Followers' : 'Following'}</h2>
-                  <div className="follow-list">
-                      {modalLoading && <p>Loading...</p>}
-                      {modalError && <p className="error-message">{modalError}</p>}
-                      {!modalLoading && !modalError && modalUsers.length === 0 && (
-                          <p>No users found.</p>
-                      )}
-                      {!modalLoading && !modalError && modalUsers.map((modalUser) => (
-                          <div key={modalUser.id} className="follow-list-item">
-                              <img
-                                  src={modalUser.pictureURL?.replace('/public', '') || '/images/default_avatar.png'}
-                                  alt={modalUser.username}
-                                  className="follow-list-pfp"
-                              />
-                              {/* TODO: Make username a link later */}
-                              <span className="follow-list-username">{modalUser.username}</span>
-                              {/* Optional: Add follow/unfollow button here later */}
-                          </div>
-                      ))}
-                  </div>
-              </div>
+        <div className="modal-overlay" onClick={handleCloseModal}>
+          <div className="modal-content follow-modal-content" onClick={e => e.stopPropagation()}>
+            <button className="modal-close" onClick={handleCloseModal}>×</button>
+            <h2>{modalType === 'followers' ? 'Followers' : 'Following'}</h2>
+            <div className="follow-list">
+              {modalLoading && <p>Loading...</p>}
+              {modalError && <p className="error-message">{modalError}</p>}
+              {!modalLoading && !modalError && modalUsers.length === 0 && (
+                <p>No users found.</p>
+              )}
+              {!modalLoading && !modalError && modalUsers.map((modalUser) => (
+                <div key={modalUser.id} className="follow-list-item">
+                  <img
+                    src={modalUser.pictureURL?.replace('/public', '') || '/images/default_avatar.png'}
+                    alt={modalUser.username}
+                    className="follow-list-pfp"
+                  />
+                  {/* TODO: Make username a link later */}
+                  <span className="follow-list-username">{modalUser.username}</span>
+                  {/* Optional: Add follow/unfollow button here later */}
+                </div>
+              ))}
+            </div>
           </div>
+        </div>
       )}
 
       {/* --- Add Edit Post Modal JSX --- */}
       {isEditModalOpen && editingPost && (
-          <div className='modal-overlay' onClick={closeModal}>
-              <div className='modal-content' onClick={e => e.stopPropagation()}>
-                  <button className="modal-close" onClick={closeModal}>×</button>
-                  <h3>Edit Post</h3>
-                  {/* Display existing image - usually not editable */}
-                  <img src={editingPost.image} alt="Post Preview" className='modal-preview-img' />
+        <div className='modal-overlay' onClick={closeModal}>
+          <div className='modal-content' onClick={e => e.stopPropagation()}>
+            <button className="modal-close" onClick={closeModal}>×</button>
+            <h3>Edit Post</h3>
+            {/* Display existing image - usually not editable */}
+            <img src={editingPost.image} alt="Post Preview" className='modal-preview-img' />
 
-                  <textarea
-                      placeholder='Edit caption...'
-                      value={editingPost.caption} // Use editingPost state
-                      onChange={(e) => setEditingPost({ ...editingPost, caption: e.target.value })}
-                      className='modal-caption'
-                  />
+            <textarea
+              placeholder='Edit caption...'
+              value={editingPost.caption} // Use editingPost state
+              onChange={(e) => setEditingPost({ ...editingPost, caption: e.target.value })}
+              className='modal-caption'
+            />
 
-                  <div className='modal-tags'>
-                      <h4>Edit Tags:</h4>
-                      <div className='tag-buttons'>
-                          {predefinedTags.map(tag => (
-                              <button
-                                  key={tag}
-                                  className={`tag-btn ${editingPost.tags?.includes(tag) ? 'active' : ''}`}
-                                  onClick={() => {
-                                      const currentTags = editingPost.tags || [];
-                                      const updatedTags = currentTags.includes(tag)
-                                          ? currentTags.filter(t => t !== tag)
-                                          : [...currentTags, tag];
-                                      setEditingPost({ ...editingPost, tags: updatedTags });
-                                  }}
-                              >
-                                  {tag}
-                              </button>
-                          ))}
-                      </div>
-                  </div>
-
-                  <div className="modal-actions">
-                      <button className="modal-btn cancel" onClick={closeModal}>Cancel</button>
-                      {/* Call confirmEditPost to save changes */}
-                      <button className="modal-btn confirm" onClick={confirmEditPost}>Save Changes</button>
-                  </div>
+            <div className='modal-tags'>
+              <h4>Edit Tags:</h4>
+              <div className='tag-buttons'>
+                {predefinedTags.map(tag => (
+                  <button
+                    key={tag}
+                    className={`tag-btn ${editingPost.tags?.includes(tag) ? 'active' : ''}`}
+                    onClick={() => {
+                      const currentTags = editingPost.tags || [];
+                      const updatedTags = currentTags.includes(tag)
+                        ? currentTags.filter(t => t !== tag)
+                        : [...currentTags, tag];
+                      setEditingPost({ ...editingPost, tags: updatedTags });
+                    }}
+                  >
+                    {tag}
+                  </button>
+                ))}
               </div>
+            </div>
+
+            <div className="modal-actions">
+              <button className="modal-btn cancel" onClick={closeModal}>Cancel</button>
+              {/* Call confirmEditPost to save changes */}
+              <button className="modal-btn confirm" onClick={confirmEditPost}>Save Changes</button>
+            </div>
           </div>
+        </div>
       )}
       {/* --- End Add Edit Post Modal JSX --- */}
     </div>
