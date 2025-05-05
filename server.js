@@ -310,6 +310,70 @@ app.get('/api/User/username/:username', async (req, res) => {
   }
 });
 
+// Endpoint to get users followed by a specific user
+app.get('/api/user/:id/following', async (req, res) => {
+  const { id } = req.params;
+  try {
+    console.log(`Fetching following list for user ID: ${id}`); // Add log
+    const user = await prisma.user.findUnique({
+      where: { id: Number(id) },
+          select: { // Select the nested list of users they are following
+        followingUsers: { 
+          select: { // Select the fields needed for the modal
+            id: true,
+            username: true,
+            pictureURL: true
+          }
+        }
+      }
+    });
+    
+    if (!user) {
+      console.log(`User ${id} not found when fetching following list.`);
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    console.log(`Found ${user.followingUsers.length} users followed by user ${id}.`);
+    res.json({ users: user.followingUsers }); // Return the list nested under 'users' key
+
+  } catch (error) {
+    console.error(`Error fetching following for user ${id}:`, error);
+    res.status(500).json({ message: 'Failed to fetch following list' });
+  }
+});
+
+// Endpoint to get followers of a specific user
+app.get('/api/user/:id/followers', async (req, res) => {
+  const { id } = req.params;
+  try {
+    console.log(`Fetching followers list for user ID: ${id}`); // Add log
+    const user = await prisma.user.findUnique({
+      where: { id: Number(id) },
+      select: { // Select the nested list of users who follow them
+        followedByUsers: { 
+          select: { // Select the fields needed for the modal
+            id: true,
+            username: true,
+            pictureURL: true
+          }
+        }
+      }
+    });
+
+    if (!user) {
+      console.log(`User ${id} not found when fetching followers list.`);
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    console.log(`Found ${user.followedByUsers.length} followers for user ${id}.`);
+    res.json({ users: user.followedByUsers }); // Return the list nested under 'users' key
+
+  } catch (error) {
+    console.error(`Error fetching followers for user ${id}:`, error);
+    res.status(500).json({ message: 'Failed to fetch followers list' });
+  }
+});
+
 // Get all posts
 app.get('/api/posts', async (req, res) => {
   try {
@@ -1013,6 +1077,11 @@ app.post('/api/unfollow', async (req, res) => {
       error: error.message
     });
     }
+});
+
+// Update user settings
+app.put('/api/user/:id', async (req, res) => {
+  // ... existing code ...
 });
 
 // Start server

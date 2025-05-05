@@ -441,7 +441,6 @@ const AccountPage = () => {
       setModalUsers([]); // Clear previous users
 
       try {
-          // Use the correct base URL for API calls
           const baseUrl = 'http://localhost:3001'; 
           const endpoint = type === 'followers'
               ? `${baseUrl}/api/user/${profileUserId}/followers`
