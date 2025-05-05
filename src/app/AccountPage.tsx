@@ -59,7 +59,7 @@ const AccountPage = () => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [newPostComment, setNewPostComment] = useState("");
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isCreatePostModalOpen, setIsCreatePostModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingPost, setEditingPost] = useState<any>(null);
   const [selectedPost, setSelectedPost] = useState<any>(null);
@@ -75,6 +75,7 @@ const AccountPage = () => {
   const [modalUsers, setModalUsers] = useState<UserType[]>([]);
   const [modalLoading, setModalLoading] = useState(false);
   const [modalError, setModalError] = useState<string | null>(null);
+  const [isFollowModalOpen, setIsFollowModalOpen] = useState(false);
   // --- End Modal State ---
 
   const predefinedTags = ["Nature", "Food", "Travel", "Fashion", "Sports"];
@@ -96,29 +97,16 @@ const AccountPage = () => {
       if (currentUser?.id) {
         try {
           console.log('Fetching user data for ID:', currentUser.id);
-          const response = await fetch(`http://localhost:3001/api/user/${currentUser.id}`);
+          const response = await fetch(`http://localhost:3001/api/User/${currentUser.id}`);
           if (response.ok) {
             const responseData = await response.json();
-            console.log('Full API response:', responseData);
+            console.log('User data response:', responseData);
             
-            // Check if data is nested under a 'users' array or another property
-            let userData;
             if (responseData.users && responseData.users.length > 0) {
-              userData = responseData.users[0]; // Get first user from users array
-              console.log('Found user in responseData.users[0]:', userData);
-            } else if (responseData.user) {
-              userData = responseData.user; // Get user from user property
-              console.log('Found user in responseData.user:', userData);
-            } else {
-              userData = responseData; // Direct response is the user data
-              console.log('Assuming responseData is the user:', userData);
-            }
-            
-            console.log('Followers from userData:', userData.followers);
-            console.log('Following from userData:', userData.following);
-            
-            setUser(prev => {
-              const newState = {
+              const userData = responseData.users[0];
+              console.log('Extracted userData:', userData);
+              
+              setUser(prev => ({
                 ...prev,
                 id: userData.id,
                 username: userData.username || prev.username,
@@ -126,15 +114,19 @@ const AccountPage = () => {
                 bio: userData.profileDesc || prev.bio,
                 followers: userData.followers ?? 0,
                 following: userData.following ?? 0
-              };
-              console.log('Updated user state:', newState);
-              return newState;
-            });
+              }));
+            } else {
+              console.error('No users found in API response:', responseData);
+              setError('No user data found for your account.');
+            }
           } else {
-            console.error('Failed to fetch user data:', response.status);
+            const errorText = await response.text();
+            console.error('Failed to fetch user data:', response.status, errorText);
+            setError(`Failed to fetch user data (${response.status})`);
           }
         } catch (err) {
           console.error('Error fetching user data:', err);
+          setError('An error occurred while fetching user data.');
         }
       }
     };
@@ -276,7 +268,7 @@ const AccountPage = () => {
       }
 
       setSelectedImage(data.imageUrl);
-      setIsModalOpen(true);
+      setIsCreatePostModalOpen(true);
     } catch (err) {
       console.error('API upload error:', err);
       setError('Failed to process image: ' + (err instanceof Error ? err.message : String(err)));
@@ -341,7 +333,7 @@ const AccountPage = () => {
     setSelectedImage(null);
     setSelectedTags([]);
     setNewPostComment("");
-    setIsModalOpen(false);
+    setIsCreatePostModalOpen(false);
     setIsEditModalOpen(false);
     setEditingPost(null);
     setSelectedPost(null);
@@ -477,17 +469,16 @@ const AccountPage = () => {
   };
 
   const handleOpenModal = (type: 'followers' | 'following') => {
-      // Use currentUser.id for the AccountPage
       if (!currentUser?.id) return;
       const profileUserId = typeof currentUser.id === 'string' ? parseInt(currentUser.id, 10) : currentUser.id;
-      if (isNaN(profileUserId)) return; // Ensure parsing didn't fail
+      if (isNaN(profileUserId)) return;
       setModalType(type);
-      setIsModalOpen(true);
+      setIsFollowModalOpen(true);
       fetchModalData(type, profileUserId);
   };
 
   const handleCloseModal = () => {
-      setIsModalOpen(false);
+      setIsFollowModalOpen(false);
       setModalType(null);
       setModalUsers([]);
       setModalLoading(false);
@@ -602,7 +593,7 @@ const AccountPage = () => {
       </div>
 
       {/* Post Creation Modal */}
-      {isModalOpen && selectedImage && (
+      {isCreatePostModalOpen && selectedImage && (
         <div className="modal-overlay" onClick={closeModal}>
           <div className="modal-content" onClick={e => e.stopPropagation()}>
             <button className="modal-close" onClick={closeModal}>×</button>
@@ -674,7 +665,11 @@ const AccountPage = () => {
                   {commentsLoaded ? (
                     <div className="comments-list">
                       {postComments.map((comment) => (
-                        <Comment key={comment.id} comment={comment} />
+                        <Comment 
+                          key={comment.id} 
+                          text={comment.text} 
+                          poster={comment.poster?.username || 'Unknown'} 
+                        />
                       ))}
                     </div>
                   ) : (
@@ -699,7 +694,7 @@ const AccountPage = () => {
       )}
 
       {/* --- Modal JSX (Copied from UserProfile) --- */}
-      {isModalOpen && (
+      {isFollowModalOpen && (
           <div className="modal-overlay" onClick={handleCloseModal}>
               <div className="modal-content follow-modal-content" onClick={e => e.stopPropagation()}>
                   <button className="modal-close" onClick={handleCloseModal}>×</button>
