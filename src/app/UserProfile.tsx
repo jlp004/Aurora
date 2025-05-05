@@ -16,6 +16,7 @@ interface PostType {
     likes: number;
     comments: number;
     timePosted: string;
+    isLikedByCurrentUser?: boolean;
 }
 
 interface UserType {
@@ -217,7 +218,7 @@ export default function UserProfile() {
                 setUser(user);
 
                 // fetch posts from this user
-                const postsUrl = `/api/posts/${user.id}`;
+                const postsUrl = `/api/posts/${user.id}${currentUser?.id ? `?currentUserId=${currentUser.id}` : ''}`;
                 const postsResponse = await fetch(postsUrl);
                 
                 if (postsResponse.status === 404) {
@@ -239,7 +240,7 @@ export default function UserProfile() {
                 }
 
                 // Transform the posts data to match PostType interface
-                const transformedPosts = postsData.map((post: PostWithUser) => ({
+                const transformedPosts = postsData.map((post: PostWithUser & { isLikedByCurrentUser?: boolean }) => ({
                     id: post.id,
                     username: user.username,
                     imageUrl: post.pictureURL,
@@ -247,7 +248,8 @@ export default function UserProfile() {
                     likes: post.likes,
                     comments: 0,
                     timePosted: new Date().toLocaleDateString(),
-                    profilePictureUrl: user.pictureURL
+                    profilePictureUrl: user.pictureURL,
+                    isLikedByCurrentUser: post.isLikedByCurrentUser
                 }));
 
                 console.log('Transformed posts:', transformedPosts);
@@ -261,7 +263,7 @@ export default function UserProfile() {
         };
 
         fetchPosts();
-    }, [userID]);
+    }, [userID, currentUser?.id]);
 
     if (loading) {
         return (
@@ -348,6 +350,7 @@ export default function UserProfile() {
                             {...post}
                             currentUserId={currentUser?.id}
                             profilePictureUrl={user.pictureURL}
+                            isLikedByCurrentUser={post.isLikedByCurrentUser}
                         />
                     ))
                 )}

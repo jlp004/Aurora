@@ -704,6 +704,7 @@ app.get('/api/posts/search', async (req, res) => {
 app.get('/api/posts/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
+    const { currentUserId } = req.query; // Add parameter to get current user ID
     
     const posts = await prisma.post.findMany({
       where: { 
@@ -724,7 +725,12 @@ app.get('/api/posts/:userId', async (req, res) => {
         },
         _count: {
           select: { Comment: true }
-        }
+        },
+        // Check if current user has liked this post
+        likedBy: currentUserId ? {
+          where: { id: Number(currentUserId) },
+          select: { id: true }
+        } : undefined
       },
       orderBy: {
         createdAt: 'desc'
@@ -737,7 +743,9 @@ app.get('/api/posts/:userId', async (req, res) => {
       return {
         ...post,
         createdAt,
-        comments: post._count.Comment
+        comments: post._count.Comment,
+        isLikedByCurrentUser: currentUserId ? post.likedBy?.length > 0 : false,
+        likedBy: undefined // Remove likedBy from response
       };
     });
     
