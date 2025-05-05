@@ -12,7 +12,7 @@ import { useUser } from './userData';
 const SettingsPage = () => {
   const { currentUser, setCurrentUser } = useUser();
   const [username, setUsername] = useState(currentUser?.username || 'user123!');
-  const [bio, setBio] = useState(currentUser?.profileDesc || 'Lover of code and coffee ☕');
+  const [bio, setBio] = useState(currentUser?.profileDesc || 'No bio yet');
   const [isPrivate, setIsPrivate] = useState(false);
   const [emailNotifs, setEmailNotifs] = useState(true);
   const [pushNotifs, setPushNotifs] = useState(true);
@@ -24,7 +24,7 @@ const SettingsPage = () => {
   useEffect(() => {
     if (currentUser) {
       setUsername(currentUser.username || username);
-      setBio(currentUser.profileDesc || bio);
+      setBio(currentUser.profileDesc || 'No bio yet');
     }
   }, [currentUser]);
 

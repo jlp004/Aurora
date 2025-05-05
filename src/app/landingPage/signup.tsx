@@ -31,7 +31,7 @@ const Signup = () => {
                 username: username,
                 email: email,
                 pictureURL: user?.pictureURL || '/images/profile-pic.jpg',
-                profileDesc: user?.profileDesc || 'Lover of code and coffee ☕' // Default bio
+                profileDesc: user?.profileDesc || 'No bio yet' // Default bio
             });
             
             // the account was created successfully

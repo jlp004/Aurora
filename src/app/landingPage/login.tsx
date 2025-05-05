@@ -66,7 +66,7 @@ const Login = () => {
             username: username || 'demo_user',
             email: email || 'demo@example.com',
             pictureURL: '/images/profile-pic.jpg',
-            profileDesc: 'Lover of code and coffee ☕' // Default bio
+            profileDesc: 'No bio yet' // Default bio
         });
         
         navigate('/home');

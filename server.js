@@ -151,7 +151,7 @@ app.post('/api/signup', async (req, res) => {
           email,
           password, // Required field in schema
           pictureURL: null, // Optional in schema
-          profileDesc: null, // Optional in schema
+          profileDesc: "No bio yet", // Optional in schema
         }
       });
       
@@ -254,7 +254,7 @@ app.get('/api/User/:id', async (req, res) => {
       where: {
         id: Number(id)
       },
-          select: {
+      select: {
         id: true,
         username: true,
         email: true,
@@ -317,14 +317,26 @@ app.get('/api/user/:id/following', async (req, res) => {
   const { id } = req.params;
   try {
     console.log(`Fetching following list for user ID: ${id}`); // Add log
+    
+    // Convert to number and validate
+    const userId = Number(id);
+    if (isNaN(userId)) {
+      return res.status(400).json({ 
+        message: 'Invalid user ID format', 
+        users: [] 
+      });
+    }
+    
     const user = await prisma.user.findUnique({
-      where: { id: Number(id) },
-          select: { // Select the nested list of users they are following
+      where: { id: userId },
+      select: { // Select the nested list of users they are following
         followingUsers: { 
           select: { // Select the fields needed for the modal
             id: true,
             username: true,
-            pictureURL: true
+            pictureURL: true,
+            profileDesc: true,
+            email: true
           }
         }
       }
@@ -332,15 +344,23 @@ app.get('/api/user/:id/following', async (req, res) => {
     
     if (!user) {
       console.log(`User ${id} not found when fetching following list.`);
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ 
+        message: 'User not found',
+        users: []
+      });
     }
 
     console.log(`Found ${user.followingUsers.length} users followed by user ${id}.`);
-    res.json({ users: user.followingUsers }); // Return the list nested under 'users' key
+    return res.status(200).json({ 
+      users: user.followingUsers // Return the list nested under 'users' key
+    });
 
   } catch (error) {
     console.error(`Error fetching following for user ${id}:`, error);
-    res.status(500).json({ message: 'Failed to fetch following list' });
+    return res.status(500).json({ 
+      message: 'Failed to fetch following list',
+      users: []
+    });
   }
 });
 
@@ -349,14 +369,26 @@ app.get('/api/user/:id/followers', async (req, res) => {
   const { id } = req.params;
   try {
     console.log(`Fetching followers list for user ID: ${id}`); // Add log
+    
+    // Convert to number and validate
+    const userId = Number(id);
+    if (isNaN(userId)) {
+      return res.status(400).json({ 
+        message: 'Invalid user ID format', 
+        users: [] 
+      });
+    }
+    
     const user = await prisma.user.findUnique({
-      where: { id: Number(id) },
+      where: { id: userId },
       select: { // Select the nested list of users who follow them
         followedByUsers: { 
           select: { // Select the fields needed for the modal
             id: true,
             username: true,
-            pictureURL: true
+            pictureURL: true,
+            profileDesc: true,
+            email: true
           }
         }
       }
@@ -364,15 +396,23 @@ app.get('/api/user/:id/followers', async (req, res) => {
 
     if (!user) {
       console.log(`User ${id} not found when fetching followers list.`);
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ 
+        message: 'User not found',
+        users: []
+      });
     }
 
     console.log(`Found ${user.followedByUsers.length} followers for user ${id}.`);
-    res.json({ users: user.followedByUsers }); // Return the list nested under 'users' key
+    return res.status(200).json({ 
+      users: user.followedByUsers // Return the list nested under 'users' key
+    });
 
   } catch (error) {
     console.error(`Error fetching followers for user ${id}:`, error);
-    return res.status(500).json({ message: 'Failed to fetch followers list' });
+    return res.status(500).json({ 
+      message: 'Failed to fetch followers list',
+      users: []
+    });
   }
 });
 
@@ -1129,17 +1169,164 @@ app.get('/api/chat/recent/:userId', async (req, res) => {
 
 // Check if a user is following another user
 app.post('/api/isFollowing', async (req, res) => {
-  // ... existing isFollowing handler code ...
+  try {
+    const { followerId, followingId } = req.body;
+
+    if (!followerId || !followingId) {
+      return res.status(400).json({ error: 'Both followerId and followingId are required' });
+    }
+
+    // Convert IDs to numbers
+    const followerNumId = Number(followerId);
+    const followingNumId = Number(followingId);
+
+    if (isNaN(followerNumId) || isNaN(followingNumId)) {
+      return res.status(400).json({ error: 'Invalid ID format' });
+    }
+
+    // Check if the follow relationship exists
+    const existingFollow = await prisma.user.findFirst({
+      where: {
+        id: followerNumId,
+        followingUsers: {
+          some: {
+            id: followingNumId
+          }
+        }
+      }
+    });
+
+    return res.status(200).json({ isFollowing: !!existingFollow });
+  } catch (error) {
+    console.error('Error checking follow status:', error);
+    return res.status(500).json({ error: 'Failed to check follow status', details: error.message });
+  }
 });
 
 // Follow a user
 app.post('/api/follow', async (req, res) => {
-  // ... existing follow handler code ...
+  try {
+    const { followerId, followingId } = req.body;
+
+    if (!followerId || !followingId) {
+      return res.status(400).json({ error: 'Both followerId and followingId are required' });
+    }
+
+    // Convert IDs to numbers
+    const followerNumId = Number(followerId);
+    const followingNumId = Number(followingId);
+
+    if (isNaN(followerNumId) || isNaN(followingNumId)) {
+      return res.status(400).json({ error: 'Invalid ID format' });
+    }
+
+    // Check if already following
+    const existingFollow = await prisma.user.findFirst({
+      where: {
+        id: followerNumId,
+        followingUsers: {
+          some: {
+            id: followingNumId
+          }
+        }
+      }
+    });
+
+    if (existingFollow) {
+      return res.status(400).json({ error: 'Already following this user' });
+    }
+
+    // Create the follow relationship
+    await prisma.user.update({
+      where: { id: followerNumId },
+      data: {
+        followingUsers: {
+          connect: { id: followingNumId }
+        },
+        following: {
+          increment: 1
+        }
+      }
+    });
+
+    // Update the followed user's follower count
+    await prisma.user.update({
+      where: { id: followingNumId },
+      data: {
+        followers: {
+          increment: 1
+        }
+      }
+    });
+
+    return res.status(200).json({ message: 'Successfully followed user' });
+  } catch (error) {
+    console.error('Error following user:', error);
+    return res.status(500).json({ error: 'Failed to follow user', details: error.message });
+  }
 });
 
 // Unfollow a user
 app.post('/api/unfollow', async (req, res) => {
-  // ... existing unfollow handler code ...
+  try {
+    const { followerId, followingId } = req.body;
+
+    if (!followerId || !followingId) {
+      return res.status(400).json({ error: 'Both followerId and followingId are required' });
+    }
+
+    // Convert IDs to numbers
+    const followerNumId = Number(followerId);
+    const followingNumId = Number(followingId);
+
+    if (isNaN(followerNumId) || isNaN(followingNumId)) {
+      return res.status(400).json({ error: 'Invalid ID format' });
+    }
+
+    // Check if the follow relationship exists
+    const existingFollow = await prisma.user.findFirst({
+      where: {
+        id: followerNumId,
+        followingUsers: {
+          some: {
+            id: followingNumId
+          }
+        }
+      }
+    });
+
+    if (!existingFollow) {
+      return res.status(400).json({ error: 'Not following this user' });
+    }
+
+    // Remove the follow relationship
+    await prisma.user.update({
+      where: { id: followerNumId },
+      data: {
+        followingUsers: {
+          disconnect: { id: followingNumId }
+        },
+        following: {
+          decrement: 1
+        }
+      }
+    });
+
+    // Update the unfollowed user's follower count
+    await prisma.user.update({
+      where: { id: followingNumId },
+      data: {
+        followers: {
+          decrement: 1
+        }
+      }
+    });
+
+    return res.status(200).json({ message: 'Successfully unfollowed user' });
+  } catch (error) {
+    console.error('Error unfollowing user:', error);
+    return res.status(500).json({ error: 'Failed to unfollow user', details: error.message });
+  }
 });
 
 // Start server

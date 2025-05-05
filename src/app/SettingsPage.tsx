@@ -9,7 +9,7 @@ import Header from '../components/Header';
 
 const SettingsPage = () => {
   const [username, setUsername] = useState('user123!');
-  const [bio, setBio] = useState('');
+  const [bio, setBio] = useState('No bio yet');
   const [isPrivate, setIsPrivate] = useState(false);
   const [emailNotifs, setEmailNotifs] = useState(true);
   const [pushNotifs, setPushNotifs] = useState(true);
@@ -25,7 +25,7 @@ const SettingsPage = () => {
         const res = await fetch(`/api/User/profile?username=${username}`);
         if (res.ok) {
           const data = await res.json();
-          setBio(data.bio || '');
+          setBio(data.bio || 'No bio yet');
         } else {
           console.error('Failed to fetch bio');
         }

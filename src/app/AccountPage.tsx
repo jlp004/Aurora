@@ -24,7 +24,7 @@ const AccountPage = () => {
   const [user, setUser] = useState({
     id: currentUser?.id || 1,
     username: currentUser?.username || "user123",
-    bio: currentUser?.profileDesc || "Lover of code and coffee ☕",
+    bio: currentUser?.profileDesc || "No bio yet",
     followers: 0,
     following: 0,
     profilePic: currentUser?.pictureURL || "/images/default_avatar.png",
