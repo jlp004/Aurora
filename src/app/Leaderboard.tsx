@@ -58,20 +58,20 @@ const Leaderboard = () => {
           {sortedUsers.slice(0, 10).map((user, index) => (
             <div key={user.id} className="leaderboard-item">
               <div className="rank">{index + 1}</div>
-              <div className="user-info">
+              <div className="lb-user-info">
                 <img
                   src={user.pictureURL || '/images/default-avatar.png'}
                   alt={user.username}
-                  className="user-avatar"
+                  className="lb-user-avatar"
                 />
-                <span className="username">{user.username}</span>
+                <span className="lb-username">{user.username}</span>
               </div>
-              <div className="stats">
-                <div className="stat">
-                  <span className="stat-value">
+              <div className="lb-stats">
+                <div className="lb-stat">
+                  <span className="lb-stat-value">
                     {sortBy === 'likes' ? user.likes : user.followers}
                   </span>
-                  <span className="stat-label">
+                  <span className="lb-stat-label">
                     {sortBy === 'likes' ? 'Likes' : 'Followers'}
                   </span>
                 </div>

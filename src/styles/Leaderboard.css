@@ -59,7 +59,7 @@
   gap: 1rem;
 }
 
-.leaderboard-item {
+.leaderboard-list .leaderboard-item {
   display: flex;
   align-items: center;
   padding: 1rem;
@@ -69,11 +69,11 @@
   transition: transform 0.3s ease;
 }
 
-.leaderboard-item:hover {
+.leaderboard-list .leaderboard-item:hover {
   transform: translateX(10px);
 }
 
-.rank {
+.leaderboard-item .rank {
   font-size: 1.5rem;
   font-weight: bold;
   color: #bb86fc;
@@ -81,14 +81,16 @@
   text-align: center;
 }
 
-.user-info {
+.leaderboard-item .lb-user-info {
   display: flex;
   flex-direction: row;
+  align-items: center;
   gap: 1rem;
   flex: 1;
+  justify-content: flex-start;
 }
 
-.user-avatar {
+.lb-user-info .lb-user-avatar {
   width: 50px;
   height: 50px;
   border-radius: 50%;
@@ -96,29 +98,31 @@
   border: 2px solid #bb86fc;
 }
 
-.username {
+.lb-user-info .lb-username {
   color: #ffffff;
   font-size: 1.1rem;
   font-weight: 500;
 }
 
-.stats {
+.leaderboard-item .lb-stats {
   display: flex;
-  gap: 2rem;
+  justify-content: flex-end;
+  min-width: 80px;
+  text-align: right;
 }
 
-.stat {
+.lb-stats .lb-stat {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-end;
 }
 
-.stat-label {
+.lb-stat .lb-stat-label {
   color: #bb86fc;
   font-size: 0.9rem;
 }
 
-.stat-value {
+.lb-stat .lb-stat-value {
   color: #ffffff;
   font-size: 1.2rem;
   font-weight: bold;

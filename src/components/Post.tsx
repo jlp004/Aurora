@@ -155,9 +155,6 @@ export default function Post({
       return;
     }
 
-    setIsLiked(!isLiked);
-    setCurrentLikes(prev => (isLiked ? prev - 1 : prev + 1));
-
     try {
       const response = await fetch(`http://localhost:3001/api/Post/${id}/like`, {
         method: 'POST',
@@ -175,8 +172,8 @@ export default function Post({
         throw new Error(data.error || 'Failed to like post');
       }
       const responseData = await response.json();
-      setCurrentLikes(responseData.likes); // Update the likes count in the frontend
-      setIsLiked(!isLiked); // Toggle the like state
+      setCurrentLikes(responseData.likes);
+      setIsLiked(responseData.isLiked);
     } catch (error) {
       console.error('Error liking post:', error);
       setError(error instanceof Error ? error.message : 'Failed to like post');
