@@ -156,7 +156,7 @@ const AccountPage = () => {
             id: post.id,
             image: post.pictureURL,
             caption: post.title,
-            tags: post.tags || [],
+            tags: post.tag ? post.tag.split(',') : [],
             comments: []
           }));
           console.log('Formatted posts:', formattedPosts);
@@ -485,6 +485,61 @@ const AccountPage = () => {
   };
   // --- End Modal Functions ---
 
+  // --- Add handleEditPost and confirmEditPost ---
+  const handleEditPost = (post) => {
+    setEditingPost({ ...post, tags: post.tags || [] }); // Ensure tags is an array
+    setSelectedImage(post.image); // Pre-fill image (though not editable here)
+    setNewPostComment(post.caption); // Pre-fill caption
+    setSelectedTags(post.tags || []); // Pre-fill tags
+    setIsEditModalOpen(true);
+  };
+
+  const confirmEditPost = async () => {
+    if (!editingPost) return;
+
+    try {
+      const postData = {
+        title: editingPost.caption, // Use caption from editingPost state
+        tags: editingPost.tags.join(','),     // JOIN the tags array into a comma-separated string
+        // userId and pictureURL are generally not updated here
+      };
+
+      console.log(`Updating post ${editingPost.id} with data:`, postData);
+
+      const response = await fetch(`http://localhost:3001/api/posts/${editingPost.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(postData)
+      });
+
+      console.log('Update post response:', response);
+
+      if (response.ok) {
+        const updatedPostFromServer = await response.json();
+        console.log('Updated post from server:', updatedPostFromServer);
+
+        // Update local state with the confirmed edited post data
+        setUser(prev => ({
+          ...prev,
+          posts: prev.posts.map(post =>
+            post.id === editingPost.id ? { ...post, ...editingPost } : post // Merge changes
+          )
+        }));
+        closeModal(); // Close modal and reset state
+      } else {
+        const errorData = await response.json();
+        console.error('Failed to update post:', errorData);
+        throw new Error(errorData.message || 'Failed to update post');
+      }
+    } catch (err) {
+      console.error('Error updating post:', err);
+      setError(err instanceof Error ? err.message : 'Failed to update post');
+      // Optionally keep the modal open if there's an error? Or close it?
+      // closeModal(); 
+    }
+  };
+  // --- End Add handleEditPost and confirmEditPost ---
+
   // At the start of the component
   console.log('AccountPage rendered with user state:', user);
 
@@ -563,12 +618,8 @@ const AccountPage = () => {
                 </button>
                 <button 
                   onClick={(e) => {
-                    e.stopPropagation();
-                    setEditingPost(post);
-                    setSelectedImage(post.image);
-                    setNewPostComment(post.caption);
-                    setSelectedTags(post.tags);
-                    setIsEditModalOpen(true);
+                    e.stopPropagation(); // Prevent triggering handleViewPost if elements overlap
+                    handleEditPost(post); // Call the new edit handler
                   }}
                   className="post-action-btn edit-btn"
                   aria-label="Edit post"
@@ -720,6 +771,53 @@ const AccountPage = () => {
               </div>
           </div>
       )}
+
+      {/* --- Add Edit Post Modal JSX --- */}
+      {isEditModalOpen && editingPost && (
+          <div className='modal-overlay' onClick={closeModal}>
+              <div className='modal-content' onClick={e => e.stopPropagation()}>
+                  <button className="modal-close" onClick={closeModal}>×</button>
+                  <h3>Edit Post</h3>
+                  {/* Display existing image - usually not editable */}
+                  <img src={editingPost.image} alt="Post Preview" className='modal-preview-img' />
+
+                  <textarea
+                      placeholder='Edit caption...'
+                      value={editingPost.caption} // Use editingPost state
+                      onChange={(e) => setEditingPost({ ...editingPost, caption: e.target.value })}
+                      className='modal-caption'
+                  />
+
+                  <div className='modal-tags'>
+                      <h4>Edit Tags:</h4>
+                      <div className='tag-buttons'>
+                          {predefinedTags.map(tag => (
+                              <button
+                                  key={tag}
+                                  className={`tag-btn ${editingPost.tags?.includes(tag) ? 'active' : ''}`}
+                                  onClick={() => {
+                                      const currentTags = editingPost.tags || [];
+                                      const updatedTags = currentTags.includes(tag)
+                                          ? currentTags.filter(t => t !== tag)
+                                          : [...currentTags, tag];
+                                      setEditingPost({ ...editingPost, tags: updatedTags });
+                                  }}
+                              >
+                                  {tag}
+                              </button>
+                          ))}
+                      </div>
+                  </div>
+
+                  <div className="modal-actions">
+                      <button className="modal-btn cancel" onClick={closeModal}>Cancel</button>
+                      {/* Call confirmEditPost to save changes */}
+                      <button className="modal-btn confirm" onClick={confirmEditPost}>Save Changes</button>
+                  </div>
+              </div>
+          </div>
+      )}
+      {/* --- End Add Edit Post Modal JSX --- */}
     </div>
   );
 };

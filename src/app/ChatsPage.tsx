@@ -6,6 +6,7 @@ import ChatRoom from "./ChatRoom";
 import Header from "../components/Header";
 import styles from "../styles/ChatsPage.module.css";
 import { useTheme } from '../context/ThemeContext';
+import { useUser as useUserData } from './userData'; // Import useUser
 
 interface User {
   id: number;
@@ -20,12 +21,7 @@ const ChatsPage: React.FC = () => {
   const [recentChats, setRecentChats] = useState<User[]>([]);
   const { theme } = useTheme();
   const isDarkMode = theme === 'dark';
-
-  // Get current user from localStorage
-  const currentUser = React.useMemo(() => {
-    const stored = localStorage.getItem('currentUser');
-    return stored ? JSON.parse(stored) : null;
-  }, []);
+  const { currentUser } = useUserData(); // Use the hook
 
   // Fetch recent chats for sidebar
   useEffect(() => {

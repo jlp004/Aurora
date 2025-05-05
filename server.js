@@ -6,6 +6,8 @@ import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import { Prisma } from '@prisma/client';
+import { URLSearchParams } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -667,7 +669,14 @@ app.get('/api/posts/:userId', async (req, res) => {
       where: { 
         userId: Number(userId) 
       },
-      include: {
+      select: {
+        id: true,
+        title: true,
+        pictureURL: true,
+        userId: true,
+        tag: true,
+        createdAt: true,
+        likes: true,
         user: {
           select: {
             username: true
@@ -740,22 +749,46 @@ app.post('/api/posts', async (req, res) => {
 app.put('/api/posts/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, content, tags } = req.body;
+    // Only expect title and tags (as string) in the body now
+    const { title, tags } = req.body; 
     
+    const updateData = {};
+    if (title) updateData.title = title;
+    if (tags !== undefined) updateData.tag = tags; // Update tag field if tags string is provided (even if empty)
+
+    if (Object.keys(updateData).length === 0) {
+        return res.status(400).json({ message: 'No update data provided' });
+    }
+
+    console.log(`Updating post ${id} with data:`, updateData);
+
     const post = await prisma.post.update({
       where: { id: Number(id) },
-      data: {
-        ...(title && { title }),
-        ...(content && { content }),
-        ...(tags && { tags })
-      }
+      data: updateData // Use the dynamically built updateData object
     });
     
     return res.status(200).json(post);
   } catch (error) {
-    console.error('Error updating post:', error);
+    // Log more detailed error information
+    console.error(`Error updating post ${req.params.id}:`, error);
+    let errorMessage = 'Failed to update post';
+    let errorDetails = null;
+
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        // Handle known Prisma errors (e.g., record not found, constraint violation)
+        errorMessage = `Database error: ${error.code}`;
+        errorDetails = error.meta;
+        console.error(`Prisma Error Code: ${error.code}, Meta:`, error.meta);
+        if (error.code === 'P2025') { // Record to update not found
+            return res.status(404).json({ message: 'Post not found' });
+        }
+    } else if (error instanceof Error) {
+        errorDetails = error.message;
+    }
+
     return res.status(500).json({ 
-      message: 'Failed to update post' 
+      message: errorMessage,
+      details: errorDetails 
     });
   }
 });
@@ -901,14 +934,97 @@ app.use((err, req, res, next) => {
 
 // === Chat Endpoints ===
 
-// Get chat history between two users
+// Get chat history between two users (using usernames)
 app.get('/api/chat/history', async (req, res) => {
-  // ... existing chat history handler code ...
+  try {
+    // Expect usernames in query parameters now
+    const { username1, username2 } = req.query; 
+
+    console.log('[GET /api/chat/history] Received query params:', req.query);
+
+    if (!username1 || !username2) {
+      console.error('[GET /api/chat/history] Validation failed: One or both usernames missing.');
+      return res.status(400).json({ error: 'Missing username1 or username2 query parameter' });
+    }
+
+    // Find users by username to get their IDs
+    const user1 = await prisma.user.findUnique({ where: { username: username1 }, select: { id: true } });
+    const user2 = await prisma.user.findUnique({ where: { username: username2 }, select: { id: true } });
+
+    if (!user1 || !user2) {
+      console.error(`[GET /api/chat/history] User lookup failed: user1 found=${!!user1}, user2 found=${!!user2}`);
+      return res.status(404).json({ error: 'One or both users not found' });
+    }
+
+    const user1Id = user1.id;
+    const user2Id = user2.id;
+    console.log(`[GET /api/chat/history] Found IDs: user1Id=${user1Id}, user2Id=${user2Id}`);
+
+    // Use the found IDs for the Prisma query
+    const messages = await prisma.message.findMany({
+      where: {
+        OR: [
+          { senderId: user1Id, receiverId: user2Id },
+          { senderId: user2Id, receiverId: user1Id },
+        ],
+      },
+      orderBy: {
+        createdAt: 'asc', // Order messages chronologically
+      },
+      // include: { // Optionally include sender/receiver details 
+      //   sender: { select: { username: true, pictureURL: true } },
+      //   receiver: { select: { username: true, pictureURL: true } }
+      // }
+    });
+
+    console.log(`[GET /api/chat/history] Found ${messages.length} messages between ${username1} and ${username2}`);
+    return res.status(200).json(messages);
+
+  } catch (error) {
+    console.error(`Error fetching chat history between ${req.query.username1} and ${req.query.username2}:`, error);
+    return res.status(500).json({ 
+        error: 'Failed to fetch chat history',
+        details: error.message
+     });
+  }
 });
 
 // Send a message
 app.post('/api/chat/send', async (req, res) => {
-  // ... existing send message handler code ...
+  const { senderId, receiverId, content } = req.body;
+
+  if (!senderId || !receiverId || !content) {
+    return res.status(400).json({ 
+        error: 'Missing senderId, receiverId, or content in request body' 
+    });
+  }
+
+  const senderNumId = Number(senderId);
+  const receiverNumId = Number(receiverId);
+
+  if (isNaN(senderNumId) || isNaN(receiverNumId)) {
+    return res.status(400).json({ error: 'Invalid senderId or receiverId' });
+  }
+
+  try {
+    const newMessage = await prisma.message.create({
+      data: {
+        senderId: senderNumId,
+        receiverId: receiverNumId,
+        content: content,
+      },
+    });
+
+    // Optionally: Emit message via WebSocket/Socket.IO here for real-time updates
+
+    return res.status(201).json(newMessage); // Return the created message
+  } catch (error) {
+    console.error(`Error sending message from ${senderId} to ${receiverId}:`, error);
+    return res.status(500).json({ 
+        error: 'Failed to send message',
+        details: error.message
+     });
+  }
 });
 
 // Search users for chat
@@ -949,7 +1065,64 @@ app.get('/api/chat/search-users', async (req, res) => {
 
 // Get recent chat users for a user
 app.get('/api/chat/recent/:userId', async (req, res) => {
-  // ... existing recent chats handler code ...
+  const { userId } = req.params;
+  const currentUserId = Number(userId);
+
+  if (isNaN(currentUserId)) {
+    return res.status(400).json({ error: 'Invalid userId parameter' });
+  }
+
+  try {
+    // Find all messages involving the current user
+    const messages = await prisma.message.findMany({
+      where: {
+        OR: [
+          { senderId: currentUserId },
+          { receiverId: currentUserId },
+        ],
+      },
+      // Include sender and receiver details for easier processing
+      include: {
+        sender: { select: { id: true, username: true, pictureURL: true } },
+        receiver: { select: { id: true, username: true, pictureURL: true } },
+      },
+      orderBy: {
+        createdAt: 'desc', // Get latest messages first to determine recency
+      },
+    });
+
+    // Process messages to find unique partners and latest message time
+    const chatPartners = new Map(); // Map to store latest message time per partner
+    const partnerDetails = new Map(); // Map to store partner details
+
+    messages.forEach(message => {
+      const partner = message.senderId === currentUserId ? message.receiver : message.sender;
+      // Ensure partner is not null and not the user themselves
+      if (partner && partner.id !== currentUserId) {
+          if (!chatPartners.has(partner.id)) {
+              chatPartners.set(partner.id, message.createdAt);
+              partnerDetails.set(partner.id, partner);
+          }
+          // Since messages are ordered desc, the first time we see a partner, 
+          // it's associated with their most recent message.
+      }
+    });
+
+    // Convert map to an array sorted by most recent message
+    const recentChats = Array.from(partnerDetails.values()).sort((a, b) => {
+        const timeA = chatPartners.get(a.id);
+        const timeB = chatPartners.get(b.id);
+        // Sort descending: more recent messages first
+        return new Date(timeB).getTime() - new Date(timeA).getTime(); 
+    });
+
+    console.log(`[GET /api/chat/recent/${userId}] Found ${recentChats.length} recent chats.`);
+    res.status(200).json({ users: recentChats });
+
+  } catch (error) {
+    console.error(`Error fetching recent chats for user ${userId}:`, error);
+    res.status(500).json({ error: 'Failed to fetch recent chats', details: error.message });
+  }
 });
 
 // === Follow/Unfollow Endpoints ===

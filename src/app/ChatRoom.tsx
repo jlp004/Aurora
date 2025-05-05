@@ -1,6 +1,7 @@
 // Chat room with real messages
 import { useState, useEffect } from "react";
 import { useTheme } from '../context/ThemeContext';
+import { useUser } from './userData';
 
 interface Message {
     id: number;
@@ -32,68 +33,81 @@ interface ChatRoomProps {
 const ChatRoom = ({ userId, onChatSent }: ChatRoomProps) => {
     const [messages, setMessages] = useState<Message[]>([]);
     const [newMessage, setNewMessage] = useState('');
-    const [currentUser, setCurrentUser] = useState<User | null>(null);
     const [recipient, setRecipient] = useState<User | null>(null);
     const { theme } = useTheme();
     const isDarkMode = theme === 'dark';
+    const { currentUser } = useUser();
 
-    // Get current user from localStorage
+    // Effect to fetch recipient data based on userId prop
     useEffect(() => {
-        const storedUser = localStorage.getItem('currentUser');
-        console.log('Stored user:', storedUser); // Debug log
-        if (storedUser) {
-            try {
-                const parsedUser = JSON.parse(storedUser);
-                console.log('Parsed user:', parsedUser); // Debug log
-                setCurrentUser(parsedUser);
-            } catch (error) {
-                console.error('Error parsing stored user:', error);
+        const fetchRecipient = async () => {
+            if (!userId) {
+                setRecipient(null); // Clear recipient if userId changes to null/undefined
+                return;
             }
-        }
-    }, []);
+            try {
+                console.log('[ChatRoom] Fetching recipient with ID:', userId);
+                const response = await fetch(`/api/User/${userId}`);
+                if (!response.ok) {
+                  throw new Error(`Failed to fetch recipient: ${response.statusText}`);
+                }
+                const data = await response.json();
+                console.log('[ChatRoom] Received recipient data:', data);
+                if (data.users && data.users.length > 0) {
+                    setRecipient(data.users[0]);
+                } else {
+                    console.error('[ChatRoom] No recipient user found with ID:', userId);
+                    setRecipient(null); // Set recipient to null if not found
+                }
+            } catch (error) {
+                console.error('[ChatRoom] Error fetching recipient:', error);
+                setRecipient(null); // Set recipient to null on error
+            }
+        };
 
-    // Load messages when a new user is selected
+        fetchRecipient();
+    }, [userId]); // Depend only on userId
+
+    // Effect to fetch messages once currentUser and recipient (with username) are available
     useEffect(() => {
         const fetchMessages = async () => {
-            if (!currentUser) {
-                console.log('No current user available'); // Debug log
+            // Ensure we have both currentUser and recipient with their usernames
+            if (!currentUser || !recipient || !currentUser.username || !recipient.username) {
+                console.log('[ChatRoom] Waiting for currentUser and recipient usernames to fetch messages...');
+                setMessages([]); // Clear messages if users aren't ready
                 return;
             }
             
             try {
-                console.log('Fetching messages between users:', currentUser.id, userId); // Debug log
-                const response = await fetch(`/api/chat/history?user1Id=${currentUser.id}&user2Id=${userId}`);
+                console.log(`[ChatRoom] Fetching messages between usernames: ${currentUser.username} (${currentUser.id}) and ${recipient.username} (${recipient.id})`);
+                // Use usernames in the API call
+                const response = await fetch(`/api/chat/history?username1=${encodeURIComponent(currentUser.username)}&username2=${encodeURIComponent(recipient.username)}`);
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch messages: ${response.statusText}`);
+                }
                 const data = await response.json();
-                console.log('Received messages:', data); // Debug log
-                setMessages(data.messages);
-            } catch (error) {
-                console.error('Error fetching messages:', error);
-            }
-        };
-
-        const fetchRecipient = async () => {
-            try {
-                console.log('Fetching recipient:', userId); // Debug log
-                const response = await fetch(`/api/User/${userId}`);
-                const data = await response.json();
-                console.log('Received recipient data:', data); // Debug log
-                if (data.users && data.users.length > 0) {
-                    setRecipient(data.users[0]);
+                console.log('[ChatRoom] Received messages:', data);
+                if (Array.isArray(data)) { 
+                    setMessages(data);
                 } else {
-                    console.error('No user found with ID:', userId);
+                    console.error('[ChatRoom] Unexpected response format for messages:', data);
+                    setMessages([]); 
                 }
             } catch (error) {
-                console.error('Error fetching recipient:', error);
+                console.error('[ChatRoom] Error fetching messages:', error);
+                setMessages([]); 
             }
         };
 
         fetchMessages();
-        fetchRecipient();
-    }, [userId, currentUser]);
+    // Depend on currentUser and recipient objects. This runs when either changes.
+    // We check inside if the required usernames are present before fetching.
+    }, [currentUser, recipient]); 
 
     const sendMessage = async () => {
-        if (!newMessage || !currentUser) {
-            console.log('Cannot send message:', { newMessage, currentUser }); // Debug log
+        // Use recipient.id which should be available if recipient state is set
+        if (!newMessage || !currentUser || !recipient) { 
+            console.log('Cannot send message:', { newMessage, currentUser, recipient }); // Debug log
             return;
         }
 
@@ -106,7 +120,7 @@ const ChatRoom = ({ userId, onChatSent }: ChatRoomProps) => {
                 body: JSON.stringify({
                     content: newMessage,
                     senderId: currentUser.id,
-                    receiverId: userId
+                    receiverId: recipient.id // Use recipient.id here
                 }),
             });
 

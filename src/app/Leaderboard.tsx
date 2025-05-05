@@ -38,15 +38,15 @@ const Leaderboard = () => {
       <Header />
       <div className="leaderboard-content">
         <h1 className="leaderboard-title">Aurora Leaderboard</h1>
-
+        
         <div className="sort-controls">
-          <button
+          <button 
             className={`sort-button ${sortBy === 'likes' ? 'active' : ''}`}
             onClick={() => setSortBy('likes')}
           >
             Sort by Likes
           </button>
-          <button
+          <button 
             className={`sort-button ${sortBy === 'followers' ? 'active' : ''}`}
             onClick={() => setSortBy('followers')}
           >
@@ -59,8 +59,8 @@ const Leaderboard = () => {
             <div key={user.id} className="leaderboard-item">
               <div className="rank">{index + 1}</div>
               <div className="lb-user-info">
-                <img
-                  src={user.pictureURL || '/images/default-avatar.png'}
+                <img 
+                  src={user.pictureURL || '/images/default-avatar.png'} 
                   alt={user.username}
                   className="lb-user-avatar"
                 />
