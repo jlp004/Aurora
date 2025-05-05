@@ -44,17 +44,11 @@ model Post {
   pictureURL String
   userId     Int
   user       User      @relation(fields: [userId], references: [id])
-  tags       Tag[]
+  tag        String    @default("")
   Comment    Comment[]
   likes      Int       @default(0)
   likedBy    User[]    @relation("PostLikes")
   createdAt  DateTime  @default(now())
-}
-
-model Tag {
-  id      Int    @id @default(autoincrement())
-  tagName String @unique
-  posts   Post[]
 }
 
 model Comment {

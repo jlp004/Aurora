@@ -337,7 +337,11 @@ app.post('/api/User/update', async (req, res) => {
 // Get all posts
 app.get('/api/posts', async (req, res) => {
   try {
+    const { tag } = req.query;
+    console.log('Fetching posts with tag:', tag);
+
     const posts = await prisma.post.findMany({
+      where: tag ? { tag } : {},
       include: {
         user: {
           select: {
@@ -495,7 +499,7 @@ app.get('/api/posts/:userId', async (req, res) => {
 app.post('/api/posts', async (req, res) => {
   try {
     console.log('Received post data:', req.body);
-    const { title, tags, userId, pictureURL } = req.body;
+    const { title, tag, userId, pictureURL } = req.body;
     
     // Validate input
     if (!title || !userId) {
@@ -510,6 +514,7 @@ app.post('/api/posts', async (req, res) => {
         title,
         pictureURL: pictureURL || '',
         userId: Number(userId),
+        tag: tag || '',
         createdAt: new Date() // Store as Date object, Prisma will handle the conversion
       }
     });

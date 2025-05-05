@@ -21,10 +21,15 @@ const Home = () => {
   const [posts, setPosts] = useState<PostData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedTag, setSelectedTag] = useState<string | null>(null);
 
-  const fetchPosts = async () => {
+  const fetchPosts = async (tag?: string) => {
     try {
-      const response = await fetch('http://localhost:3001/api/posts');
+      const url = tag 
+        ? `http://localhost:3001/api/posts?tag=${encodeURIComponent(tag)}`
+        : 'http://localhost:3001/api/posts';
+      
+      const response = await fetch(url);
       if (!response.ok) {
         throw new Error('Failed to fetch posts');
       }
@@ -67,13 +72,23 @@ const Home = () => {
   };
 
   useEffect(() => {
-    fetchPosts();
+    fetchPosts(selectedTag || undefined);
     // Refresh posts every minute
-    const intervalId = setInterval(fetchPosts, 60000);
+    const intervalId = setInterval(() => fetchPosts(selectedTag || undefined), 60000);
     return () => clearInterval(intervalId);
-  }, []);
+  }, [selectedTag]);
 
   const predefinedTags = ["Nature", "Food", "Travel", "Fashion", "Sports"];
+
+  const handleTagClick = (tag: string) => {
+    // If clicking the same tag that's already selected, deselect it
+    if (selectedTag === tag) {
+      setSelectedTag(null);
+    } else {
+      setSelectedTag(tag);
+    }
+    setLoading(true);
+  };
 
   if (loading) {
     return (
@@ -82,7 +97,13 @@ const Home = () => {
         <div className="home-tags-bar">
           <div className="tag-buttons">
             {predefinedTags.map(tag => (
-              <button key={tag} className="tag-btn">{tag}</button>
+              <button 
+                key={tag} 
+                className={`tag-btn ${selectedTag === tag ? 'active' : ''}`}
+                onClick={() => handleTagClick(tag)}
+              >
+                {tag}
+              </button>
             ))}
           </div>
         </div>
@@ -100,7 +121,13 @@ const Home = () => {
         <div className="home-tags-bar">
           <div className="tag-buttons">
             {predefinedTags.map(tag => (
-              <button key={tag} className="tag-btn">{tag}</button>
+              <button 
+                key={tag} 
+                className={`tag-btn ${selectedTag === tag ? 'active' : ''}`}
+                onClick={() => handleTagClick(tag)}
+              >
+                {tag}
+              </button>
             ))}
           </div>
         </div>
@@ -117,7 +144,13 @@ const Home = () => {
       <div className="home-tags-bar">
         <div className="tag-buttons">
           {predefinedTags.map(tag => (
-            <button key={tag} className="tag-btn">{tag}</button>
+            <button 
+              key={tag} 
+              className={`tag-btn ${selectedTag === tag ? 'active' : ''}`}
+              onClick={() => handleTagClick(tag)}
+            >
+              {tag}
+            </button>
           ))}
         </div>
       </div>
