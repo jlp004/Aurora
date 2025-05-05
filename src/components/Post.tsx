@@ -284,26 +284,28 @@ export default function Post({
         <img src={imageUrl} alt="Post content" />
       </div>
       
-      <div className="post-actions">
-        <button 
-          className={`action-btn like-btn ${isLiked ? 'liked' : ''}`}
-          onClick={handleLike}
-          style={{ marginLeft: '-585px' }}
-        >
-        </button>
-        <button 
-          className="action-btn comment-btn"
-          onClick={() => {
-            setShowCommentForm(!showCommentForm);
-            setShowComments(!showComments);
-          }}
-        >
-        </button>
-      </div>
-      
-      <div className="post-stats">
-        <span className="likes">{currentLikes} likes</span>
-        <span className="comments">{commentCount} comments</span>
+      <div className="post-actions-stacked">
+        <div className="post-actions">
+          <button 
+            className={`action-btn like-btn ${isLiked ? 'liked' : ''}`}
+            onClick={handleLike}
+          >
+            ♥
+          </button>
+          <button 
+            className="action-btn comment-btn"
+            onClick={() => {
+              setShowCommentForm(!showCommentForm);
+              setShowComments(!showComments);
+            }}
+          >
+            💬
+          </button>
+        </div>
+        <div className="post-stats">
+          <span className="likes">{currentLikes} likes</span>
+          <span className="comments">{commentCount} comments</span>
+        </div>
       </div>
       
       <div className="post-caption">
