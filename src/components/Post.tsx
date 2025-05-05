@@ -254,6 +254,35 @@ export default function Post({
     }
   };
 
+  const handleDeleteComment = async (commentId: number) => {
+    if (window.confirm('Are you sure you want to delete this comment?')) {
+      try {
+        console.log('Attempting to delete post:', commentId);
+        const response = await fetch(`http://localhost:3001/api/comment/${commentId}`, {
+          method: 'DELETE',
+        });
+       
+        console.log('Delete response:', response);
+        const responseData = await response.json();
+        console.log('Delete response data:', responseData);
+       
+        if (response.ok) {
+          console.log('Comment deleted successfully, updating UI');
+          // Only update the UI if the server deletion was successful
+          setPostComments((prev) => prev.filter((comment) => comment.id !== commentId));
+          setCommentCount((prev) => prev - 1);
+        } else {
+          console.error('Failed to delete comment:', responseData);
+          throw new Error('Failed to delete comment');
+        }
+      } catch (err) {
+        console.error('Error deleting comment:', err);
+        setError('Failed to delete comment: ' + (err instanceof Error ? err.message : String(err)));
+      }
+    }
+  };
+ 
+
   return (
     <div className="post">
       <div className="post-header">
@@ -313,6 +342,14 @@ export default function Post({
               <div key={comment.id} className="comment">
                 <span className="comment-username">{comment.poster?.username || 'Unknown'}</span>
                 <span className="comment-text">{comment.text}</span>
+                {comment.poster?.username === currentUserId && ( // Compare currentUserId with comment.poster.id
+                  <button
+                    className="delete-comment-btn"
+                    onClick={() => handleDeleteComment(comment.id)}
+              >
+                Delete
+              </button>
+          )}
               </div>
             ))}
           </div>
