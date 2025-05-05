@@ -507,3 +507,21 @@
 .follow-btn:hover {
     opacity: 0.9;
 }
+
+.upload-status {
+    position: absolute;
+    bottom: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 14px;
+    z-index: 10;
+    white-space: nowrap;
+}
+
+.upload-status.success {
+    background-color: rgba(40, 167, 69, 0.8);
+}

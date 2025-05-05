@@ -879,13 +879,48 @@ app.post('/api/upload/profile', upload.single('image'), async (req, res) => {
       data: { pictureURL: imageUrl }
     });
     
+    // Generate a cache-busting version of the URL
+    const timestamp = Date.now();
+    const cacheBustUrl = `${imageUrl}?t=${timestamp}`;
+    
     return res.status(200).json({
       message: 'Profile picture uploaded successfully',
-      imageUrl
+      imageUrl: cacheBustUrl,
+      userId: user.id,
+      success: true
     });
   } catch (error) {
     console.error('Error uploading profile picture:', error);
     return res.status(500).json({ error: 'Failed to upload profile picture' });
+  }
+});
+
+// Check profile picture - for debugging
+app.get('/api/user/check-profile-pic/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    if (!userId) {
+      return res.status(400).json({ error: 'User ID is required' });
+    }
+    
+    // Get user from database to check pictureURL
+    const user = await prisma.user.findUnique({
+      where: { id: Number(userId) },
+      select: { pictureURL: true, username: true }
+    });
+    
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    return res.status(200).json({
+      username: user.username,
+      pictureURL: user.pictureURL,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Error checking profile picture:', error);
+    return res.status(500).json({ error: 'Failed to check profile picture' });
   }
 });
 

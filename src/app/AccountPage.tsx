@@ -27,33 +27,8 @@ const AccountPage = () => {
     bio: currentUser?.profileDesc || "No bio yet",
     followers: 0,
     following: 0,
-    profilePic: currentUser?.pictureURL || "/images/default_avatar.png",
-    posts: [
-      {
-        id: 1,
-        image: "/images/accountPic1.png",
-        caption: "Beautiful morning coffee",
-        tags: ["Food"],
-        comments: [
-          { id: 1, poster: "User1", text: "Beautiful shot! Love the colors 😍" },
-          { id: 2, poster: "User2", text: "wow, where was this taken??" }
-        ]
-      },
-      {
-        id: 2,
-        image: "/images/accountPic2.png",
-        caption: "Nature at its best",
-        tags: ["Nature"],
-        comments: []
-      },
-      {
-        id: 3,
-        image: "/images/accountPic3.png",
-        caption: "Travel diaries",
-        tags: ["Travel"],
-        comments: []
-      }
-    ]
+    profilePic: currentUser?.pictureURL || "",
+    posts: []
   });
 
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -66,6 +41,7 @@ const AccountPage = () => {
   const [commentTab, setCommentTab] = useState<'view' | 'post'>('view');
   const [newComment, setNewComment] = useState("");
   const [uploadLoading, setUploadLoading] = useState(false);
+  const [profileUploadStatus, setProfileUploadStatus] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [postComments, setPostComments] = useState<any[]>([]);
   const [commentsLoaded, setCommentsLoaded] = useState(false);
@@ -172,20 +148,61 @@ const AccountPage = () => {
     fetchUserPosts();
   }, [currentUser]);
 
+  // Force reload of profile pictures globally
+  const forceReloadProfilePictures = (newImageUrl: string) => {
+    // 1. Add a small delay to ensure DOM updates have occurred
+    setTimeout(() => {
+      // 2. Find all profile pictures in the document
+      const allProfilePics = document.querySelectorAll('img[src*="profile-pic"], img[src*="pictureURL"], img.profile-pic, .profile-pic > img');
+      
+      console.log('Found profile pictures to update:', allProfilePics.length);
+      
+      // 3. Update each image source to the new URL
+      allProfilePics.forEach(img => {
+        const imgElement = img as HTMLImageElement;
+        // Skip non-matching urls (other users' pictures)
+        if (imgElement.src.includes('default_avatar') || 
+            (currentUser?.pictureURL && imgElement.src.includes(currentUser.pictureURL.split('?')[0]))) {
+          console.log('Updating img src from', imgElement.src, 'to', newImageUrl);
+          // Force browser to reload the image
+          imgElement.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'; // 1x1 transparent gif
+          // Trigger reflow
+          void imgElement.offsetWidth;
+          // Set the new image URL
+          imgElement.src = newImageUrl;
+        }
+      });
+      
+      // 4. Update background images (in case profile pic is used as background)
+      const elementsWithBgImage = document.querySelectorAll('[style*="background"]');
+      elementsWithBgImage.forEach(el => {
+        const element = el as HTMLElement;
+        const style = window.getComputedStyle(element);
+        const bgImage = style.backgroundImage;
+        
+        if (currentUser?.pictureURL && bgImage.includes(currentUser.pictureURL.split('?')[0])) {
+          console.log('Updating background image from', bgImage, 'to', newImageUrl);
+          element.style.backgroundImage = `url("${newImageUrl}")`;
+        }
+      });
+    }, 100);
+  };
+
   const handleProfilePicChange = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
     
     try {
-      // Show preview immediately
-      const previewUrl = URL.createObjectURL(file);
-      setUser(prev => ({ ...prev, profilePic: previewUrl }));
+      setUploadLoading(true);
+      setProfileUploadStatus('Uploading...');
+      setError(null);
       
-      // Upload to server
+      // Create the form data with the image and user ID
       const formData = new FormData();
       formData.append('image', file);
-      formData.append('userId', currentUser?.id.toString() || user.id.toString());
+      formData.append('userId', currentUser?.id.toString() || '0');
       
+      // Upload to server
       const response = await fetch('http://localhost:3001/api/upload/profile', { 
         method: 'POST', 
         body: formData 
@@ -193,49 +210,34 @@ const AccountPage = () => {
       
       if (response.ok) {
         const data = await response.json();
-        console.log('Profile picture uploaded:', data);
+        console.log('Server response:', data);
         
-        // Update both local state and user context with the new image URL
-        // Remove the /public prefix from the image URL
-        const newImageUrl = data.imageUrl.replace('/public', '');
+        // Success! Show message and reload the page after a brief delay
+        setProfileUploadStatus('Profile updated! Refreshing...');
         
-        // Update user context first
-        if (currentUser) {
-          const updatedUser = { ...currentUser, pictureURL: newImageUrl };
-          setCurrentUser(updatedUser);
+        // Update local state for immediate feedback
+        if (data.imageUrl) {
+          const localUrl = URL.createObjectURL(file);
+          setUser(prev => ({
+            ...prev,
+            profilePic: localUrl
+          }));
         }
         
-        // Update local state
-        setUser(prev => ({ 
-          ...prev, 
-          profilePic: newImageUrl,
-          username: prev.username
-        }));
-        
-        // Force an immediate update of the image
-        const imgElement = document.querySelector('.profile-pic') as HTMLImageElement;
-        if (imgElement) {
-          // Create a new image object to preload
-          const newImage = new Image();
-          newImage.src = newImageUrl;
-          
-          // Update the DOM immediately
-          imgElement.src = newImageUrl;
-          
-          // Force a re-render after a short delay
-          setTimeout(() => {
-            imgElement.src = '';
-            imgElement.src = newImageUrl;
-          }, 100);
-        }
+        // Force page reload after a slight delay
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
       } else {
         const errorData = await response.json();
-        console.error('Failed to upload profile picture:', errorData);
-        throw new Error('Failed to upload profile picture');
+        throw new Error(errorData.error || 'Failed to upload image');
       }
     } catch (err) {
-      console.error('Failed to upload profile picture:', err);
-      setError('Failed to upload profile picture: ' + (err instanceof Error ? err.message : String(err)));
+      console.error('Upload error:', err);
+      setError('Failed to upload: ' + (err instanceof Error ? err.message : String(err)));
+      setProfileUploadStatus('');
+    } finally {
+      // Don't set uploadLoading to false since we're reloading the page
     }
   };
 
@@ -556,6 +558,11 @@ const AccountPage = () => {
               <FaUser style={{ fontSize: 64, color: '#a0a0a0' }} />
             </div>
           )}
+          {uploadLoading ? (
+            <div className="upload-status">Uploading...</div>
+          ) : profileUploadStatus ? (
+            <div className="upload-status success">{profileUploadStatus}</div>
+          ) : null}
           <div className="profile-pic-overlay">Click to remove</div>
         </div>
 

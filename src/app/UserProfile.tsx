@@ -346,7 +346,7 @@ export default function UserProfile() {
                         <Post 
                             key={post.id} 
                             {...post}
-                            currentUserId={userID}
+                            currentUserId={currentUser?.id}
                             profilePictureUrl={user.pictureURL}
                         />
                     ))

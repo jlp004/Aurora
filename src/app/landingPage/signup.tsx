@@ -30,7 +30,7 @@ const Signup = () => {
                 id: user?.id || 'user_' + Date.now(), // Use the user ID from API or generate one
                 username: username,
                 email: email,
-                pictureURL: user?.pictureURL || '/images/profile-pic.jpg',
+                pictureURL: user?.pictureURL || '', // Remove hardcoded profile pic
                 profileDesc: user?.profileDesc || 'No bio yet' // Default bio
             });
             

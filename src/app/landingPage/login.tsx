@@ -39,7 +39,7 @@ const Login = () => {
                 id: user?.id || 'user_' + Date.now(),
                 username: user?.username || username,
                 email: user?.email || email,
-                pictureURL: user?.pictureURL || '/images/profile-pic.jpg',
+                pictureURL: user?.pictureURL || '',
                 profileDesc: user?.profileDesc // Don't use default bio here
             });
             
@@ -65,7 +65,7 @@ const Login = () => {
             id: 'user_' + Date.now(), // Generate a unique ID
             username: username || 'demo_user',
             email: email || 'demo@example.com',
-            pictureURL: '/images/profile-pic.jpg',
+            pictureURL: '',
             profileDesc: 'No bio yet' // Default bio
         });
         

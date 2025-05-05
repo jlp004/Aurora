@@ -52,16 +52,3 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
 // Create a custom hook to use the user context
 export const useUser = () => useContext(UserContext);
-
-// example user data for testing
-export const users = {
-    '1': { username: 'Jane Doe', avatar: '/images/img1.png' },
-    '2': { username: 'John Smith', avatar: '/images/img2.png' },
-    '3': { username: 'Lauren Anderson', avatar: '/images/img3.png' },
-};
-
-export const currentUser = {
-    id: 'me',
-    username: 'You',
-    avatar: '/images/img4.png',
-};
