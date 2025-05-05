@@ -23,6 +23,7 @@ interface PostProps {
   timePosted?: string | Date;
   currentUserId?: string | number;
   isLikedByCurrentUser?: boolean;
+  profilePictureUrl?: string;
 }
 
 const getStoredTimestamp = (postId: number): string | null => {
@@ -74,7 +75,8 @@ export default function Post({
   timePosted = new Date(),
   id = 0,
   currentUserId = '',
-  isLikedByCurrentUser = false
+  isLikedByCurrentUser = false,
+  profilePictureUrl = ''
 }: PostProps) {
   const [currentLikes, setCurrentLikes] = useState(likes);
   const [isLiked, setIsLiked] = useState(isLikedByCurrentUser ?? false);
@@ -266,7 +268,13 @@ export default function Post({
       <div className="post-header">
         <div className="post-user">
           <Link to={`/account/query?userID=${username}`} className="user-link">
-            <div className="user-avatar">{username.charAt(0)}</div>
+            <div className="post-profile-picture">
+              {profilePictureUrl ? (
+                <img src={profilePictureUrl} alt={`${username}'s profile`} />
+              ) : (
+                username.charAt(0)
+              )}
+            </div>
             <span className="username">{username}</span>
           </Link>
         </div>

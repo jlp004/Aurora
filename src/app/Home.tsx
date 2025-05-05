@@ -11,6 +11,7 @@ interface PostData {
   userId: number;
   user: {
     username: string;
+    pictureURL: string;
   };
   createdAt: string;
   comments: number;
@@ -175,6 +176,7 @@ const Home = () => {
             comments={post.comments}
             likes={post.likes}
             isLikedByCurrentUser={post.isLikedByCurrentUser}
+            profilePictureUrl={post.user.pictureURL}
           />
         ))}
       </div>

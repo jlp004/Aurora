@@ -542,7 +542,8 @@ app.get('/api/posts', async (req, res) => {
         likes: true,
         user: { 
           select: {
-            username: true
+            username: true,
+            pictureURL: true
           }
         },
         _count: {

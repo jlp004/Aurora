@@ -23,8 +23,6 @@ interface UserType {
     email: string;
     pictureURL?: string;
     profileDesc?: string;
-    followers?: number;
-    following?: number;
 }
 
 interface PostWithUser {
@@ -33,7 +31,6 @@ interface PostWithUser {
     pictureURL: string;
     userId: number;
     likes: number;
-    createdAt: string;
     user: {
         username: string;
     };
@@ -46,151 +43,6 @@ export default function UserProfile() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [user, setUser] = useState<UserType | null>(null);
-    const [isFollowing, setIsFollowing] = useState(false);
-    const [followerCount, setFollowerCount] = useState(0);
-    const [followLoading, setFollowLoading] = useState(false);
-
-    // --- Modal State ---
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [modalType, setModalType] = useState<'followers' | 'following' | null>(null);
-    const [modalUsers, setModalUsers] = useState<UserType[]>([]);
-    const [modalLoading, setModalLoading] = useState(false);
-    const [modalError, setModalError] = useState<string | null>(null);
-    // --- End Modal State ---
-
-    // Get the actual logged-in user from localStorage
-    const currentUser = (() => {
-        const stored = localStorage.getItem('currentUser');
-        return stored ? JSON.parse(stored) : null;
-    })();
-
-    // Function to check if current user is following the profile user
-    const checkFollowStatus = async (profileUserId: number) => {
-        if (!currentUser || currentUser.id === profileUserId) {
-            return; // Can't follow yourself
-        }
-
-        try {
-            console.log('Checking follow status:', { followerId: currentUser.id, followingId: profileUserId });
-            const response = await fetch('/api/isFollowing', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    followerId: currentUser.id,
-                    followingId: profileUserId,
-                }),
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                console.log('Follow status check result:', data);
-                setIsFollowing(data.isFollowing);
-            } else {
-                console.error('Failed to check follow status:', await response.text());
-            }
-        } catch (err) {
-            console.error('Failed to check follow status:', err);
-        }
-    };
-
-    // Function to handle follow/unfollow
-    const handleFollowToggle = async () => {
-        if (!currentUser || !user || currentUser.id === user.id) {
-            return; // Can't follow yourself
-        }
-
-        setFollowLoading(true);
-        
-        try {
-            const endpoint = isFollowing ? '/api/unfollow' : '/api/follow';
-            const response = await fetch(endpoint, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    followerId: currentUser.id,
-                    followingId: user.id,
-                }),
-            });
-
-            if (response.ok) {
-                // Update local state for optimistic UI
-                setIsFollowing(!isFollowing);
-                
-                // Update follower count
-                if (isFollowing) {
-                    setFollowerCount(prev => Math.max(0, prev - 1));
-                } else {
-                    setFollowerCount(prev => prev + 1);
-                }
-                
-                // Update current user in localStorage - this keeps the following count in sync
-                const updatedCurrentUser = { 
-                    ...currentUser,
-                    following: isFollowing 
-                        ? Math.max(0, currentUser.following - 1) 
-                        : (currentUser.following || 0) + 1
-                };
-                localStorage.setItem('currentUser', JSON.stringify(updatedCurrentUser));
-            } else {
-                const errorData = await response.json();
-                console.error('Follow/unfollow error:', errorData);
-            }
-        } catch (err) {
-            console.error('Failed to follow/unfollow:', err);
-        } finally {
-            setFollowLoading(false);
-        }
-    };
-
-    // --- Modal Functions ---
-    const fetchModalData = async (type: 'followers' | 'following', profileUserId: number) => {
-        setModalLoading(true);
-        setModalError(null);
-        setModalUsers([]); // Clear previous users
-
-        try {
-            const endpoint = type === 'followers'
-                ? `/api/user/${profileUserId}/followers`
-                : `/api/user/${profileUserId}/following`;
-
-            console.log(`Fetching modal data from: ${endpoint}`);
-            const response = await fetch(endpoint);
-
-            if (!response.ok) {
-                throw new Error(`Failed to fetch ${type}`);
-            }
-
-            const data = await response.json();
-            console.log(`Received modal data for ${type}:`, data);
-            setModalUsers(data.users || []); // Assuming API returns { users: [...] }
-
-        } catch (err: any) {
-            console.error(`Error fetching modal data for ${type}:`, err);
-            setModalError(err.message || `Failed to load ${type}`);
-        } finally {
-            setModalLoading(false);
-        }
-    };
-
-    const handleOpenModal = (type: 'followers' | 'following') => {
-        if (!user) return;
-        setModalType(type);
-        setIsModalOpen(true);
-        fetchModalData(type, user.id); // Fetch data when modal opens
-    };
-
-    const handleCloseModal = () => {
-        setIsModalOpen(false);
-        setModalType(null);
-        setModalUsers([]);
-        setModalLoading(false);
-        setModalError(null);
-    };
-    // --- End Modal Functions ---
 
     useEffect(() => {
         if (!userID) {
@@ -204,13 +56,8 @@ export default function UserProfile() {
         const fetchPosts = async () => {
             try {
                 console.log('Fetching user data for:', userID);
-                // If userID is a number, fetch by ID, else by username
-                let userUrl;
-                if (!isNaN(Number(userID))) {
-                  userUrl = `/api/User/${encodeURIComponent(userID)}`;
-                } else {
-                  userUrl = `/api/User/username/${encodeURIComponent(userID)}`;
-                }
+                //  fetch user data to get their posts
+                const userUrl = `/api/User/username/${encodeURIComponent(userID)}`;
                 const userResponse = await fetch(userUrl);
                 
                 if (!userResponse.ok) {
@@ -225,12 +72,6 @@ export default function UserProfile() {
 
                 const user = userData.users[0];
                 setUser(user);
-                setFollowerCount(user.followers || 0);
-                
-                // Check if current user is following this user - only once when profile loads
-                if (currentUser && currentUser.id !== user.id) {
-                    checkFollowStatus(user.id);
-                }
 
                 // fetch posts from this user
                 const postsUrl = `/api/posts/${user.id}`;
@@ -254,21 +95,23 @@ export default function UserProfile() {
                     return;
                 }
 
-                // Transform the posts data to match our PostType interface
-                const transformedPosts = postsData.map((post: any) => ({
+                // Transform the posts data to match PostType interface
+                const transformedPosts = postsData.map((post: PostWithUser) => ({
                     id: post.id,
                     username: user.username,
                     imageUrl: post.pictureURL,
                     caption: post.title,
                     likes: post.likes,
-                    comments: post.comments ?? post._count?.Comment ?? 0,
-                    timePosted: post.createdAt
+                    comments: 0,
+                    timePosted: new Date().toLocaleDateString(),
+                    profilePictureUrl: user.pictureURL
                 }));
 
                 console.log('Transformed posts:', transformedPosts);
                 setPosts(transformedPosts);
-            } catch (err: any) {
-                setError(err.message || 'Failed to fetch user data');
+            } catch (err) {
+                console.error('Error fetching posts:', err);
+                setError(err instanceof Error ? err.message : 'Failed to fetch posts');
             } finally {
                 setLoading(false);
             }
@@ -303,9 +146,6 @@ export default function UserProfile() {
         );
     }
 
-    // Determine if follow button should be shown
-    const showFollowButton = currentUser && currentUser.id !== user.id;
-
     return (
         <div className="user-profile">
             <Header />
@@ -313,9 +153,9 @@ export default function UserProfile() {
             <div className="profile-header">
                 <div className="profile-pic-container">
                     {user.pictureURL ? (
-                        <img src={user.pictureURL.replace('/public', '')} alt="" className="profile-pic" />
+                        <img src={user.pictureURL} alt="" className="profile-pic" />
                     ) : (
-                        <div className="profile-pic default-pic">?</div>
+                        <div className="profile-pic">Profile</div>
                     )}
                 </div>
 
@@ -325,26 +165,9 @@ export default function UserProfile() {
                     
                     <div className="stats">
                         <span><strong>{posts.length}</strong> Posts</span>
-                        <span className="stat-link" onClick={() => handleOpenModal('followers')}>
-                            <strong>{followerCount}</strong> Followers
-                        </span>
-                        <span className="stat-link" onClick={() => handleOpenModal('following')}>
-                            <strong>{user.following || 0}</strong> Following
-                        </span>
+                        <span><strong>0</strong> Followers</span>
+                        <span><strong>0</strong> Following</span>
                     </div>
-
-                    {showFollowButton && (
-                        <button 
-                            className={`follow-button ${isFollowing ? 'following' : ''}`}
-                            onClick={handleFollowToggle}
-                            disabled={followLoading}
-                        >
-                            {followLoading 
-                                ? 'Loading...' 
-                                : (isFollowing ? 'Unfollow' : 'Follow')
-                            }
-                        </button>
-                    )}
                 </div>
             </div>
 
@@ -358,39 +181,12 @@ export default function UserProfile() {
                         <Post 
                             key={post.id} 
                             {...post}
-                            currentUserId={currentUser?.id}
+                            currentUserId={userID}
+                            profilePictureUrl={user.pictureURL}
                         />
                     ))
                 )}
             </div>
-
-            {/* --- Modal JSX --- */}
-            {isModalOpen && (
-                <div className="modal-overlay" onClick={handleCloseModal}>
-                    <div className="modal-content follow-modal-content" onClick={e => e.stopPropagation()}>
-                        <button className="modal-close" onClick={handleCloseModal}>×</button>
-                        <h2>{modalType === 'followers' ? 'Followers' : 'Following'}</h2>
-                            <div className="follow-list">
-                            {modalLoading && <p>Loading...</p>}
-                            {modalError && <p className="error-message">{modalError}</p>}
-                            {!modalLoading && !modalError && modalUsers.length === 0 && (
-                                <p>No users found.</p>
-                            )}
-                            {!modalLoading && !modalError && modalUsers.map((modalUser) => (
-                                <div key={modalUser.id} className="follow-list-item">
-                                    <img
-                                        src={modalUser.pictureURL?.replace('/public', '') || '/images/default_avatar.png'}
-                                        alt={modalUser.username}
-                                        className="follow-list-pfp"
-                                    />
-                                    <span className="follow-list-username">{modalUser.username}</span>
-                                    </div>
-                                ))}
-                            </div>
-                    </div>
-                </div>
-            )}
-            {/* --- End Modal JSX --- */}
         </div>
     );
 }
