@@ -329,7 +329,11 @@ app.post('/api/User/update', async (req, res) => {
 // Get all posts
 app.get('/api/posts', async (req, res) => {
   try {
+    const { tag } = req.query;
+    console.log('Fetching posts with tag:', tag);
+
     const posts = await prisma.post.findMany({
+      where: tag ? { tag } : {},
       include: {
         user: {
           select: {
