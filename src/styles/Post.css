@@ -19,8 +19,8 @@
     justify-content: space-between;
     align-items: center;
     border-bottom: 1px solid var(--border-color);
-    background-color: #8A2BE2; /* Purple background */
-    color: white; /* White text for better contrast */
+    background-color: var(--bg-primary);
+    color: var(--text-primary); /* Will be black in light theme */
   }
 
   .post-feed {
@@ -86,7 +86,7 @@
   }
 
   .username {
-    color: var(--text-primary);
+    color: var(--text-primary); /* Will be black in light theme */
     font-weight: 600;
     font-size: 15px;
   }
@@ -311,8 +311,8 @@
 }
 
 .post-tag {
-  background-color: rgba(255, 255, 255, 0.2); /* Semi-transparent white background */
-  color: white; /* White text */
+  background-color: var(--bg-secondary);
+  color: var(--text-primary); /* Will be black in light theme */
   padding: 4px 8px;
   border-radius: 12px;
   font-size: 0.9em;
