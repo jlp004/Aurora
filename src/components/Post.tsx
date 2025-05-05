@@ -22,6 +22,7 @@ interface PostProps {
   comments?: number;
   timePosted?: string | Date;
   currentUserId?: string | number;
+  isLikedByCurrentUser?: boolean;
 }
 
 const getStoredTimestamp = (postId: number): string | null => {
@@ -72,10 +73,11 @@ export default function Post({
   comments = 2,
   timePosted = new Date(),
   id = 0,
-  currentUserId = ''
+  currentUserId = '',
+  isLikedByCurrentUser = false
 }: PostProps) {
   const [currentLikes, setCurrentLikes] = useState(likes);
-  const [isLiked, setIsLiked] = useState(false);
+  const [isLiked, setIsLiked] = useState(isLikedByCurrentUser ?? false);
   const [showComments, setShowComments] = useState(false);
   const [showCommentForm, setShowCommentForm] = useState(false);
   const [commentText, setCommentText] = useState('');
@@ -147,26 +149,6 @@ export default function Post({
     return () => clearInterval(interval);
   }, [timestamp]);
 
-  // const handleLike = () => {
-  //   setCurrentLikes(isLiked ? currentLikes - 1 : currentLikes + 1);
-  //   setIsLiked(!isLiked);
-  // };
-  // Example: Fetch post data including likes when the component mounts
-  useEffect(() => {
-  const fetchPostData = async () => {
-    try {
-      const response = await fetch(`/api/Post/${id}`);
-      if (!response.ok) throw new Error('Failed to fetch post data');
-      const data = await response.json();
-      setCurrentLikes(data.likes);
-    } catch (error) {
-      console.error('Error fetching post data:', error);
-    }
-  };
-
-    if (id) fetchPostData();
-  }, [id]);
-
   const handleLike = async () => {
     if (!currentUserId || !id) {
       setError('You must be logged in to like a post');
@@ -200,7 +182,6 @@ export default function Post({
       setError(error instanceof Error ? error.message : 'Failed to like post');
     }
   };
-
 
   const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

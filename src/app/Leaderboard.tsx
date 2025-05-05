@@ -38,15 +38,15 @@ const Leaderboard = () => {
       <Header />
       <div className="leaderboard-content">
         <h1 className="leaderboard-title">Aurora Leaderboard</h1>
-        
+
         <div className="sort-controls">
-          <button 
+          <button
             className={`sort-button ${sortBy === 'likes' ? 'active' : ''}`}
             onClick={() => setSortBy('likes')}
           >
             Sort by Likes
           </button>
-          <button 
+          <button
             className={`sort-button ${sortBy === 'followers' ? 'active' : ''}`}
             onClick={() => setSortBy('followers')}
           >
@@ -55,12 +55,12 @@ const Leaderboard = () => {
         </div>
 
         <div className="leaderboard-list">
-          {sortedUsers.map((user, index) => (
+          {sortedUsers.slice(0, 10).map((user, index) => (
             <div key={user.id} className="leaderboard-item">
               <div className="rank">{index + 1}</div>
               <div className="user-info">
-                <img 
-                  src={user.pictureURL || '/images/default-avatar.png'} 
+                <img
+                  src={user.pictureURL || '/images/default-avatar.png'}
                   alt={user.username}
                   className="user-avatar"
                 />
@@ -68,17 +68,18 @@ const Leaderboard = () => {
               </div>
               <div className="stats">
                 <div className="stat">
-                  <span className="stat-label">Likes</span>
-                  <span className="stat-value">{user.likes}</span>
-                </div>
-                <div className="stat">
-                  <span className="stat-label">Followers</span>
-                  <span className="stat-value">{user.followers}</span>
+                  <span className="stat-value">
+                    {sortBy === 'likes' ? user.likes : user.followers}
+                  </span>
+                  <span className="stat-label">
+                    {sortBy === 'likes' ? 'Likes' : 'Followers'}
+                  </span>
                 </div>
               </div>
             </div>
           ))}
         </div>
+
       </div>
     </div>
   );

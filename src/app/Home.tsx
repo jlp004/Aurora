@@ -14,6 +14,8 @@ interface PostData {
   };
   createdAt: string;
   comments: number;
+  likes: number;
+  isLikedByCurrentUser: boolean;
 }
 
 const Home = () => {
@@ -25,10 +27,16 @@ const Home = () => {
 
   const fetchPosts = async (tag?: string) => {
     try {
-      const url = tag 
+      let url = tag 
         ? `http://localhost:3001/api/posts?tag=${encodeURIComponent(tag)}`
         : 'http://localhost:3001/api/posts';
       
+      // Append userId if currentUser exists
+      if (currentUser?.id) {
+        url += url.includes('?') ? `&userId=${currentUser.id}` : `?userId=${currentUser.id}`;
+      }
+      
+      console.log('Fetching posts from URL:', url); // Log the final URL
       const response = await fetch(url);
       if (!response.ok) {
         throw new Error('Failed to fetch posts');
@@ -165,6 +173,8 @@ const Home = () => {
             timePosted={post.createdAt}
             currentUserId={currentUser?.id}
             comments={post.comments}
+            likes={post.likes}
+            isLikedByCurrentUser={post.isLikedByCurrentUser}
           />
         ))}
       </div>

@@ -61,6 +61,49 @@ app.use((req, res, next) => {
 
 // === User Endpoints ===
 
+// Get ALL users (for leaderboard)
+app.get('/api/User', async (req, res) => {
+  try {
+    console.log('Fetching all users for leaderboard');
+    const users = await prisma.user.findMany({
+      select: {
+        id: true,
+        username: true,
+        pictureURL: true,
+        // Assuming 'likes' and 'followers' are direct fields or relations that Prisma can count/select
+        // If they are relations (e.g., posts liked by user, followers list), you might need to adjust the query
+        // For now, assuming simple numeric fields exist on the User model
+        likes: true,      // Make sure 'likes' field exists in your Prisma schema
+        followers: true   // Make sure 'followers' field exists in your Prisma schema
+      },
+      // Optionally order by likes/followers in the query itself, though frontend also sorts
+      // orderBy: {
+      //   likes: 'desc'
+      // }
+    });
+
+    if (!users || users.length === 0) {
+      console.log('No users found in database.');
+      return res.status(404).json({ 
+        message: 'No users found',
+        users: []
+      });
+    }
+
+    console.log(`Found ${users.length} users.`);
+    // The frontend expects a direct array, not nested under 'users' key based on its logic
+    return res.status(200).json(users);
+
+  } catch (error) {
+    console.error('Error fetching all users:', error);
+    return res.status(500).json({ 
+      message: 'Failed to fetch users: ' + error.message,
+      details: error.message,
+      users: []
+    });
+  }
+});
+
 // Test endpoint
 app.get('/api/test', (req, res) => {
   res.json({ message: 'API is working' });
@@ -267,179 +310,53 @@ app.get('/api/User/username/:username', async (req, res) => {
   }
 });
 
-// Get all users (for leaderboard)
-app.get('/api/users', async (req, res) => {
-  try {
-    const users = await prisma.user.findMany({
-      select: {
-        id: true,
-        username: true,
-        pictureURL: true
-      }
-    });
-    return res.status(200).json({ users });
-  } catch (error) {
-    console.error('Error fetching users:', error);
-    return res.status(500).json({ message: 'Failed to fetch users' });
-  }
-});
-
-// Endpoint to get users followed by a specific user
-app.get('/api/user/:id/following', async (req, res) => {
-  const { id } = req.params;
-  try {
-    const user = await prisma.user.findUnique({
-      where: { id: Number(id) },
-          select: {
-        followingUsers: { // Select the users this user is following
-          select: {
-            id: true,
-            username: true,
-            pictureURL: true
-            // Add other fields if needed in the modal list
-          }
-        }
-      }
-    });
-    
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-
-    res.json({ users: user.followingUsers });
-  } catch (error) {
-    console.error(`Error fetching following for user ${id}:`, error);
-    res.status(500).json({ message: 'Failed to fetch following list' });
-  }
-});
-
-// Endpoint to get followers of a specific user
-app.get('/api/user/:id/followers', async (req, res) => {
-  const { id } = req.params;
-  try {
-    const user = await prisma.user.findUnique({
-      where: { id: Number(id) },
-      select: {
-        followedByUsers: { // Select the users following this user
-          select: {
-            id: true,
-            username: true,
-            pictureURL: true
-            // Add other fields if needed in the modal list
-          }
-        }
-      }
-    });
-
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-
-    res.json({ users: user.followedByUsers });
-  } catch (error) {
-    console.error(`Error fetching followers for user ${id}:`, error);
-    res.status(500).json({ message: 'Failed to fetch followers list' });
-  }
-});
-
-// Update user settings
-app.put('/api/user/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { username, profileDesc } = req.body;
-    
-    console.log('Updating user:', { id, username, profileDesc });
-    
-    const updatedUser = await prisma.user.update({
-      where: { id: Number(id) },
-      data: {
-        ...(username && { username }),
-        ...(profileDesc && { profileDesc })
-      }
-    });
-    
-    // Don't return the password
-    const { password: _, ...userWithoutPassword } = updatedUser;
-    
-    return res.status(200).json(userWithoutPassword);
-  } catch (error) {
-    console.error('Error updating user:', error);
-    return res.status(500).json({ 
-      message: 'Failed to update user settings',
-      details: error.message 
-    });
-  }
-});
-
-// Update user email, password, and bio
-app.post('/api/User/update', async (req, res) => {
-  try {
-    const { oldUsername, username, email, password, bio } = req.body;
-    if (!oldUsername || !username) {
-      return res.status(400).json({ message: 'Old and new username are required' });
-    }
-    // Find user by old username
-    const user = await prisma.user.findUnique({ where: { username: oldUsername } });
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-    // If username is changing, check for uniqueness
-    if (oldUsername !== username) {
-      const existingUser = await prisma.user.findUnique({ where: { username } });
-      if (existingUser) {
-        return res.status(409).json({ message: 'Username already taken' });
-      }
-    }
-    const updatedUser = await prisma.user.update({
-      where: { username: oldUsername },
-      data: {
-        ...(username && { username }),
-        ...(email && { email }),
-        ...(password && { password }),
-        ...(bio && { profileDesc: bio }),
-      }
-    });
-    const { password: _, ...userWithoutPassword } = updatedUser;
-    return res.status(200).json(userWithoutPassword);
-  } catch (error) {
-    console.error('Error updating user:', error);
-    return res.status(500).json({ message: 'Failed to update user: ' + error.message });
-  }
-});
-
-// === Post Endpoints ===
-
 // Get all posts
 app.get('/api/posts', async (req, res) => {
   try {
-    const { tag } = req.query;
-    console.log('Fetching posts with tag:', tag);
+    const { tag, userId } = req.query; // Get optional userId
+    const currentUserId = userId ? Number(userId) : null;
+    console.log('Fetching posts with:', { tag, currentUserId });
 
     const posts = await prisma.post.findMany({
       where: tag ? { tag } : {},
-      include: {
-        user: {
+      select: {
+        id: true,
+        title: true,
+        pictureURL: true,
+        userId: true,
+        tag: true,
+        createdAt: true,
+        likes: true,
+        user: { 
           select: {
             username: true
           }
         },
         _count: {
           select: { Comment: true }
-        }
+        },
+        // Conditionally check likedBy relation if currentUserId is provided
+        likedBy: currentUserId 
+          ? { where: { id: currentUserId }, select: { id: true } } 
+          : false // If no userId, don't need to fetch this relation
       },
       orderBy: {
         createdAt: 'desc'
       }
     });
     
-    // Add a comments property to each post for the count
-    const postsWithCommentCount = posts.map(post => ({
+    // Map the results to include comment count and isLikedByCurrentUser flag
+    const postsWithDetails = posts.map(post => ({
       ...post,
-      comments: post._count.Comment
+      comments: post._count.Comment,
+      // Determine if the current user liked this post based on the likedBy check
+      isLikedByCurrentUser: currentUserId ? post.likedBy.length > 0 : false,
+      // Remove the potentially large likedBy array from the final response
+      likedBy: undefined 
     }));
 
     return res.status(200).json({ 
-      data: postsWithCommentCount
+      data: postsWithDetails // Return the modified array
     });
   } catch (error) {
     console.error('Error fetching posts:', error);
